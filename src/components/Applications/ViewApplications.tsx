@@ -1357,6 +1357,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               availableApplications={availableApplications}
               clientUsername={clientUsername}
               clientName={clientName}
+              viewerUsername={this.props.username}
+              viewerRole={this.props.role}
+              viewerName={this.props.name}
+              organizationName={this.props.organization}
             />
           )}
         </Route>

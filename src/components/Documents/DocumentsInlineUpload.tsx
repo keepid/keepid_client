@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
-import { canUseClientNotifications } from '../../utils/featureAccess';
+import { canUseClientNotifications, isStaffRole } from '../../utils/featureAccess';
 import {
   buildPickupMessage,
   EMPTY_ORG_ADDRESS,
@@ -138,6 +138,9 @@ export default function DocumentsInlineUpload({
   const canNotify = !!viewerUsername
     && viewerUsername !== targetUser
     && canUseClientNotifications(viewerRole, organizationName, viewerUsername, viewerEmail);
+  const canCreatePhoneUpload = !!viewerUsername
+    && viewerUsername !== targetUser
+    && isStaffRole(viewerRole);
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const [clientDisplayName, setClientDisplayName] = useState<string>(clientNameProp || '');
   const [clientPhone, setClientPhone] = useState<string>('');
@@ -368,7 +371,7 @@ export default function DocumentsInlineUpload({
   }, [alert, onPhoneUploadClosed, phoneUploadToken]);
 
   const createPhoneUploadSession = useCallback(async (recipient: PhoneUploadRecipient) => {
-    if (!canNotify) return;
+    if (!canCreatePhoneUpload) return;
     if (!category) {
       alert.show('Choose a category first.');
       return;
@@ -411,7 +414,7 @@ export default function DocumentsInlineUpload({
     }
   }, [
     alert,
-    canNotify,
+    canCreatePhoneUpload,
     category,
     fetchCurrentDocumentIds,
     isOtherCategory,
@@ -429,11 +432,11 @@ export default function DocumentsInlineUpload({
 
   const resetAll = useCallback(() => {
     setFile(null);
-    setCategory('');
+    setCategory(lockedCategory ? initialCategory : '');
     setCustomIdCategory(initialCustomIdCategory);
     goToEntryMode();
     if (collapsible) setExpanded(false);
-  }, [collapsible, goToEntryMode, initialCustomIdCategory]);
+  }, [collapsible, goToEntryMode, initialCategory, initialCustomIdCategory, lockedCategory]);
 
   // Uploads the file and returns whether the upload succeeded. The success
   // toast / reset is intentionally deferred to the caller because the
@@ -758,33 +761,44 @@ export default function DocumentsInlineUpload({
 
         {mode === 'upload-pick-file' && (
           <div className="d-flex flex-column gap-3">
-            {canNotify && !isTokenDrivenUpload && (
+            {canCreatePhoneUpload && !isTokenDrivenUpload && (
               <div className="border rounded bg-white p-3">
-                <label htmlFor="phone-upload-category" className="form-label fw-semibold">
-                  Send scanner link to phone
-                </label>
-                <select
-                  id="phone-upload-category"
-                  className="form-select mb-2"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="">Select category…</option>
-                  {categoryOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                {isOtherCategory && (
-                  <input
-                    type="text"
-                    className="form-control mb-2"
-                    value={customIdCategory}
-                    onChange={(e) => setCustomIdCategory(e.target.value)}
-                    placeholder="Enter document type"
-                    aria-label="Custom document type"
-                  />
+                <div className="form-label fw-semibold">
+                  {lockedCategory && category
+                    ? `Upload ${category} from phone`
+                    : 'Send scanner link to phone'}
+                </div>
+                {lockedCategory ? (
+                  <p className="small text-muted mb-2">
+                    The secure link will save the upload as {category}.
+                  </p>
+                ) : (
+                  <>
+                    <select
+                      id="phone-upload-category"
+                      className="form-select mb-2"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      aria-label="Document category for phone upload"
+                    >
+                      <option value="">Select category…</option>
+                      {categoryOptions.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    {isOtherCategory && (
+                      <input
+                        type="text"
+                        className="form-control mb-2"
+                        value={customIdCategory}
+                        onChange={(e) => setCustomIdCategory(e.target.value)}
+                        placeholder="Enter document type"
+                        aria-label="Custom document type"
+                      />
+                    )}
+                  </>
                 )}
                 <div className="d-flex flex-wrap gap-2">
                   <button
@@ -807,7 +821,7 @@ export default function DocumentsInlineUpload({
                 {phoneUploadError ? <div className="text-danger small mt-2">{phoneUploadError}</div> : null}
               </div>
             )}
-            {canNotify && !isTokenDrivenUpload && (
+            {canCreatePhoneUpload && !isTokenDrivenUpload && (
               <div className="text-center text-muted fw-semibold text-uppercase small">or</div>
             )}
             <div
