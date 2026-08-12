@@ -189,6 +189,7 @@ const WorkerLanding: React.FC<Props> = ({
   const [sortMode, setSortMode] = useState<ClientSortMode>('date-desc');
   const [viewMode, setViewMode] = useState<ClientViewMode>('list');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const { path } = useRouteMatch();
   const canAccessApplications = canUseApplications(role, organization, username, email);
   const canAccessCommunications = canUseCommunications(role, organization, username, email);
@@ -239,7 +240,7 @@ const WorkerLanding: React.FC<Props> = ({
     const { signal } = controller;
 
     const fetchClients = async () => {
-      setIsLoading(true);
+      setIsSearching(true);
       setCurrentPage(1);
 
       try {
@@ -269,7 +270,6 @@ const WorkerLanding: React.FC<Props> = ({
 
         if (filteredPeople.length > 0) {
           setClients(filteredPeople);
-          setIsLoading(false);
           await loadProfilePhoto(filteredPeople, signal);
         } else {
           setClients([]);
@@ -281,6 +281,7 @@ const WorkerLanding: React.FC<Props> = ({
       } finally {
         if (!signal.aborted) {
           setIsLoading(false);
+          setIsSearching(false);
         }
       }
     };
@@ -300,7 +301,7 @@ const WorkerLanding: React.FC<Props> = ({
     const timeoutId = window.setTimeout(() => {
       const trimmedSearch = searchName.trim();
       setSubmittedSearchName((prev) => (prev === trimmedSearch ? prev : trimmedSearch));
-    }, 250);
+    }, 500);
 
     return () => window.clearTimeout(timeoutId);
   }, [searchName]);
@@ -680,8 +681,12 @@ const WorkerLanding: React.FC<Props> = ({
                     value={searchName}
                     placeholder="Search by name, phone, email..."
                   />
-                  <button type="submit" className="tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-r-md hover:tw-bg-blue-700 tw-border-0">
-                    Search
+                  <button
+                    type="submit"
+                    className="tw-min-w-[7rem] tw-bg-twprimary tw-text-white tw-font-semibold tw-py-2 tw-px-4 tw-rounded-r-md hover:tw-bg-blue-700 tw-border-0"
+                    aria-label={isSearching ? 'Searching for clients' : 'Search clients'}
+                  >
+                    {isSearching ? 'Searching…' : 'Search'}
                   </button>
                 </form>
                 <div className="tw-flex tw-w-full md:tw-w-64">
@@ -721,7 +726,7 @@ const WorkerLanding: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="tw-container tw-mx-auto tw-px-4">
+            <div className="tw-container tw-mx-auto tw-px-4" aria-busy={isSearching}>
               {isLoading ? (
                 <div className="tw-text-center tw-py-12">
                   <h3 className="tw-text-xl tw-text-gray-700">Loading Clients</h3>

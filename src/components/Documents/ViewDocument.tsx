@@ -127,6 +127,34 @@ const ViewDocument: React.FC<Props> = ({
 
   const uploadedByLabel = (documentUploaderName || '').trim() || documentUploader;
 
+  const handlePrint = () => {
+    if (!pdfFile) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert.show('Allow pop-ups to print this document.', { type: 'error' });
+      return;
+    }
+
+    const url = window.URL.createObjectURL(pdfFile);
+    printWindow.document.title = `Print ${documentName || 'document'}`;
+    printWindow.document.body.textContent = 'Preparing document for printing...';
+
+    const frame = printWindow.document.createElement('iframe');
+    frame.style.position = 'fixed';
+    frame.style.inset = '0';
+    frame.style.width = '100%';
+    frame.style.height = '100%';
+    frame.style.border = '0';
+    frame.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    };
+    frame.src = url;
+    printWindow.document.body.replaceChildren(frame);
+  };
+
   return (
     <div className="tw-w-full tw-pt-12 sm:tw-pt-16 tw-pb-14 tw-px-4 sm:tw-px-6 lg:tw-px-8">
       <div className="tw-mx-auto tw-w-full tw-max-w-5xl">
@@ -138,10 +166,15 @@ const ViewDocument: React.FC<Props> = ({
           <span className="tw-align-middle">Back to My Documents</span>
         </PrimaryButton>
 
-        <div className="tw-flex tw-items-center tw-space-x-2">
+        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-end tw-gap-2">
           <PrimaryButtonSolid onClick={onDownloadCurrentDocument}>
             Download
           </PrimaryButtonSolid>
+          {pdfFile && (
+            <PrimaryButton onClick={handlePrint}>
+              Print
+            </PrimaryButton>
+          )}
           {canNotify && (
             <Link
               to={{
