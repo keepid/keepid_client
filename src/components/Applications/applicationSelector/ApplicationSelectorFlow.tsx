@@ -4,14 +4,18 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useAlert } from 'react-alert';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import { useHistory } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 
 import getServerURL from '../../../serverOverride';
+import Role from '../../../static/Role';
 import HomelessnessDefinitionModal from '../../BaseComponents/HomelessnessDefinitionModal';
 import { isValidPennDotNumber } from '../../BaseComponents/pennDotNumber';
 import PennDotNumberField from '../../BaseComponents/PennDotNumberField';
+import DocumentsInlineUpload from '../../Documents/DocumentsInlineUpload';
+import { IdCategories } from '../../Documents/IdCategories';
 import {
   completeServiceRecord,
   createClassifiedService,
@@ -41,6 +45,10 @@ interface Props {
   availableApplications: RegistryApplicationOption[];
   clientUsername?: string;
   clientName?: string;
+  viewerUsername?: string;
+  viewerRole?: Role;
+  viewerName?: string;
+  organizationName?: string;
 }
 
 const uuid = () => (typeof crypto !== 'undefined' && crypto.randomUUID
@@ -65,8 +73,13 @@ const ApplicationSelectorFlow = ({
   availableApplications,
   clientUsername = '',
   clientName = '',
+  viewerUsername,
+  viewerRole,
+  viewerName,
+  organizationName,
 }: Props) => {
   const history = useHistory();
+  const alert = useAlert();
   const [flow, setFlow] = useState<SelectorFlow | null>(null);
   const [nodeId, setNodeId] = useState('');
   const [path, setPath] = useState<SelectorPathStep[]>([]);
@@ -81,6 +94,7 @@ const ApplicationSelectorFlow = ({
   const [manualMode, setManualMode] = useState(false);
   const [manualPreview, setManualPreview] = useState<string | null>(null);
   const [homelessnessDefinitionOpen, setHomelessnessDefinitionOpen] = useState(false);
+  const [completedPhotoIdUploads, setCompletedPhotoIdUploads] = useState<Set<string>>(new Set());
   const [clientLoginDetails, setClientLoginDetails] = useState({
     penndotNumber: '',
     birthDate: '',
@@ -228,10 +242,19 @@ const ApplicationSelectorFlow = ({
       return;
     }
     const config = currentNode.componentConfig || {};
+    if (
+      currentNode.componentKey === 'photo-id-upload'
+      && config.required !== false
+      && !completedPhotoIdUploads.has(currentNode.id)
+    ) {
+      setError('Upload the photo ID before continuing.');
+      return;
+    }
     const isInformation = [
       'information',
       'homelessness-definition',
       'penndot-login-details',
+      'photo-id-upload',
     ].includes(currentNode.componentKey);
     const value = fieldValue.trim();
     if (!isInformation && config.required !== false && !value) {
@@ -453,6 +476,41 @@ const ApplicationSelectorFlow = ({
             </div>
           );
         }
+        if (node.componentKey === 'photo-id-upload') {
+          const uploadComplete = completedPhotoIdUploads.has(node.id);
+          return (
+            <div className="tw-mb-5 tw-max-w-3xl">
+              <div className="tw-mb-3">
+                <h3 className="tw-text-lg tw-font-semibold tw-text-slate-950">
+                  {String(config.label || 'Upload the client’s photo ID')}
+                </h3>
+                <p className="tw-mt-1 tw-text-sm tw-text-slate-600">
+                  {String(config.helpText || 'Send a secure phone link or drag a PDF or image into the box.')}
+                </p>
+              </div>
+              <DocumentsInlineUpload
+                targetUser={clientUsername}
+                alert={alert}
+                onUploadComplete={() => {
+                  setCompletedPhotoIdUploads((completed) => new Set(completed).add(node.id));
+                  setError(null);
+                }}
+                viewerUsername={viewerUsername}
+                viewerRole={viewerRole}
+                viewerName={viewerName}
+                organizationName={organizationName}
+                clientName={clientName}
+                initialCategory={IdCategories.DriversLicense}
+                lockedCategory
+              />
+              {uploadComplete && (
+                <p className="tw-mt-3 tw-rounded-md tw-border tw-border-green-200 tw-bg-green-50 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-green-800">
+                  Photo ID uploaded. You can continue.
+                </p>
+              )}
+            </div>
+          );
+        }
         return information ? (
           <div className="tw-mb-5 tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-5 tw-text-blue-950">
             {String(config.helpText || 'Review this information before continuing.')}
@@ -476,42 +534,63 @@ const ApplicationSelectorFlow = ({
           </label>
         );
       })()}
-      <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
-        {node.transitions.map((transition) => (
-          <div
-            key={transition.id}
-            className="tw-flex tw-min-h-48 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-shadow-md"
-          >
-            <button
-              type="button"
-              disabled={busy}
-              className="tw-flex tw-flex-1 tw-flex-col tw-items-stretch tw-justify-center tw-bg-white tw-p-4 hover:tw-bg-blue-50"
-              onClick={() => selectAnswer(transition)}
-            >
-              {transition.assetId && (
-                <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
-                  <img
-                    src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
-                    alt={transition.assetAltText || ''}
-                    className="tw-h-full tw-w-full tw-object-contain"
-                  />
-                </span>
-              )}
-              <span className="tw-font-semibold tw-text-slate-950">
-                {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
-              </span>
-            </button>
-            {transition.description && (
-              <div className="tw-prose tw-prose-sm tw-max-w-none tw-border-t tw-border-slate-100 tw-px-4 tw-py-3 tw-text-left tw-text-gray-600">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={descriptionMarkdownComponents}>
-                  {transition.description}
-                </ReactMarkdown>
-              </div>
-            )}
+      {node.componentKey === 'photo-id-upload' ? (
+        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
+          <button type="button" className="btn btn-outline-dark" onClick={goBack}>Back</button>
+          <div className="tw-flex tw-flex-wrap tw-gap-2">
+            {node.transitions.map((transition) => (
+              <button
+                key={transition.id}
+                type="button"
+                className="btn btn-primary"
+                disabled={busy}
+                onClick={() => selectAnswer(transition)}
+              >
+                {transition.label}
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
-      <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
+        </div>
+      ) : (
+        <>
+          <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
+            {node.transitions.map((transition) => (
+              <div
+                key={transition.id}
+                className="tw-flex tw-min-h-48 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-shadow-md"
+              >
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="tw-flex tw-flex-1 tw-flex-col tw-items-stretch tw-justify-center tw-bg-white tw-p-4 hover:tw-bg-blue-50"
+                  onClick={() => selectAnswer(transition)}
+                >
+                  {transition.assetId && (
+                    <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
+                      <img
+                        src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
+                        alt={transition.assetAltText || ''}
+                        className="tw-h-full tw-w-full tw-object-contain"
+                      />
+                    </span>
+                  )}
+                  <span className="tw-font-semibold tw-text-slate-950">
+                    {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
+                  </span>
+                </button>
+                {transition.description && (
+                  <div className="tw-prose tw-prose-sm tw-max-w-none tw-border-t tw-border-slate-100 tw-px-4 tw-py-3 tw-text-left tw-text-gray-600">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={descriptionMarkdownComponents}>
+                      {transition.description}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
+        </>
+      )}
     </div>
   );
 
