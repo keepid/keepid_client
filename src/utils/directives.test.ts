@@ -207,6 +207,12 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.personalAddress.$line1And2', profiles)).toBe('12 Analytical Engine Way, Suite 34');
     expect(resolveDirectiveFromProfiles('org.address.$line1+2', profiles)).toBe('100 Main St, Floor 2');
     expect(resolveDirectiveFromProfiles('org.address.$line1And2', profiles)).toBe('100 Main St, Floor 2');
+    expect(resolveDirectiveFromProfiles('address.$city+state+zip', profiles)).toBe('Philadelphia, PA 19104');
+    expect(resolveDirectiveFromProfiles('client.personalAddress.$cityStateZip', profiles)).toBe('Philadelphia, PA 19104');
+    expect(resolveDirectiveFromProfiles('client.mailAddress.$cityStateZip', profiles)).toBe('Pittsburgh, PA 15213');
+    expect(resolveDirectiveFromProfiles('director.personalAddress.$cityStateZip', profiles)).toBe('Hampton, VA 23666');
+    expect(resolveDirectiveFromProfiles('org.address.$city+state+zip', profiles)).toBe('Philadelphia, PA 19107');
+    expect(resolveDirectiveFromProfiles('org.address.$cityStateZip', profiles)).toBe('Philadelphia, PA 19107');
   });
 
   it('supports legacy org directive aliases', () => {
@@ -255,6 +261,14 @@ describe('directive resolution', () => {
     expect(getDirectiveHealth('address.$line1And2')).toMatchObject({
       status: 'deprecated',
       replacement: 'client.personalAddress.$line1And2',
+    });
+    expect(getDirectiveHealth('address.$city+state+zip')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.personalAddress.$cityStateZip',
+    });
+    expect(getDirectiveHealth('client.personalAddress.$cityStateZip')).toEqual({
+      status: 'supported',
+      directive: 'client.personalAddress.$cityStateZip',
     });
     expect(getDirectiveHealth('signature')).toMatchObject({ status: 'sentinel' });
     expect(getDirectiveHealth('client.nope')).toMatchObject({ status: 'unknown' });

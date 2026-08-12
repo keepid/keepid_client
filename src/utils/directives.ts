@@ -96,12 +96,19 @@ export const DIRECTIVE_CATALOG_COLUMNS: DirectiveCatalogColumn[] = [
           { directive: 'director.$fullMailAddress', label: 'Director full mail address' },
           { directive: 'org.$fullAddress', label: 'Org full address' },
           { directive: 'client.personalAddress.$line1And2', label: 'Client personal line 1 + 2' },
+          { directive: 'client.personalAddress.$cityStateZip', label: 'Client personal city, state ZIP' },
           { directive: 'client.mailAddress.$line1And2', label: 'Client mail line 1 + 2' },
+          { directive: 'client.mailAddress.$cityStateZip', label: 'Client mail city, state ZIP' },
           { directive: 'worker.personalAddress.$line1And2', label: 'Worker personal line 1 + 2' },
+          { directive: 'worker.personalAddress.$cityStateZip', label: 'Worker personal city, state ZIP' },
           { directive: 'worker.mailAddress.$line1And2', label: 'Worker mail line 1 + 2' },
+          { directive: 'worker.mailAddress.$cityStateZip', label: 'Worker mail city, state ZIP' },
           { directive: 'director.personalAddress.$line1And2', label: 'Director personal line 1 + 2' },
+          { directive: 'director.personalAddress.$cityStateZip', label: 'Director personal city, state ZIP' },
           { directive: 'director.mailAddress.$line1And2', label: 'Director mail line 1 + 2' },
+          { directive: 'director.mailAddress.$cityStateZip', label: 'Director mail city, state ZIP' },
           { directive: 'org.address.$line1And2', label: 'Org address line 1 + 2' },
+          { directive: 'org.address.$cityStateZip', label: 'Org city, state ZIP' },
         ],
       },
     ],
@@ -305,6 +312,21 @@ function replacementForDeprecatedDirective(directive: string): string | null {
     if (scope === 'org') return 'org.address.$line1And2';
     if (scope === 'director') return 'director.personalAddress.$line1And2';
     return `${scope}.${clientAddress}.$line1And2`;
+  }
+  const cityStateZip = directive.match(
+    /^(?:(client|worker|director|org)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$city(?:\+state\+zip|StateZip)$/i,
+  );
+  if (cityStateZip) {
+    const scope = cityStateZip[1]?.toLowerCase();
+    const addressKey = cityStateZip[2]?.toLowerCase();
+    const clientAddress = addressKey === 'mailaddress' ? 'mailAddress' : 'personalAddress';
+    if (!scope) {
+      if (addressKey === 'orgaddress') return 'org.address.$cityStateZip';
+      return `client.${clientAddress}.$cityStateZip`;
+    }
+    if (scope === 'org') return 'org.address.$cityStateZip';
+    if (scope === 'director') return 'director.personalAddress.$cityStateZip';
+    return `${scope}.${clientAddress}.$cityStateZip`;
   }
 
   const normalized = normalizeDirectiveAlias(directive);
@@ -514,6 +536,49 @@ function resolveAddressLine1And2Directive(
   return combineAddressLine1And2(profile, 'personalAddress') ?? combineAddressLine1And2(profile, 'mailAddress');
 }
 
+function combineAddressCityStateZip(
+  profile: Record<string, unknown> | undefined,
+  prefix: string,
+): string | undefined {
+  const city = String(getByPath(profile, `${prefix}.city`) ?? '').trim();
+  const state = String(getByPath(profile, `${prefix}.state`) ?? '').trim();
+  const zip = String(
+    getByPath(profile, `${prefix}.zip`) ?? getByPath(profile, `${prefix}.zipcode`) ?? '',
+  ).trim();
+  const stateZip = [state, zip].filter(Boolean).join(' ');
+  return [city, stateZip].filter(Boolean).join(', ') || undefined;
+}
+
+function resolveAddressCityStateZipDirective(
+  directive: string,
+  profiles: ResolvedProfiles,
+): string | undefined {
+  const match = directive.trim().match(
+    /^(?:(client|worker|org|director)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$city(?:\+state\+zip|StateZip)$/i,
+  );
+  if (!match) return undefined;
+
+  const profileKey = (match[1]?.toLowerCase() ?? 'client') as 'client' | 'worker' | 'org' | 'director';
+  const rawPrefix = match[2]?.toLowerCase();
+  const profile = profiles[profileKey] as Record<string, unknown> | undefined;
+  if (!profile) return undefined;
+
+  if (rawPrefix === 'personaladdress') return combineAddressCityStateZip(profile, 'personalAddress');
+  if (rawPrefix === 'mailaddress') return combineAddressCityStateZip(profile, 'mailAddress');
+  if (rawPrefix === 'orgaddress') return combineAddressCityStateZip(profile, 'orgAddress');
+  if (rawPrefix === 'address') {
+    if (profileKey === 'org') {
+      return combineAddressCityStateZip(profile, 'address') ?? combineAddressCityStateZip(profile, 'orgAddress');
+    }
+    return combineAddressCityStateZip(profile, 'personalAddress') ?? combineAddressCityStateZip(profile, 'mailAddress');
+  }
+
+  if (profileKey === 'org') {
+    return combineAddressCityStateZip(profile, 'address') ?? combineAddressCityStateZip(profile, 'orgAddress');
+  }
+  return combineAddressCityStateZip(profile, 'personalAddress') ?? combineAddressCityStateZip(profile, 'mailAddress');
+}
+
 /** Resolve directive string to value from profiles, e.g. "client.currentName.first" */
 export function resolveDirectiveFromProfiles(
   directive: string,
@@ -609,6 +674,11 @@ export function resolveDirectiveFromProfiles(
   const addressLine1And2 = resolveAddressLine1And2Directive(normalizedDirective, profiles);
   if (addressLine1And2 !== undefined) {
     return addressLine1And2;
+  }
+
+  const addressCityStateZip = resolveAddressCityStateZipDirective(normalizedDirective, profiles);
+  if (addressCityStateZip !== undefined) {
+    return addressCityStateZip;
   }
 
   if (lower.startsWith('client.') && profiles.client) {
