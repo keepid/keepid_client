@@ -2,6 +2,7 @@ import React from 'react';
 import MailchimpSubscribe from 'react-mailchimp-subscribe';
 import { Link } from 'react-router-dom';
 
+import { buildVersionLabel, currentBuildSha } from '../lib/buildVersion';
 import Email from '../static/images/email-2.svg';
 import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
@@ -173,7 +174,9 @@ const Footer = () => {
             </a>
           </div>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">Keep.id is proud to be a 501(c)(3) tax-exempt non-profit organization.</p>
-          <p className="tw-text-xs tw-text-white tw-text-center my-1">Illustrations by Storyset. Environment: {currentMode}</p>
+          <p className="tw-text-xs tw-text-white tw-text-center my-1" title={`Build ${currentBuildSha}`}>
+            Illustrations by Storyset. Environment: {currentMode}. Build: {buildVersionLabel(currentBuildSha)}
+          </p>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; {new Date().getFullYear()} Keep.id</p>
         </div>
       </div>

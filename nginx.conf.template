@@ -49,6 +49,12 @@ server {
         try_files $uri =404;
     }
 
+    # Build fingerprint used by open tabs to detect a newer deployment.
+    location = /version.json {
+        add_header Cache-Control "no-store" always;
+        try_files $uri =404;
+    }
+
     # Reverse proxy: /api/foo → ${BACKEND_URL}/foo
     # The trailing slash on both proxy_pass and the location is what
     # strips the /api prefix.

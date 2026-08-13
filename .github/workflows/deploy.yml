@@ -57,6 +57,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
+            --build-arg VITE_BUILD_SHA=${{ github.sha }} \
             -t ${{ env.IMAGE }}:${{ github.sha }} \
             -t ${{ env.IMAGE }}:${{ github.ref_name }} \
             --push \
