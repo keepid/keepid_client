@@ -2,12 +2,12 @@ import React from 'react';
 import MailchimpSubscribe from 'react-mailchimp-subscribe';
 import { Link } from 'react-router-dom';
 
+import { buildVersionLabel, currentBuildSha } from '../lib/buildVersion';
 import Email from '../static/images/email-2.svg';
 import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
 import Logo from '../static/images/logo.svg';
 
-const currentMode = import.meta.env.MODE;
 const Footer = () => {
   const mailchimpUrl =
     'https://keep.us7.list-manage.com/subscribe/post?u=9896e51b9ee0605d5e6745f82&amp;id=f16b440eb5';
@@ -173,7 +173,9 @@ const Footer = () => {
             </a>
           </div>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">Keep.id is proud to be a 501(c)(3) tax-exempt non-profit organization.</p>
-          <p className="tw-text-xs tw-text-white tw-text-center my-1">Illustrations by Storyset. Environment: {currentMode}</p>
+          <p className="tw-text-xs tw-text-white tw-text-center my-1" title={`Build ${currentBuildSha}`}>
+            Build: {buildVersionLabel(currentBuildSha)}
+          </p>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; {new Date().getFullYear()} Keep.id</p>
         </div>
       </div>

@@ -20,6 +20,8 @@
 
 import type { VitePWAOptions } from 'vite-plugin-pwa';
 
+const buildSha = process.env.VITE_BUILD_SHA || 'development';
+
 export const pwaConfig: Partial<VitePWAOptions> = {
   registerType: 'autoUpdate',
   // Registration is handled in src/lib/pwa/registerServiceWorker.js so the
@@ -90,6 +92,10 @@ export const pwaConfig: Partial<VitePWAOptions> = {
     // above remain available to the installed PWA, while all UI code and
     // styling are fetched from the current deployment.
     globPatterns: [],
+    // Make sw.js change for every deployed commit even when the icons and
+    // manifest are unchanged. This wakes older PWA tabs and complements the
+    // direct version.json check without caching any application data.
+    additionalManifestEntries: [{ url: 'version.json', revision: buildSha }],
     navigateFallback: null,
     // No runtime caching for API/document responses or application assets.
     runtimeCaching: [],
