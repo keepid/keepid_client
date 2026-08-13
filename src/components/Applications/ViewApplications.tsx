@@ -1,6 +1,7 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined';
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -12,6 +13,11 @@ import Role from '../../static/Role';
 import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
+import {
+  ApplicationMailStatus,
+  getApplicationMailTableLabel,
+  setApplicationManuallyMailed,
+} from './api/applicationMailStatus';
 import {
   createUploadedApplication,
 } from './api/interactiveForm';
@@ -43,6 +49,8 @@ interface DocumentInformation {
   createdByFirstName?: string,
   createdByLastName?: string,
   createdByName?: string,
+  mailStatus?: ApplicationMailStatus,
+  mailedAt?: string,
 }
 
 interface ClientSearchResult {
@@ -99,6 +107,8 @@ interface State {
   modalClientSearching: boolean,
   modalClientError: string | null,
   modalClientResultsOpen: boolean,
+  mailStatusUpdatingId: string | null,
+  mailStatusError: string | null,
 }
 
 interface LocationState {
@@ -139,6 +149,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       modalClientSearching: false,
       modalClientError: null,
       modalClientResultsOpen: false,
+      mailStatusUpdatingId: null,
+      mailStatusError: null,
     };
   }
 
@@ -609,6 +621,10 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           createdByUsername: String(item.createdByUsername || ''),
           createdByFirstName: String(item.createdByFirstName || ''),
           createdByLastName: String(item.createdByLastName || ''),
+          mailStatus: item.mailStatus === 'MAILED_WITH_LOB' || item.mailStatus === 'MAILED_MANUALLY'
+            ? item.mailStatus
+            : 'NOT_MAILED',
+          mailedAt: String(item.mailedAt || ''),
           // index used by some table internals
           ...(index !== undefined ? { index } : {}),
         }));
@@ -686,6 +702,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             uploadedByName: this.getUploaderDisplayName(row),
             createdDate: row.createdDate || '',
             lastUpdatedDate: row.uploadDate || '',
+            mailStatus: row.mailStatus || 'NOT_MAILED',
+            mailedAt: row.mailedAt || '',
           },
         });
       },
@@ -829,6 +847,34 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     });
   };
 
+  handleSetMailStatus = (row: DocumentInformation, mailed: boolean) => {
+    this.setState({ mailStatusUpdatingId: row.id, mailStatusError: null });
+    setApplicationManuallyMailed(row.id, mailed)
+      .then((result) => {
+        this.setState((state) => ({
+          documents: state.documents.map((document) => (
+            document.id === row.id
+              ? {
+                ...document,
+                mailStatus: result.mailStatus,
+                mailedAt: result.mailedAt || '',
+              }
+              : document
+          )),
+          mailStatusUpdatingId: null,
+          mailStatusError: null,
+        }));
+      })
+      .catch((error) => {
+        this.setState({
+          mailStatusUpdatingId: null,
+          mailStatusError: error instanceof Error
+            ? error.message
+            : 'Could not update application mail status.',
+        });
+      });
+  };
+
   handleUploadApplication = () => {
     const {
       uploadApplicationName,
@@ -894,6 +940,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         icon: <DriveFileRenameOutlineIcon fontSize="small" />,
         onClick: () => this.openRenameModal(row),
       }] : []),
+      ...(row.mailStatus === 'MAILED_WITH_LOB' ? [] : [{
+        label: row.mailStatus === 'MAILED_MANUALLY'
+          ? 'Mark as not mailed'
+          : 'Mark as printed and mailed',
+        icon: <MarkEmailReadOutlinedIcon fontSize="small" />,
+        onClick: () => this.handleSetMailStatus(row, row.mailStatus !== 'MAILED_MANUALLY'),
+      }]),
       {
         label: 'Delete',
         icon: <DeleteOutlineIcon fontSize="small" />,
@@ -986,6 +1039,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       uploadSubmitting,
       uploadError,
       modalClientUsername,
+      mailStatusUpdatingId,
+      mailStatusError,
     } = this.state;
     const isClientUser = this.props.role === Role.Client;
     const pageTitle = isClientUser ? 'My Applications' : 'Applications';
@@ -1000,7 +1055,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         headerName: 'Service',
         sortable: true,
         width: '34%',
-        mobileWidth: '52%',
+        mobileWidth: '40%',
         renderCell: (row) => (
           <span
             title={row.serviceFullName || row.serviceName || undefined}
@@ -1019,17 +1074,40 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         field: 'applicationName',
         headerName: 'Application',
         sortable: true,
-        width: '31%',
-        mobileWidth: '32%',
+        width: '24%',
+        mobileWidth: '30%',
         renderCell: (row) => row.applicationName || '—',
+      },
+      {
+        field: 'mailStatus',
+        headerName: 'Mail',
+        sortable: true,
+        width: '18%',
+        mobileWidth: '30%',
+        renderCell: (row) => {
+          const status = row.mailStatus || 'NOT_MAILED';
+          let color = 'tw-bg-gray-100 tw-text-gray-700';
+          if (status === 'MAILED_WITH_LOB') {
+            color = 'tw-bg-blue-100 tw-text-blue-800';
+          } else if (status === 'MAILED_MANUALLY') {
+            color = 'tw-bg-green-100 tw-text-green-800';
+          }
+          return (
+            <span className={`tw-inline-flex tw-rounded-full tw-px-2 tw-py-1 tw-text-xs tw-font-semibold ${color}`}>
+              {mailStatusUpdatingId === row.id
+                ? 'Updating...'
+                : getApplicationMailTableLabel(status)}
+            </span>
+          );
+        },
       },
       {
         field: 'createdDate',
         headerName: 'Date',
         sortable: true,
         sortType: 'date',
-        width: '15%',
-        mobileWidth: '16%',
+        width: '12%',
+        hideOnMobile: true,
         nowrap: true,
         renderCell: (row) => row.formattedCreatedDate || '-',
       } as DataTableColumn<DocumentInformation>,
@@ -1037,7 +1115,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         field: 'clientName',
         headerName: 'Client',
         sortable: true,
-        width: '20%',
+        width: '18%',
         hideOnMobile: true,
         renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>,
@@ -1130,6 +1208,11 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               </div>
             </div>
             <div>
+              {mailStatusError && (
+                <div className="alert alert-danger" role="alert">
+                  {mailStatusError}
+                </div>
+              )}
               <DataTable
                 columns={columns}
                 data={documents}

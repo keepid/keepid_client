@@ -17,6 +17,7 @@ interface Props {
   documentDate: string;
   documentUploader: string;
   documentName: string;
+  onMailSubmitted?: () => void;
 }
 
 interface AddressData {
@@ -81,6 +82,7 @@ export const MailModal: React.FC<Props> = ({
   documentDate,
   documentUploader,
   documentName,
+  onMailSubmitted,
 }) => {
   const { username, organization } = useContext(UserContext);
   const [destinationPrefilled, setDestinationPrefilled] = useState(false);
@@ -296,6 +298,7 @@ export const MailModal: React.FC<Props> = ({
       });
       const responseJSON = await response.json();
       if (responseJSON.status === 'MAIL_SUCCESS') {
+        onMailSubmitted?.();
         setIsVisible(false);
         setShowMailSuccess(true);
       } else {
