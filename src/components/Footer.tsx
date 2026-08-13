@@ -8,7 +8,6 @@ import GithubLogo from '../static/images/github-logo.svg';
 import InstagramLogo from '../static/images/instagram.svg';
 import Logo from '../static/images/logo.svg';
 
-const currentMode = import.meta.env.MODE;
 const Footer = () => {
   const mailchimpUrl =
     'https://keep.us7.list-manage.com/subscribe/post?u=9896e51b9ee0605d5e6745f82&amp;id=f16b440eb5';
@@ -175,7 +174,7 @@ const Footer = () => {
           </div>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">Keep.id is proud to be a 501(c)(3) tax-exempt non-profit organization.</p>
           <p className="tw-text-xs tw-text-white tw-text-center my-1" title={`Build ${currentBuildSha}`}>
-            Illustrations by Storyset. Environment: {currentMode}. Build: {buildVersionLabel(currentBuildSha)}
+            Build: {buildVersionLabel(currentBuildSha)}
           </p>
           <p className="tw-text-xs tw-text-white tw-text-center my-0">&copy; {new Date().getFullYear()} Keep.id</p>
         </div>
