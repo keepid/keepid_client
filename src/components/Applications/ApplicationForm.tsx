@@ -599,6 +599,7 @@ export default function ApplicationForm({
           applicationId || blankFormId,
           formOutput,
           targetClientUsername,
+          profileUpdates,
         );
         let persistedId = uploadResult.applicationId || uploadResult.fileId;
         if (!persistedId && existingApplicationIdsBeforeSave) {

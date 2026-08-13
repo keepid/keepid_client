@@ -130,11 +130,15 @@ export async function uploadCompletedPdf(
   applicationId: string,
   formAnswers: Record<string, unknown>,
   clientUsername = '',
+  profileUpdates: Record<string, unknown> = {},
 ): Promise<{ status: string; applicationId?: string; fileId?: string }> {
   const form = new FormData();
   form.append('file', file, file instanceof File ? file.name : 'application.pdf');
   form.append('applicationId', applicationId);
   form.append('formAnswers', JSON.stringify(formAnswers));
+  if (Object.keys(profileUpdates).length > 0) {
+    form.append('profileUpdates', JSON.stringify(profileUpdates));
+  }
   form.append('clientUsername', clientUsername);
   const res = await fetch(`${getServerURL()}/save-application`, {
     method: 'POST',
