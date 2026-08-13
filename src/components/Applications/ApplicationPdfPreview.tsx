@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback, useEffect, useMemo, useRef, useState,
+} from 'react';
 import { useAlert } from 'react-alert';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { Helmet } from 'react-helmet';
@@ -8,6 +10,12 @@ import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import SignAndDownloadViewer, { SignAndDownloadViewerHandle } from '../InteractiveForms/SignAndDownloadViewer';
+import {
+  ApplicationMailStatus,
+  getApplicationMailDetailLabel,
+  getApplicationMailStatus,
+  setApplicationManuallyMailed,
+} from './api/applicationMailStatus';
 
 interface PreviewLocationState {
   applicationId?: string;
@@ -18,6 +26,8 @@ interface PreviewLocationState {
   uploadedByName?: string;
   createdDate?: string;
   lastUpdatedDate?: string;
+  mailStatus?: ApplicationMailStatus;
+  mailedAt?: string;
 }
 
 export default function ApplicationPdfPreview({
@@ -43,6 +53,8 @@ export default function ApplicationPdfPreview({
   const uploadedByName = location.state?.uploadedByName || targetUser || clientUsername || '';
   const createdDate = location.state?.createdDate || '';
   const lastUpdatedDate = location.state?.lastUpdatedDate || '';
+  const initialMailStatus = location.state?.mailStatus || 'NOT_MAILED';
+  const initialMailedAt = location.state?.mailedAt || null;
   const editTargetUsername = targetUser || clientUsername;
   const canUsePdfEditing = editable && canEditPdf;
   const canEditAttachments = canUsePdfEditing && allowAttachmentEditing;
@@ -54,6 +66,10 @@ export default function ApplicationPdfPreview({
   const [isSavingEdits, setIsSavingEdits] = useState(false);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
+  const [mailStatus, setMailStatus] = useState<ApplicationMailStatus>(initialMailStatus);
+  const [mailedAt, setMailedAt] = useState<string | null>(initialMailedAt);
+  const [mailStatusUpdating, setMailStatusUpdating] = useState(false);
+  const [mailStatusError, setMailStatusError] = useState<string | null>(null);
   const viewerRef = useRef<SignAndDownloadViewerHandle>(null);
   const goToPreviewRoute = () => {
     history.replace({
@@ -67,6 +83,8 @@ export default function ApplicationPdfPreview({
         uploadedByName,
         createdDate,
         lastUpdatedDate,
+        mailStatus,
+        mailedAt: mailedAt || '',
       },
     });
   };
@@ -145,6 +163,41 @@ export default function ApplicationPdfPreview({
     return () => controller.abort();
   }, [applicationId, editTargetUsername]);
 
+  const refreshApplicationMailStatus = useCallback(async () => {
+    if (!applicationId) return;
+    try {
+      const result = await getApplicationMailStatus(applicationId);
+      setMailStatus(result.mailStatus);
+      setMailedAt(result.mailedAt);
+      setMailStatusError(null);
+    } catch (statusError) {
+      setMailStatusError(statusError instanceof Error
+        ? statusError.message
+        : 'Could not load mail status.');
+    }
+  }, [applicationId]);
+
+  useEffect(() => {
+    refreshApplicationMailStatus();
+  }, [refreshApplicationMailStatus]);
+
+  const handleSetManualMailStatus = async (mailed: boolean) => {
+    if (!applicationId) return;
+    setMailStatusUpdating(true);
+    setMailStatusError(null);
+    try {
+      const result = await setApplicationManuallyMailed(applicationId, mailed);
+      setMailStatus(result.mailStatus);
+      setMailedAt(result.mailedAt);
+    } catch (statusError) {
+      setMailStatusError(statusError instanceof Error
+        ? statusError.message
+        : 'Could not update mail status.');
+    } finally {
+      setMailStatusUpdating(false);
+    }
+  };
+
   useEffect(() => () => {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl);
   }, [pdfUrl]);
@@ -167,6 +220,12 @@ export default function ApplicationPdfPreview({
     { label: 'Created', value: formatDate(createdDate) },
     { label: 'Last updated', value: formatDate(lastUpdatedDate) },
   ];
+  let manualMailActionLabel = 'Mark as printed and mailed';
+  if (mailStatusUpdating) {
+    manualMailActionLabel = 'Updating...';
+  } else if (mailStatus === 'MAILED_MANUALLY') {
+    manualMailActionLabel = 'Mark as not mailed';
+  }
 
   return (
     <div className="tw-w-full tw-pt-10 tw-px-4 sm:tw-px-6 lg:tw-px-8">
@@ -209,6 +268,8 @@ export default function ApplicationPdfPreview({
                     uploadedByName,
                     createdDate,
                     lastUpdatedDate,
+                    mailStatus,
+                    mailedAt: mailedAt || '',
                   },
                 }}
               >
@@ -253,7 +314,7 @@ export default function ApplicationPdfPreview({
         </div>
 
         {applicationId && (
-          <div className="tw-mb-4 tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-3 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-shadow-sm">
+          <div className="tw-mb-4 tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-5 tw-gap-3 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-shadow-sm">
             {details.map((item) => (
               <div key={item.label} className="tw-min-w-0">
                 <div className="tw-text-xs tw-font-semibold tw-uppercase tw-text-gray-500">
@@ -264,6 +325,27 @@ export default function ApplicationPdfPreview({
                 </div>
               </div>
             ))}
+            <div className="tw-min-w-0">
+              <div className="tw-text-xs tw-font-semibold tw-uppercase tw-text-gray-500">
+                Mail
+              </div>
+              <div className="tw-mt-1 tw-text-sm tw-font-medium tw-text-gray-900">
+                {getApplicationMailDetailLabel({ mailStatus, mailedAt })}
+              </div>
+              {mailStatus !== 'MAILED_WITH_LOB' && (
+                <button
+                  type="button"
+                  className="tw-mt-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-left tw-text-xs tw-font-semibold tw-text-blue-700 hover:tw-underline disabled:tw-text-gray-400"
+                  disabled={mailStatusUpdating}
+                  onClick={() => handleSetManualMailStatus(mailStatus !== 'MAILED_MANUALLY')}
+                >
+                  {manualMailActionLabel}
+                </button>
+              )}
+              {mailStatusError && (
+                <div className="tw-mt-1 tw-text-xs tw-text-red-600">{mailStatusError}</div>
+              )}
+            </div>
           </div>
         )}
 
@@ -310,6 +392,7 @@ export default function ApplicationPdfPreview({
         documentUploader=""
         documentDate=""
         documentName={applicationFilename}
+        onMailSubmitted={refreshApplicationMailStatus}
       />
       <MailConfirmation isVisible={showMailSuccess} setIsVisible={setShowMailSuccess} />
     </div>
