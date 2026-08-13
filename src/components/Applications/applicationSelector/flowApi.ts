@@ -48,7 +48,7 @@ const requestJson = async <T>(path: string, init: RequestInit = {}): Promise<T> 
 };
 
 export const loadCaseSelector = (): Promise<SelectorFlow> =>
-  requestJson('/api/case-selector', { cache: 'no-store' });
+  requestJson('/api/case-selector');
 
 export const resolveCaseOutcome = (request: TraversalRequest): Promise<ResolvedOutcome> =>
   requestJson('/api/case-selector/resolve', {

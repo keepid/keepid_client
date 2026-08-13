@@ -1,5 +1,4 @@
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -64,8 +63,6 @@ const displayBirthDate = (value: string) => (
   value.replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$1/$2/$3')
 );
 
-const SELECTOR_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-
 const descriptionMarkdownComponents: Components = {
   a: ({ node: _node, children, ...props }) => (
     <a {...props} target="_blank" rel="noreferrer">{children}</a>
@@ -84,7 +81,6 @@ const ApplicationSelectorFlow = ({
   const history = useHistory();
   const alert = useAlert();
   const [flow, setFlow] = useState<SelectorFlow | null>(null);
-  const [pendingFlow, setPendingFlow] = useState<SelectorFlow | null>(null);
   const [nodeId, setNodeId] = useState('');
   const [path, setPath] = useState<SelectorPathStep[]>([]);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -114,86 +110,20 @@ const ApplicationSelectorFlow = ({
     registryEntryId: '',
   });
   const fileInput = useRef<HTMLInputElement | null>(null);
-  const flowRef = useRef<SelectorFlow | null>(null);
-  const hasProgressRef = useRef(false);
-
-  flowRef.current = flow;
-  hasProgressRef.current = path.length > 0
-    || Object.keys(responses).length > 0
-    || fieldValue.trim().length > 0
-    || Boolean(resolved)
-    || Boolean(record)
-    || manualMode
-    || completedPhotoIdUploads.size > 0;
-
-  const applyFlow = useCallback((loaded: SelectorFlow) => {
-    setFlow(loaded);
-    setPendingFlow(null);
-    setNodeId(loaded.rootNodeId);
-    setPath([]);
-    setResponses({});
-    setFieldValue('');
-    setResolved(null);
-    setRecord(null);
-    setConfirmedEffects([]);
-    setPdf(null);
-    setError(null);
-    setManualMode(false);
-    setManualPreview(null);
-    setCompletedPhotoIdUploads(new Set());
-  }, []);
 
   useEffect(() => {
     let active = true;
     loadCaseSelector()
       .then((loaded) => {
         if (!active) return;
-        applyFlow(loaded);
+        setFlow(loaded);
+        setNodeId(loaded.rootNodeId);
       })
       .catch((loadError) => {
         if (active) setError(errorMessage(loadError));
       });
     return () => { active = false; };
-  }, [applyFlow]);
-
-  useEffect(() => {
-    let active = true;
-    let checking = false;
-
-    const refresh = async () => {
-      if (checking || !flowRef.current) return;
-      checking = true;
-      try {
-        const loaded = await loadCaseSelector();
-        const current = flowRef.current;
-        if (!active || !current || loaded.publishToken === current.publishToken) return;
-        if (hasProgressRef.current) {
-          setPendingFlow(loaded);
-        } else {
-          applyFlow(loaded);
-        }
-      } catch {
-        // The initial load reports errors. Background refreshes should not
-        // interrupt an application that is already in progress.
-      } finally {
-        checking = false;
-      }
-    };
-
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === 'visible') refresh().catch(() => undefined);
-    };
-
-    window.addEventListener('focus', refresh);
-    document.addEventListener('visibilitychange', refreshWhenVisible);
-    const interval = window.setInterval(refresh, SELECTOR_REFRESH_INTERVAL_MS);
-    return () => {
-      active = false;
-      window.clearInterval(interval);
-      window.removeEventListener('focus', refresh);
-      document.removeEventListener('visibilitychange', refreshWhenVisible);
-    };
-  }, [applyFlow]);
+  }, []);
 
   const nodes = useMemo(
     () => new Map((flow?.nodes || []).map((node) => [node.id, node])),
@@ -265,10 +195,6 @@ const ApplicationSelectorFlow = ({
   });
 
   const reset = () => {
-    if (pendingFlow) {
-      applyFlow(pendingFlow);
-      return;
-    }
     if (!flow) return;
     setNodeId(flow.rootNodeId);
     setPath([]);
@@ -838,11 +764,6 @@ const ApplicationSelectorFlow = ({
         <div>
           <button type="button" className="btn btn-outline-dark tw-mb-4" onClick={backToApplications}>← Applications</button>
           <h1 className="tw-text-4xl tw-font-semibold tw-text-gray-950">{flow?.title || 'Client case picker'}</h1>
-          {flow?.publishToken && (
-            <p className="tw-mt-2 tw-text-xs tw-text-gray-500" title={flow.publishToken}>
-              Picker version {flow.publishToken.slice(0, 8)}
-            </p>
-          )}
         </div>
         {!record && !manualMode && (
           <div className="tw-flex tw-flex-wrap tw-gap-2">
@@ -853,14 +774,6 @@ const ApplicationSelectorFlow = ({
           </div>
         )}
       </div>
-      {pendingFlow && (
-        <div className="alert alert-warning tw-mb-5 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
-          <span>A newer application picker was published while this application was open.</span>
-          <button type="button" className="btn btn-warning" onClick={() => applyFlow(pendingFlow)}>
-            Restart with latest picker
-          </button>
-        </div>
-      )}
       {error && <div className="alert alert-danger tw-mb-5">{error}</div>}
       {!flow && !error && <p className="tw-text-gray-600">Loading the published case tree…</p>}
       {manualMode ? renderManual() : currentNode && (
