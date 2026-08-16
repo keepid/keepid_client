@@ -242,14 +242,6 @@ const ApplicationSelectorFlow = ({
       return;
     }
     const config = currentNode.componentConfig || {};
-    if (
-      currentNode.componentKey === 'photo-id-upload'
-      && config.required !== false
-      && !completedPhotoIdUploads.has(currentNode.id)
-    ) {
-      setError('Upload the photo ID before continuing.');
-      return;
-    }
     const isInformation = [
       'information',
       'homelessness-definition',
@@ -483,6 +475,7 @@ const ApplicationSelectorFlow = ({
               <div className="tw-mb-3">
                 <h3 className="tw-text-lg tw-font-semibold tw-text-slate-950">
                   {String(config.label || 'Upload the client’s photo ID')}
+                  <span className="tw-ml-2 tw-text-sm tw-font-normal tw-text-slate-500"> (optional)</span>
                 </h3>
                 <p className="tw-mt-1 tw-text-sm tw-text-slate-600">
                   {String(config.helpText || 'Send a secure phone link or drag a PDF or image into the box.')}
@@ -534,63 +527,42 @@ const ApplicationSelectorFlow = ({
           </label>
         );
       })()}
-      {node.componentKey === 'photo-id-upload' ? (
-        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
-          <button type="button" className="btn btn-outline-dark" onClick={goBack}>Back</button>
-          <div className="tw-flex tw-flex-wrap tw-gap-2">
-            {node.transitions.map((transition) => (
-              <button
-                key={transition.id}
-                type="button"
-                className="btn btn-primary"
-                disabled={busy}
-                onClick={() => selectAnswer(transition)}
-              >
-                {transition.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
-            {node.transitions.map((transition) => (
-              <div
-                key={transition.id}
-                className="tw-flex tw-min-h-48 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-shadow-md"
-              >
-                <button
-                  type="button"
-                  disabled={busy}
-                  className="tw-flex tw-flex-1 tw-flex-col tw-items-stretch tw-justify-center tw-bg-white tw-p-4 hover:tw-bg-blue-50"
-                  onClick={() => selectAnswer(transition)}
-                >
-                  {transition.assetId && (
-                    <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
-                      <img
-                        src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
-                        alt={transition.assetAltText || ''}
-                        className="tw-h-full tw-w-full tw-object-contain"
-                      />
-                    </span>
-                  )}
-                  <span className="tw-font-semibold tw-text-slate-950">
-                    {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
-                  </span>
-                </button>
-                {transition.description && (
-                  <div className="tw-prose tw-prose-sm tw-max-w-none tw-border-t tw-border-slate-100 tw-px-4 tw-py-3 tw-text-left tw-text-gray-600">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={descriptionMarkdownComponents}>
-                      {transition.description}
-                    </ReactMarkdown>
-                  </div>
-                )}
+      <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
+        {node.transitions.map((transition) => (
+          <div
+            key={transition.id}
+            className="tw-flex tw-min-h-48 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-solid tw-border-gray-300 tw-bg-white tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-shadow-md"
+          >
+            <button
+              type="button"
+              disabled={busy}
+              className="tw-flex tw-flex-1 tw-flex-col tw-items-stretch tw-justify-center tw-border-0 tw-bg-white tw-p-4 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-blue-500 hover:tw-bg-blue-50"
+              onClick={() => selectAnswer(transition)}
+            >
+              {transition.assetId && (
+                <span className="tw-mb-4 tw-flex tw-h-32 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-100 tw-bg-slate-50">
+                  <img
+                    src={`${getServerURL()}/api/case-selector/assets/${transition.assetId}`}
+                    alt={transition.assetAltText || ''}
+                    className="tw-h-full tw-w-full tw-object-contain"
+                  />
+                </span>
+              )}
+              <span className="tw-font-semibold tw-text-slate-950">
+                {busy && node.componentKey === 'penndot-number' ? 'Saving…' : transition.label}
+              </span>
+            </button>
+            {transition.description && (
+              <div className="tw-prose tw-prose-sm tw-max-w-none tw-border-t tw-border-slate-100 tw-px-4 tw-py-3 tw-text-left tw-text-gray-600">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={descriptionMarkdownComponents}>
+                  {transition.description}
+                </ReactMarkdown>
               </div>
-            ))}
+            )}
           </div>
-          <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
-        </>
-      )}
+        ))}
+      </div>
+      <button type="button" className="btn btn-outline-dark tw-mt-6" onClick={goBack}>Back</button>
     </div>
   );
 
