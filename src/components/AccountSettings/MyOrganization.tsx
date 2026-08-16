@@ -157,8 +157,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const canEditOrganization = role === Role.Admin;
   const canManageDocumentAssets = role === Role.Director || role === Role.Admin;
 
-  const adminMembers = useMemo(
-    () => workers.filter((worker) => worker.privilegeLevel === 'Admin'),
+  const directorCandidates = useMemo(
+    () => workers.filter(
+      (worker) => worker.privilegeLevel === 'Admin' || worker.privilegeLevel === 'Director',
+    ),
     [workers],
   );
 
@@ -563,7 +565,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                 onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, designatedDirectorUsername: e.target.value })}
               >
                 <option value="">No designated director</option>
-                {adminMembers.map((member) => (
+                {directorCandidates.map((member) => (
                   <option key={member.username} value={member.username}>
                     {member.firstName} {member.lastName}
                   </option>
