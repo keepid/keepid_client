@@ -1,20 +1,13 @@
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { withAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import getServerURL from '../../serverOverride';
-import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import { formatAddress as formatPostalAddress } from '../../utils/address';
 import { formatPhoneForDisplay } from '../../utils/phone';
-import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
-import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
-import ViewDocument from '../Documents/ViewDocument';
 
 interface Props {
   name: string;
@@ -37,7 +30,9 @@ interface OrgInfo {
   address: OrgAddress;
   phone: string;
   email: string;
+  ein: string;
   designatedDirectorUsername: string;
+  directorTitle: string;
 }
 
 interface Worker {
@@ -50,44 +45,6 @@ interface Worker {
 }
 
 const EMPTY_ADDRESS: OrgAddress = { line1: '', line2: '', city: '', state: '', zip: '', county: '' };
-
-async function downloadOrgDocumentPdf(fileId: string, filename: string, alert: any) {
-  try {
-    const res = await fetch(`${getServerURL()}/download-file`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fileId,
-        fileType: FileType.ORG_DOCUMENT,
-      }),
-    });
-    const contentType = res.headers.get('content-type') || '';
-    if (!res.ok || contentType.includes('json')) {
-      const text = await res.text();
-      let msg = text;
-      try {
-        const j = JSON.parse(text) as { message?: string };
-        if (j.message) msg = j.message;
-      } catch {
-        /* keep raw */
-      }
-      throw new Error(msg);
-    }
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const safeName = filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
-    a.download = safeName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    alert.show(`Error downloading file: ${err instanceof Error ? err.message : err}`, { type: 'error' });
-  }
-}
 
 function formatAddress(a: OrgAddress): string {
   return formatPostalAddress(a);
@@ -102,30 +59,19 @@ function toLocalISODate(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-interface OrgDocument {
-  id: string;
-  filename: string;
-  uploadDate: string;
-  uploader: string;
-  uploaderName?: string;
-}
-
-const OrganizationDocumentRoleKey = {
-  PaIdHomelessVerificationLetter: 'pa-id-homeless-verification-letter',
-  PaSscDireNeedLetter: 'pa-ssc-dire-need-letter',
-  DirectorPhotoId: 'director-photo-id',
-  PaBcHomelessVerificationLetter: 'pa-bc-homeless-verification-letter',
-} as const;
-
-type OrganizationDocumentRoleKeyValue =
-  typeof OrganizationDocumentRoleKey[keyof typeof OrganizationDocumentRoleKey];
-
-interface OrganizationDocumentRole {
-  roleKey: OrganizationDocumentRoleKeyValue;
+interface OrganizationDocumentAsset {
+  roleKey: string;
   displayName: string;
-  description?: string | null;
-  documentId?: string | null;
-  documentFilename?: string | null;
+  description: string;
+  acceptedMimeTypes: string[];
+  maxBytes: number;
+  asset?: {
+    documentId: string;
+    filename: string;
+    mimeType: string;
+    byteSize: number;
+    uploadedAt: string;
+  } | null;
 }
 
 interface MailSummaryEntry {
@@ -169,7 +115,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     address: { ...EMPTY_ADDRESS },
     phone: '',
     email: '',
+    ein: '',
     designatedDirectorUsername: '',
+    directorTitle: '',
   });
   const [isEditingOrg, setIsEditingOrg] = useState(false);
   const [editedOrgInfo, setEditedOrgInfo] = useState<OrgInfo>({
@@ -177,7 +125,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     address: { ...EMPTY_ADDRESS },
     phone: '',
     email: '',
+    ein: '',
     designatedDirectorUsername: '',
+    directorTitle: '',
   });
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
@@ -199,26 +149,13 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
   const [reportText, setReportText] = useState('');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
-  const [orgDocs, setOrgDocs] = useState<OrgDocument[]>([]);
-  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
-  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
-  const [documentRoles, setDocumentRoles] = useState<OrganizationDocumentRole[]>([]);
-  const [isLoadingDocumentRoles, setIsLoadingDocumentRoles] = useState(false);
-  const [savingDocumentRole, setSavingDocumentRole] = useState<string | null>(null);
-
-  const [currentDocumentId, setCurrentDocumentId] = useState<string | undefined>();
-  const [currentDocumentName, setCurrentDocumentName] = useState<string | undefined>();
-  const [currentUploadDate, setCurrentUploadDate] = useState<string | undefined>();
-  const [currentUploader, setCurrentUploader] = useState<string | undefined>();
-
-  const [renameTarget, setRenameTarget] = useState<OrgDocument | null>(null);
-  const [renameValue, setRenameValue] = useState('');
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [deleteTargetDocument, setDeleteTargetDocument] = useState<OrgDocument | null>(null);
+  const [documentAssets, setDocumentAssets] = useState<OrganizationDocumentAsset[]>([]);
+  const [isLoadingAssets, setIsLoadingAssets] = useState(false);
+  const [savingAssetRole, setSavingAssetRole] = useState<string | null>(null);
 
   const canManageMembers = role === Role.Director || role === Role.Admin;
   const canEditOrganization = role === Role.Admin;
-  const canManageDocumentRoles = role === Role.Director || role === Role.Admin;
+  const canManageDocumentAssets = role === Role.Director || role === Role.Admin;
 
   const adminMembers = useMemo(
     () => workers.filter((worker) => worker.privilegeLevel === 'Admin'),
@@ -263,7 +200,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           address: addr,
           phone: data.phone || '',
           email: data.email || '',
+          ein: data.ein || '',
           designatedDirectorUsername: data.designatedDirectorUsername || '',
+          directorTitle: data.directorTitle || '',
         };
         setOrgInfo(info);
         setEditedOrgInfo(info);
@@ -324,48 +263,26 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }
   }, [organization, mailDateFrom, mailDateTo]);
 
-  const fetchOrgDocs = useCallback(async () => {
-    setIsLoadingDocs(true);
+  const fetchDocumentAssets = useCallback(async () => {
+    setIsLoadingAssets(true);
     try {
-      const res = await fetch(`${getServerURL()}/get-files`, {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
-      });
-      const data = await res.json();
-      if (data.status === 'SUCCESS' && data.documents) {
-        setOrgDocs(data.documents);
-      } else {
-        setOrgDocs([]);
-      }
-    } catch (error) {
-      console.error('Failed to load org docs', error);
-    } finally {
-      setIsLoadingDocs(false);
-    }
-  }, []);
-
-  const fetchDocumentRoles = useCallback(async () => {
-    setIsLoadingDocumentRoles(true);
-    try {
-      const res = await fetch(`${getServerURL()}/api/organization/document-roles`, {
+      const res = await fetch(`${getServerURL()}/api/organization/document-assets`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      setDocumentRoles(await res.json());
+      setDocumentAssets(await res.json());
     } catch (error) {
-      console.error('Failed to load organization document labels', error);
-      setDocumentRoles([]);
+      console.error('Failed to load organization document assets', error);
+      setDocumentAssets([]);
     } finally {
-      setIsLoadingDocumentRoles(false);
+      setIsLoadingAssets(false);
     }
   }, []);
 
   useEffect(() => { fetchOrgInfo(); }, [fetchOrgInfo]);
   useEffect(() => { fetchWorkers(); }, [fetchWorkers]);
   useEffect(() => { fetchMailSummary(); }, [fetchMailSummary]);
-  useEffect(() => { fetchOrgDocs(); }, [fetchOrgDocs]);
-  useEffect(() => { fetchDocumentRoles(); }, [fetchDocumentRoles]);
+  useEffect(() => { fetchDocumentAssets(); }, [fetchDocumentAssets]);
 
   const handleSaveOrgInfo = async () => {
     try {
@@ -379,7 +296,9 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           address: editedOrgInfo.address,
           phone: editedOrgInfo.phone,
           email: editedOrgInfo.email,
+          ein: editedOrgInfo.ein,
           designatedDirectorUsername: editedOrgInfo.designatedDirectorUsername || null,
+          directorTitle: editedOrgInfo.directorTitle,
         }),
       });
       const data = await res.json();
@@ -484,243 +403,52 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     }));
   };
 
-  const handleUploadDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadAsset = async (
+    roleKey: string,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setIsUploadingDoc(true);
+    setSavingAssetRole(roleKey);
     try {
       const formData = new FormData();
       formData.append('file', file, file.name);
-      formData.append('fileType', 'ORG_DOCUMENT');
 
-      const res = await fetch(`${getServerURL()}/upload-file`, {
-        method: 'POST',
+      const res = await fetch(`${getServerURL()}/api/organization/document-assets/${encodeURIComponent(roleKey)}`, {
+        method: 'PUT',
         credentials: 'include',
         body: formData,
       });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Server returned ${res.status}: ${text}`);
-      }
       const data = await res.json();
-      if (data.status === 'SUCCESS') {
-        alert.show('Organization document uploaded successfully.');
-        fetchOrgDocs();
-      } else {
-        alert.show(`Failed to upload document: ${data.message || data.status}`, { type: 'error' });
-      }
+      if (!res.ok) throw new Error(data.message || `Server returned ${res.status}`);
+      alert.show('Organization document asset saved.');
+      await fetchDocumentAssets();
     } catch (error) {
-      alert.show(`Failed to upload document: ${error}`, { type: 'error' });
+      alert.show(`Failed to upload asset: ${error instanceof Error ? error.message : error}`, { type: 'error' });
     } finally {
-      setIsUploadingDoc(false);
+      setSavingAssetRole(null);
       e.target.value = '';
     }
   };
 
-  const assignDocumentRole = async (
-    roleKey: OrganizationDocumentRoleKeyValue,
-    documentId: string,
-  ) => {
-    setSavingDocumentRole(roleKey);
+  const removeDocumentAsset = async (role: OrganizationDocumentAsset) => {
+    if (!window.confirm(`Remove ${role.displayName}? New generated documents will require it to be uploaded again.`)) return;
+    setSavingAssetRole(role.roleKey);
     try {
-      const res = await fetch(
-        `${getServerURL()}/api/organization/document-roles/${encodeURIComponent(roleKey)}`,
-        {
-          method: 'PUT',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ documentId: documentId || null }),
-        },
-      );
+      const res = await fetch(`${getServerURL()}/api/organization/document-assets/${encodeURIComponent(role.roleKey)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || `Server returned ${res.status}`);
-      await fetchDocumentRoles();
-      alert.show(documentId ? 'Automatic category assigned.' : 'Automatic category cleared.');
+      alert.show(`${role.displayName} removed.`);
+      await fetchDocumentAssets();
     } catch (error) {
-      alert.show(`Failed to update automatic category: ${error instanceof Error ? error.message : error}`, { type: 'error' });
+      alert.show(`Failed to remove asset: ${error instanceof Error ? error.message : error}`, { type: 'error' });
     } finally {
-      setSavingDocumentRole(null);
+      setSavingAssetRole(null);
     }
   };
-
-  const closeDeleteModal = () => {
-    setDeleteTargetDocument(null);
-  };
-
-  const confirmDeleteDoc = async () => {
-    if (!deleteTargetDocument) return;
-    try {
-      const res = await fetch(`${getServerURL()}/delete-file`, {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({ fileId: deleteTargetDocument.id, fileType: 'ORG_DOCUMENT' }),
-      });
-      const data = await res.json();
-      if (data.status === 'SUCCESS') {
-        alert.show('Document deleted successfully.');
-        setDeleteTargetDocument(null);
-        setCurrentDocumentId(undefined);
-        setCurrentDocumentName(undefined);
-        fetchOrgDocs();
-        fetchDocumentRoles();
-      } else {
-        alert.show(`Failed to delete document: ${data.message || data.status}`, { type: 'error' });
-      }
-    } catch (error) {
-      alert.show(`Failed to delete document: ${error}`, { type: 'error' });
-    }
-  };
-
-  const openRenameModal = (doc: OrgDocument) => {
-    setRenameTarget(doc);
-    setRenameValue(doc.filename.replace(/\.pdf$/i, ''));
-  };
-
-  const closeRenameModal = () => {
-    if (!isRenaming) {
-      setRenameTarget(null);
-      setRenameValue('');
-    }
-  };
-
-  const confirmRename = async () => {
-    if (!renameTarget || !renameValue.trim()) return;
-    setIsRenaming(true);
-    const newFilename = renameValue.trim().endsWith('.pdf') ? renameValue.trim() : `${renameValue.trim()}.pdf`;
-    try {
-      const res = await fetch(`${getServerURL()}/rename-file`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId: renameTarget.id, newFilename }),
-      });
-      const data = await res.json();
-      if (data?.status === 'SUCCESS') {
-        alert.show('Document renamed successfully.');
-        closeRenameModal();
-        fetchOrgDocs();
-      } else {
-        alert.show(`Failed to rename: ${data?.message || 'Unknown error'}`, { type: 'error' });
-      }
-    } catch (err) {
-      alert.show(`Failed to rename: ${err}`, { type: 'error' });
-    } finally {
-      setIsRenaming(false);
-    }
-  };
-
-  const getDocDisplayFileName = (filename?: string) => (filename || '').replace(/\.pdf$/i, '');
-
-  const getUploaderDisplayName = (row: OrgDocument) => {
-    const displayName = typeof row.uploaderName === 'string' ? row.uploaderName.trim() : '';
-    if (displayName) return displayName;
-    return row.uploader || '';
-  };
-
-  const handleRowClick = (row: OrgDocument) => {
-    setCurrentDocumentId(row.id);
-    setCurrentDocumentName(row.filename);
-    setCurrentUploadDate(row.uploadDate);
-    setCurrentUploader(getUploaderDisplayName(row));
-  };
-
-  const getRowActions = (row: any): RowAction[] => {
-    const actions: RowAction[] = [
-      {
-        label: 'Download',
-        icon: <FileDownloadOutlinedIcon fontSize="small" />,
-        onClick: () => {
-          downloadOrgDocumentPdf(row.id, row.filename, alert);
-        },
-      },
-      {
-        label: 'Rename',
-        icon: <DriveFileRenameOutlineIcon fontSize="small" />,
-        onClick: () => openRenameModal(row),
-      },
-      {
-        label: 'Delete',
-        icon: <DeleteOutlineIcon fontSize="small" />,
-        onClick: () => setDeleteTargetDocument(row),
-        danger: true,
-      },
-    ];
-    return actions;
-  };
-
-  const docColumns: DataTableColumn[] = [
-    {
-      field: 'filename',
-      headerName: 'Name',
-      width: '34%',
-      mobileWidth: '35%',
-      renderCell: (row: any) => (
-        <span
-          className="tw-font-medium tw-text-gray-900 tw-block"
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}
-        >
-          {getDocDisplayFileName(row.filename)}
-        </span>
-      ),
-    },
-    {
-      field: 'uploader',
-      headerName: 'Uploaded By',
-      hideOnMobile: true,
-      renderCell: (row: OrgDocument) => getUploaderDisplayName(row),
-    },
-    {
-      field: 'uploadDate',
-      headerName: 'Date Uploaded',
-      sortable: true,
-      sortType: 'date',
-      hideOnMobile: true,
-      renderCell: (row: any) => formatDate(row.uploadDate),
-    },
-    {
-      field: 'automaticCategory',
-      headerName: 'Category',
-      width: '300px',
-      mobileWidth: '57%',
-      renderCell: (row: OrgDocument) => {
-        const assignedRole = documentRoles.find((documentRole) => documentRole.documentId === row.id);
-        return (
-          <select
-            aria-label={`Automatic category for ${getDocDisplayFileName(row.filename)}`}
-            value={assignedRole?.roleKey || ''}
-            disabled={!canManageDocumentRoles || isLoadingDocumentRoles || savingDocumentRole !== null}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-            onChange={(event) => {
-              event.stopPropagation();
-              const selectedRoleKey = event.target.value as OrganizationDocumentRoleKeyValue | '';
-              if (!selectedRoleKey && assignedRole) {
-                assignDocumentRole(assignedRole.roleKey, '');
-              } else if (selectedRoleKey && selectedRoleKey !== assignedRole?.roleKey) {
-                assignDocumentRole(selectedRoleKey, row.id);
-              }
-            }}
-            className="form-control tw-w-full tw-min-w-0 tw-bg-white tw-text-sm"
-          >
-            <option value="">{isLoadingDocumentRoles ? 'Loading categories...' : 'No category'}</option>
-            {documentRoles.map((documentRole) => (
-              <option key={documentRole.roleKey} value={documentRole.roleKey}>
-                {documentRole.displayName}
-              </option>
-            ))}
-          </select>
-        );
-      },
-    },
-    {
-      field: 'actions',
-      headerName: '',
-      align: 'right',
-      width: '48px',
-      mobileWidth: '32px',
-      renderCell: (row: any) => <RowActionMenu actions={getRowActions(row)} />,
-    },
-  ];
 
   const renderOrgInfoContent = () => {
     if (isLoadingOrg) {
@@ -789,6 +517,19 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
             </div>
           </div>
           <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="orgEin" className="col-3 card-text mt-2 text-primary-theme">EIN</label>
+            <div className="col-9 card-text">
+              <input
+                id="orgEin"
+                type="text"
+                className="form-control form-purple tw-py-2"
+                value={editedOrgInfo.ein}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, ein: e.target.value })}
+                placeholder="12-3456789"
+              />
+            </div>
+          </div>
+          <div className="row tw-mb-2 tw-mt-1">
             <label htmlFor="orgPhone" className="col-3 card-text mt-2 text-primary-theme">Phone</label>
             <div className="col-9 card-text">
               <input
@@ -830,6 +571,19 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
               </select>
             </div>
           </div>
+          <div className="row tw-mb-2 tw-mt-1">
+            <label htmlFor="directorTitle" className="col-3 card-text mt-2 text-primary-theme">Director title</label>
+            <div className="col-9 card-text">
+              <input
+                id="directorTitle"
+                type="text"
+                className="form-control form-purple tw-py-2"
+                value={editedOrgInfo.directorTitle}
+                onChange={(e) => setEditedOrgInfo({ ...editedOrgInfo, directorTitle: e.target.value })}
+                placeholder="Director of Services"
+              />
+            </div>
+          </div>
         </>
       );
     }
@@ -846,6 +600,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
           <div className="col-9 card-text tw-pt-2">{formatAddress(orgInfo.address) || 'Not set'}</div>
         </div>
         <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">EIN</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.ein || 'Not set'}</div>
+        </div>
+        <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Phone</div>
           <div className="col-9 card-text tw-pt-2">{orgInfo.phone ? formatPhoneForDisplay(orgInfo.phone) : 'Not set'}</div>
         </div>
@@ -856,6 +614,10 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
         <div className="row tw-mb-2 tw-mt-1">
           <div className="col-3 card-text mt-2 text-primary-theme">Director</div>
           <div className="col-9 card-text tw-pt-2">{designatedDirectorDisplayName || 'Not set'}</div>
+        </div>
+        <div className="row tw-mb-2 tw-mt-1">
+          <div className="col-3 card-text mt-2 text-primary-theme">Director title</div>
+          <div className="col-9 card-text tw-pt-2">{orgInfo.directorTitle || 'Not set'}</div>
         </div>
       </>
     );
@@ -1013,38 +775,13 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
     );
   };
 
-  const isViewingDocument = !!(currentDocumentId && currentDocumentName);
-
   return (
-    <div className={`tw-w-full tw-mx-auto tw-py-6 ${isViewingDocument ? '' : 'tw-max-w-5xl tw-px-4'}`}>
+    <div className="tw-w-full tw-max-w-5xl tw-mx-auto tw-px-4 tw-py-6">
       <Helmet>
         <title>My Organization</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
 
-      {isViewingDocument ? (
-        <ViewDocument
-          userRole={role}
-          documentId={currentDocumentId!}
-          documentName={currentDocumentName!}
-          documentDate={formatDate(currentUploadDate)}
-          documentUploader={currentUploader || 'Unknown'}
-          targetUser={undefined as unknown as string} // Omit targetUser to avoid backend USER_NOT_FOUND
-          fileType={FileType.ORG_DOCUMENT}
-          idCategory="NONE"
-          onDownloadCurrentDocument={() => {
-            downloadOrgDocumentPdf(currentDocumentId!, currentDocumentName!, alert);
-          }}
-          onRequestDeleteCurrentDocument={() => setDeleteTargetDocument({
-            id: currentDocumentId!,
-            filename: currentDocumentName!,
-            uploadDate: currentUploadDate || '',
-            uploader: currentUploader || '',
-          })}
-          resetDocumentId={() => setCurrentDocumentId(undefined)}
-        />
-      ) : (
-        <>
           <div className="card mt-3 mb-3 pl-5 pr-5">
             <div className="card-body">
               <div className="tw-flex tw-items-center tw-justify-between">
@@ -1202,133 +939,110 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
           <div className="card mt-3 mb-3 pl-5 pr-5">
             <div className="card-body">
-          <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-mb-4">
-            <h5 className="card-title tw-mb-0">Organization Documents</h5>
-            <div className="tw-mt-3 sm:tw-mt-0">
-              <input
-                type="file"
-                accept="application/pdf"
-                id="org-doc-upload"
-                className="tw-hidden"
-                onChange={handleUploadDoc}
-                disabled={isUploadingDoc}
-              />
-              <label
-                htmlFor="org-doc-upload"
-                className={`btn btn-primary tw-m-0 ${isUploadingDoc ? 'tw-opacity-50 tw-cursor-not-allowed' : 'tw-cursor-pointer'}`}
-              >
-                {isUploadingDoc ? 'Uploading...' : 'Upload PDF'}
-              </label>
+              <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-3 tw-mb-5">
+                <div>
+                  <h5 className="card-title tw-mb-1">Document Automation Setup</h5>
+                  <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
+                    Keep.id inserts these organization assets into published document templates when a service record is created.
+                  </p>
+                </div>
+                {!isLoadingAssets && documentAssets.length > 0 && (
+                  <span className="tw-shrink-0 tw-rounded-full tw-bg-gray-100 tw-px-3 tw-py-1 tw-text-xs tw-font-semibold tw-text-gray-700">
+                    {documentAssets.filter((item) => item.asset).length} of {documentAssets.length} ready
+                  </span>
+                )}
+              </div>
+
+              {isLoadingAssets && (
+                <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading setup...</p>
+              )}
+
+              {!isLoadingAssets && (
+                <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                  {documentAssets.map((assetRole) => {
+                    const inputId = `org-asset-${assetRole.roleKey}`;
+                    const saving = savingAssetRole === assetRole.roleKey;
+                    const accept = assetRole.acceptedMimeTypes.join(',');
+                    let uploadLabel = assetRole.asset ? 'Replace' : 'Upload';
+                    if (saving) uploadLabel = 'Saving...';
+                    return (
+                      <section
+                        key={assetRole.roleKey}
+                        className={`tw-rounded-xl tw-border tw-p-4 ${assetRole.asset ? 'tw-border-emerald-200 tw-bg-emerald-50/40' : 'tw-border-gray-200 tw-bg-white'}`}
+                      >
+                        <div className="tw-flex tw-items-start tw-justify-between tw-gap-3">
+                          <div>
+                            <h6 className="tw-mb-1 tw-font-semibold tw-text-gray-900">{assetRole.displayName}</h6>
+                            <p className="tw-mb-0 tw-text-xs tw-leading-5 tw-text-gray-500">{assetRole.description}</p>
+                          </div>
+                          <span className={`tw-shrink-0 tw-rounded-full tw-px-2.5 tw-py-1 tw-text-xs tw-font-semibold ${assetRole.asset ? 'tw-bg-emerald-100 tw-text-emerald-700' : 'tw-bg-amber-100 tw-text-amber-700'}`}>
+                            {assetRole.asset ? 'Ready' : 'Needed'}
+                          </span>
+                        </div>
+
+                        {assetRole.asset && (
+                          <div className="tw-mt-3 tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-px-3 tw-py-2">
+                            <div className="tw-truncate tw-text-sm tw-font-medium tw-text-gray-800">{assetRole.asset.filename}</div>
+                            <div className="tw-mt-1 tw-text-xs tw-text-gray-500">
+                              {(assetRole.asset.byteSize / 1024).toFixed(0)} KB · Uploaded {formatDate(assetRole.asset.uploadedAt)}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="tw-mt-4 tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+                          {canManageDocumentAssets && (
+                            <>
+                              <input
+                                id={inputId}
+                                type="file"
+                                accept={accept}
+                                className="tw-hidden"
+                                disabled={savingAssetRole !== null}
+                                onChange={(event) => handleUploadAsset(assetRole.roleKey, event)}
+                              />
+                              <label
+                                htmlFor={inputId}
+                                className={`btn btn-primary btn-sm tw-mb-0 ${savingAssetRole !== null ? 'tw-pointer-events-none tw-opacity-50' : 'tw-cursor-pointer'}`}
+                              >
+                                {uploadLabel}
+                              </label>
+                            </>
+                          )}
+                          {assetRole.asset && (
+                            <a
+                              className="btn btn-outline-dark btn-sm"
+                              href={`${getServerURL()}/api/organization/document-assets/${encodeURIComponent(assetRole.roleKey)}/content`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              View
+                            </a>
+                          )}
+                          {assetRole.asset && canManageDocumentAssets && (
+                            <button
+                              type="button"
+                              className="btn btn-link btn-sm tw-text-red-600"
+                              disabled={savingAssetRole !== null}
+                              onClick={() => removeDocumentAsset(assetRole)}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        <p className="tw-mt-3 tw-mb-0 tw-text-xs tw-text-gray-400">
+                          {assetRole.acceptedMimeTypes.map((mime) => mime.replace('image/', '').replace('application/', '')).join(', ').toUpperCase()} · up to {(assetRole.maxBytes / (1024 * 1024)).toFixed(0)} MB
+                        </p>
+                      </section>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!isLoadingAssets && !canManageDocumentAssets && (
+                <p className="tw-mt-4 tw-mb-0 tw-text-xs tw-text-gray-500">An administrator or director can replace these files.</p>
+              )}
             </div>
           </div>
-
-          <p className="tw-text-sm tw-text-gray-500 tw-mb-4">
-            Upload reusable PDFs and optionally assign an automatic-attachment category in the table.
-            {!canManageDocumentRoles && ' Admin or director access is required to change categories.'}
-          </p>
-
-          {isLoadingDocs && (
-            <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading documents...</p>
-          )}
-
-          {!isLoadingDocs && (
-            <DataTable
-              columns={docColumns}
-              data={orgDocs}
-              keyField="id"
-              emptyMessage="No organization documents uploaded yet."
-              searchPlaceholder="Search documents..."
-              searchFields={['filename', 'uploaderName', 'uploader', 'uploadDate']}
-              pageSize={10}
-              defaultSortField="uploadDate"
-              defaultSortDirection="desc"
-              onRowClick={handleRowClick}
-            />
-          )}
-            </div>
-          </div>
-        </>
-      )}
-
-      {deleteTargetDocument && (
-        <div
-          className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
-          onClick={closeDeleteModal}
-          role="presentation"
-        >
-          <div
-            className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
-            onClick={(e) => e.stopPropagation()}
-            role="presentation"
-          >
-            <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-2">
-              Delete Document
-            </h5>
-            <p className="tw-text-gray-600 tw-mb-4">
-              Are you sure you want to delete{' '}
-              <span className="tw-font-semibold">
-                {getDocDisplayFileName(deleteTargetDocument.filename)}
-              </span>
-              ? This action cannot be undone.
-            </p>
-            <div className="tw-flex tw-justify-end tw-gap-3">
-              <button type="button" className="btn btn-outline-dark" onClick={closeDeleteModal}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-danger" onClick={confirmDeleteDoc}>
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {renameTarget && (
-        <div
-          className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
-          onClick={() => { if (!isRenaming) closeRenameModal(); }}
-          role="presentation"
-        >
-          <div
-            className="tw-bg-white tw-rounded-lg tw-shadow-xl tw-p-6 tw-max-w-md tw-w-full tw-mx-4"
-            onClick={(e) => e.stopPropagation()}
-            role="presentation"
-          >
-            <h5 className="tw-text-lg tw-font-semibold tw-text-gray-900 tw-mb-4">
-              Rename Document
-            </h5>
-            <input
-              type="text"
-              className="form-control"
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && renameValue.trim()) confirmRename(); }}
-              disabled={isRenaming}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-            />
-            <div className="tw-flex tw-justify-end tw-gap-3 tw-mt-4">
-              <button
-                type="button"
-                className="btn btn-outline-dark"
-                onClick={closeRenameModal}
-                disabled={isRenaming}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={confirmRename}
-                disabled={isRenaming || !renameValue.trim()}
-              >
-                {isRenaming ? 'Renaming...' : 'Rename'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {removingUsername && workerToRemove && (
         <div
           className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
