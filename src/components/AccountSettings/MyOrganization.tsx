@@ -941,19 +941,7 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
 
           <div className="card mt-3 mb-3 pl-5 pr-5">
             <div className="card-body">
-              <div className="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-3 tw-mb-5">
-                <div>
-                  <h5 className="card-title tw-mb-1">Document Automation Setup</h5>
-                  <p className="tw-text-sm tw-text-gray-500 tw-mb-0">
-                    Keep.id inserts these organization assets into published document templates when a service record is created.
-                  </p>
-                </div>
-                {!isLoadingAssets && documentAssets.length > 0 && (
-                  <span className="tw-shrink-0 tw-rounded-full tw-bg-gray-100 tw-px-3 tw-py-1 tw-text-xs tw-font-semibold tw-text-gray-700">
-                    {documentAssets.filter((item) => item.asset).length} of {documentAssets.length} ready
-                  </span>
-                )}
-              </div>
+              <h5 className="card-title tw-mb-5">Organization Documents</h5>
 
               {isLoadingAssets && (
                 <p className="tw-text-gray-500 tw-py-4 tw-mb-0">Loading setup...</p>
@@ -972,22 +960,12 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                         key={assetRole.roleKey}
                         className={`tw-rounded-xl tw-border tw-p-4 ${assetRole.asset ? 'tw-border-emerald-200 tw-bg-emerald-50/40' : 'tw-border-gray-200 tw-bg-white'}`}
                       >
-                        <div className="tw-flex tw-items-start tw-justify-between tw-gap-3">
-                          <div>
-                            <h6 className="tw-mb-1 tw-font-semibold tw-text-gray-900">{assetRole.displayName}</h6>
-                            <p className="tw-mb-0 tw-text-xs tw-leading-5 tw-text-gray-500">{assetRole.description}</p>
-                          </div>
-                          <span className={`tw-shrink-0 tw-rounded-full tw-px-2.5 tw-py-1 tw-text-xs tw-font-semibold ${assetRole.asset ? 'tw-bg-emerald-100 tw-text-emerald-700' : 'tw-bg-amber-100 tw-text-amber-700'}`}>
-                            {assetRole.asset ? 'Ready' : 'Needed'}
-                          </span>
-                        </div>
+                        <h6 className="tw-mb-0 tw-font-semibold tw-text-gray-900">{assetRole.displayName}</h6>
 
                         {assetRole.asset && (
                           <div className="tw-mt-3 tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-px-3 tw-py-2">
                             <div className="tw-truncate tw-text-sm tw-font-medium tw-text-gray-800">{assetRole.asset.filename}</div>
-                            <div className="tw-mt-1 tw-text-xs tw-text-gray-500">
-                              {(assetRole.asset.byteSize / 1024).toFixed(0)} KB · Uploaded {formatDate(assetRole.asset.uploadedAt)}
-                            </div>
+                            <div className="tw-mt-1 tw-text-xs tw-text-gray-500">{formatDate(assetRole.asset.uploadedAt)}</div>
                           </div>
                         )}
 
@@ -1031,9 +1009,6 @@ const MyOrganization: React.FC<Props> = ({ name, organization, role, alert }) =>
                             </button>
                           )}
                         </div>
-                        <p className="tw-mt-3 tw-mb-0 tw-text-xs tw-text-gray-400">
-                          {assetRole.acceptedMimeTypes.map((mime) => mime.replace('image/', '').replace('application/', '')).join(', ').toUpperCase()} · up to {(assetRole.maxBytes / (1024 * 1024)).toFixed(0)} MB
-                        </p>
                       </section>
                     );
                   })}
