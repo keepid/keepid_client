@@ -82,6 +82,7 @@ export interface ResolvedOutcome {
   clientSheetMarkdown: string;
   fulfillmentMode: FulfillmentMode;
   registryEntryId?: string | null;
+  registryApplicationId?: string | null;
   components: OutcomeComponent[];
   proposedActions: ProposedAction[];
 }

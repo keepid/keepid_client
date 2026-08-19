@@ -554,6 +554,7 @@ export function extractDirectivesFromUiSchema(
   uiSchema: Record<string, unknown>,
   data: Record<string, unknown>,
   jsonSchema?: Record<string, unknown> | null,
+  extractionOptions: { includeExcluded?: boolean } = {},
 ): Record<string, unknown> {
   const directivesMap: Record<string, unknown> = {};
 
@@ -579,7 +580,7 @@ export function extractDirectivesFromUiSchema(
           const formattedValue = formatTextValue(value, isTitleCaseTextScope(scope));
           if (typeof directive === 'string') {
             const profileDirective = canonicalDirectiveForTarget(directive, targetText(element.label, scope));
-            if (!isExcludedFromProfileFormSync(profileDirective)) {
+            if (extractionOptions.includeExcluded || !isExcludedFromProfileFormSync(profileDirective)) {
               directivesMap[profileDirective] = formattedValue;
             }
           } else if (Array.isArray(directive)) {
@@ -590,7 +591,7 @@ export function extractDirectivesFromUiSchema(
             const profileDirective = useDirective
               ? canonicalDirectiveForTarget(useDirective, targetText(element.label, scope))
               : null;
-            if (profileDirective && !isExcludedFromProfileFormSync(profileDirective)) {
+            if (profileDirective && (extractionOptions.includeExcluded || !isExcludedFromProfileFormSync(profileDirective))) {
               directivesMap[profileDirective] = formattedValue;
             }
           }

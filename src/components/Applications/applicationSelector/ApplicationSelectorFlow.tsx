@@ -280,6 +280,12 @@ const ApplicationSelectorFlow = ({
     (application) => application.applicationId === applicationId,
   );
 
+  const hasWebFormTarget = (outcome: ResolvedOutcome | ServiceRecordResult) => (
+    outcome.fulfillmentMode === 'WEB_FORM'
+    && Boolean(outcome.registryEntryId)
+    && Boolean(outcome.registryApplicationId)
+  );
+
   const startWebForm = (created?: ServiceRecordResult) => {
     const registryEntryId = created?.registryEntryId || resolved?.registryEntryId;
     const registryApplicationId = created?.registryApplicationId || resolved?.registryApplicationId;
@@ -326,8 +332,11 @@ const ApplicationSelectorFlow = ({
         idempotencyKey: uuid(),
         confirmedEffectIds: confirmedEffects,
       });
-      setRecord(created);
-      if (created.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
+      const effectiveCreated = created.fulfillmentMode === 'WEB_FORM' && !hasWebFormTarget(created)
+        ? { ...created, fulfillmentMode: 'INSTRUCTIONS_ONLY' as const }
+        : created;
+      setRecord(effectiveCreated);
+      if (effectiveCreated.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
         await completeServiceRecord(created.applicationId);
       }
     } catch (createError) {
@@ -613,7 +622,7 @@ const ApplicationSelectorFlow = ({
     }
     let createLabel = 'Save service';
     if (busy) createLabel = 'Creating service record…';
-    else if (resolved.fulfillmentMode === 'WEB_FORM') createLabel = 'Continue to application';
+    else if (hasWebFormTarget(resolved)) createLabel = 'Continue to application';
     return (
       <div>
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-p-5">
@@ -633,7 +642,7 @@ const ApplicationSelectorFlow = ({
             type="button"
             className="btn btn-primary"
             disabled={busy}
-            onClick={resolved.fulfillmentMode === 'WEB_FORM' ? () => startWebForm() : createOutcomeRecord}
+            onClick={hasWebFormTarget(resolved) ? () => startWebForm() : createOutcomeRecord}
           >
             {createLabel}
           </button>

@@ -63,7 +63,13 @@ function WebFormPageContent({
   registryLoading: boolean;
   registryError: string | null;
   onBack: () => void;
-  onWizardSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => void;
+  onWizardSubmit: (
+    pdfFill: Record<string, unknown>,
+    formOutput: Record<string, unknown>,
+    formData: Record<string, unknown>,
+    profileUpdates: Record<string, unknown>,
+    directiveValues: Record<string, unknown>,
+  ) => void;
   onConfigLoaded: (config: { builderState: BuilderState | null; formTitle: string }) => void;
   clientUsername: string;
   restoredFormData?: Record<string, unknown> | null;
@@ -571,7 +577,13 @@ export default function ApplicationForm({
   ]);
 
   const handleWizardSubmit = useCallback(
-    async (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => {
+    async (
+      pdfFill: Record<string, unknown>,
+      formOutput: Record<string, unknown>,
+      formData: Record<string, unknown>,
+      profileUpdates: Record<string, unknown>,
+      directiveValues: Record<string, unknown>,
+    ) => {
       if (!blankFormId || Object.keys(pdfFill).length === 0) {
         handleNext();
         return;
@@ -591,6 +603,7 @@ export default function ApplicationForm({
           const created = await createClassifiedService({
             clientUsername: targetClientUsername,
             ...selectorCompletion,
+            directiveValues,
           });
           applicationId = created.applicationId;
         }
