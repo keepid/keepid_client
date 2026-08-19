@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ResolvedProfiles } from '../../utils/directives';
-import { applyAutoFillFields } from './InteractiveFormWizard';
+import { applyAutoFillFields, extractAutoFillDirectiveValues } from './InteractiveFormWizard';
 import type { AutoFillField } from './types';
 import { buildFormAnswers, extractDirectivesFromUiSchema, normalizeTextFieldValues } from './useInteractiveForm';
 
@@ -233,6 +233,18 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
+  it('passes fixed auto-fill directives to current document generation', () => {
+    const autoFillFields: AutoFillField[] = [{
+      pdfFieldName: 'client_dob',
+      valueSource: 'directive',
+      value: 'client.$dob_month_day_year',
+    }];
+
+    expect(
+      extractAutoFillDirectiveValues(autoFillFields, resolvedProfiles as Record<string, unknown>),
+    ).toEqual({ 'client.$dob_month_day_year': 'December 10, 1815' });
+  });
+
   it('does not overwrite fixed auto-fill fields with unresolved directive values', () => {
     expect(
       applyAutoFillFields(
@@ -372,5 +384,26 @@ describe('interactive form PDF fill directives', () => {
     expect(
       extractDirectivesFromUiSchema(uiSchema, data, schema, { includeExcluded: true }),
     ).toEqual({ 'client.birthDate': '1987-01-19' });
+  });
+
+  it('includes a computed DOB answer in current document generation values', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [{
+        type: 'Control',
+        label: 'Date of birth',
+        scope: '#/properties/birthDate',
+        options: { directive: 'client.$dob_month_day_year' },
+      }],
+    };
+
+    expect(
+      extractDirectivesFromUiSchema(
+        uiSchema,
+        { birthDate: 'January 19, 1987' },
+        undefined,
+        { includeExcluded: true },
+      ),
+    ).toEqual({ 'client.$dob_month_day_year': 'January 19, 1987' });
   });
 });

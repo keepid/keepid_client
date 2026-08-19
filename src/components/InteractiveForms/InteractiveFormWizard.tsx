@@ -2,7 +2,11 @@ import type { UISchemaElement } from '@jsonforms/core';
 import { JsonForms } from '@jsonforms/react';
 import React, { useCallback, useState } from 'react';
 
-import { normalizeDateLikeValue, resolveDirectiveFromProfilesForTarget } from '../../utils/directives';
+import {
+  canonicalDirectiveForTarget,
+  normalizeDateLikeValue,
+  resolveDirectiveFromProfilesForTarget,
+} from '../../utils/directives';
 import { WizardSubmitProvider } from './InteractiveFormWizardContext';
 import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
@@ -32,6 +36,24 @@ export function applyAutoFillFields(
     }
   });
   return merged;
+}
+
+export function extractAutoFillDirectiveValues(
+  autoFillFields: AutoFillField[] | undefined,
+  resolvedProfiles: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  const values: Record<string, unknown> = {};
+  autoFillFields?.forEach((field) => {
+    if (field.valueSource !== 'directive' || !field.value) return;
+    const value = resolveDirectiveFromProfilesForTarget(
+      field.value,
+      resolvedProfiles as never,
+      field.pdfFieldName,
+    );
+    if (value === undefined || value === null || value === '') return;
+    values[canonicalDirectiveForTarget(field.value, field.pdfFieldName)] = value;
+  });
+  return values;
 }
 
 export interface InteractiveFormWizardProps {
@@ -108,7 +130,7 @@ export default function InteractiveFormWizard({
     const pdfFill = applyAutoFillFields(baseFill, effectiveAutoFillFields, resolvedProfiles);
     const metadata = computeMetadata(effectiveOutputFields, normalizedData, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
     const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema as Record<string, unknown>, normalizedData, jsonSchema) : {};
-    const directiveValues = uiSchema
+    const formDirectiveValues = uiSchema
       ? extractDirectivesFromUiSchema(
         uiSchema as Record<string, unknown>,
         normalizedData,
@@ -116,6 +138,10 @@ export default function InteractiveFormWizard({
         { includeExcluded: true },
       )
       : {};
+    const directiveValues = {
+      ...extractAutoFillDirectiveValues(effectiveAutoFillFields, resolvedProfiles),
+      ...formDirectiveValues,
+    };
     const formOutput = { ...pdfFill, metadata };
     onSubmit(pdfFill, formOutput, normalizedData, profileUpdates, directiveValues);
   }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema, jsonSchema]);

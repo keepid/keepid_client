@@ -286,6 +286,23 @@ const ApplicationSelectorFlow = ({
     && Boolean(outcome.registryApplicationId)
   );
 
+  const openPdfRecord = (applicationId: string, serviceTitle: string) => {
+    const now = new Date().toISOString();
+    history.push({
+      pathname: '/applications/preview',
+      state: {
+        applicationId,
+        applicationFilename: `${serviceTitle || 'Application packet'}.pdf`,
+        targetUser: clientUsername,
+        clientUsername,
+        applicantName: clientName || clientUsername,
+        uploadedByName: viewerName || viewerUsername || '',
+        createdDate: now,
+        lastUpdatedDate: now,
+      },
+    });
+  };
+
   const startWebForm = (created?: ServiceRecordResult) => {
     const registryEntryId = created?.registryEntryId || resolved?.registryEntryId;
     const registryApplicationId = created?.registryApplicationId || resolved?.registryApplicationId;
@@ -338,6 +355,7 @@ const ApplicationSelectorFlow = ({
       setRecord(effectiveCreated);
       if (effectiveCreated.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
         await completeServiceRecord(created.applicationId);
+        openPdfRecord(created.applicationId, created.serviceTitle || resolved.serviceTitle);
       }
     } catch (createError) {
       setError(errorMessage(createError));
@@ -353,7 +371,7 @@ const ApplicationSelectorFlow = ({
     try {
       await uploadServicePdf(record.applicationId, pdf);
       await completeServiceRecord(record.applicationId);
-      backToApplications();
+      openPdfRecord(record.applicationId, record.serviceTitle || 'Application packet');
     } catch (uploadError) {
       setError(errorMessage(uploadError));
     } finally {
@@ -384,6 +402,7 @@ const ApplicationSelectorFlow = ({
       if (created.fulfillmentMode === 'WEB_FORM') startWebForm(created);
       if (created.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
         await completeServiceRecord(created.applicationId);
+        openPdfRecord(created.applicationId, created.serviceTitle || manual.serviceTitle);
       }
     } catch (createError) {
       setError(errorMessage(createError));
@@ -620,8 +639,8 @@ const ApplicationSelectorFlow = ({
         </div>
       );
     }
-    let createLabel = 'Save service';
-    if (busy) createLabel = 'Creating service record…';
+    let createLabel = 'Create PDF record';
+    if (busy) createLabel = 'Creating PDF record…';
     else if (hasWebFormTarget(resolved)) createLabel = 'Continue to application';
     return (
       <div>
