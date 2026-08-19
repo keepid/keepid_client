@@ -12,6 +12,7 @@ interface TraversalRequest {
   publishToken: string;
   path: SelectorPathStep[];
   responses: Record<string, string>;
+  directiveValues?: Record<string, unknown>;
 }
 
 export interface ManualServiceRequest {

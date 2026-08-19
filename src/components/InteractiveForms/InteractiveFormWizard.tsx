@@ -39,7 +39,13 @@ export interface InteractiveFormWizardProps {
   clientUsername?: string;
   outputFields?: OutputFieldDefinition[];
   autoFillFields?: AutoFillField[];
-  onSubmit: (pdfFill: Record<string, unknown>, formOutput: Record<string, unknown>, formData: Record<string, unknown>, profileUpdates: Record<string, unknown>) => void;
+  onSubmit: (
+    pdfFill: Record<string, unknown>,
+    formOutput: Record<string, unknown>,
+    formData: Record<string, unknown>,
+    profileUpdates: Record<string, unknown>,
+    directiveValues: Record<string, unknown>,
+  ) => void;
   onDebugUpdate?: (formAnswers: Record<string, unknown>) => void;
   /** Called when config is loaded, so parent can access builderState (e.g. signaturePlacements) and formTitle. */
   onConfigLoaded?: (config: { builderState: BuilderState | null; formTitle: string }) => void;
@@ -102,8 +108,16 @@ export default function InteractiveFormWizard({
     const pdfFill = applyAutoFillFields(baseFill, effectiveAutoFillFields, resolvedProfiles);
     const metadata = computeMetadata(effectiveOutputFields, normalizedData, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
     const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema as Record<string, unknown>, normalizedData, jsonSchema) : {};
+    const directiveValues = uiSchema
+      ? extractDirectivesFromUiSchema(
+        uiSchema as Record<string, unknown>,
+        normalizedData,
+        jsonSchema,
+        { includeExcluded: true },
+      )
+      : {};
     const formOutput = { ...pdfFill, metadata };
-    onSubmit(pdfFill, formOutput, normalizedData, profileUpdates);
+    onSubmit(pdfFill, formOutput, normalizedData, profileUpdates, directiveValues);
   }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema, jsonSchema]);
 
   if (loading) {

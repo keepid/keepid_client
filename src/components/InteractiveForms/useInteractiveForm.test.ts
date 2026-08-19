@@ -351,4 +351,26 @@ describe('interactive form PDF fill directives', () => {
       'client.email': 'daniel@example.com',
     });
   });
+
+  it('can include identity values for current document generation without profile sync', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [{
+        type: 'Control',
+        label: 'Date of birth',
+        scope: '#/properties/birthDate',
+        options: { directive: 'client.birthDate' },
+      }],
+    };
+    const data = { birthDate: '1987-01-19' };
+    const schema = {
+      type: 'object',
+      properties: { birthDate: { type: 'string', format: 'date' } },
+    };
+
+    expect(extractDirectivesFromUiSchema(uiSchema, data, schema)).toEqual({});
+    expect(
+      extractDirectivesFromUiSchema(uiSchema, data, schema, { includeExcluded: true }),
+    ).toEqual({ 'client.birthDate': '1987-01-19' });
+  });
 });
