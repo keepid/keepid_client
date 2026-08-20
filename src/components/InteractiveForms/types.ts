@@ -32,9 +32,13 @@ export interface OutputFieldDefinition {
 }
 
 export interface SignaturePlacement {
+  key?: string;
   page: number;
   rect: [number, number, number, number];
   label?: string;
+  required?: boolean;
+  status?: 'PENDING' | 'SIGNED';
+  signedAt?: string | null;
 }
 
 export interface AutoFillField {

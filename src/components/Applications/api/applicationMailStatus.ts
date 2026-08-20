@@ -1,6 +1,8 @@
 import getServerURL from '../../../serverOverride';
 
 export type ApplicationMailStatus =
+  | 'AWAITING_SIGNATURE'
+  | 'READY_TO_MAIL'
   | 'NOT_MAILED'
   | 'MAILED_WITH_LOB'
   | 'MAILED_MANUALLY';
@@ -16,7 +18,7 @@ interface ApplicationMailStatusResponse extends ApplicationMailStatusInfo {
 }
 
 const DEFAULT_STATUS: ApplicationMailStatusInfo = {
-  mailStatus: 'NOT_MAILED',
+  mailStatus: 'READY_TO_MAIL',
   mailedAt: null,
 };
 
@@ -57,16 +59,19 @@ export const setApplicationManuallyMailed = async (
 };
 
 export const getApplicationMailTableLabel = (mailStatus: ApplicationMailStatus): string => {
+  if (mailStatus === 'AWAITING_SIGNATURE') return 'Awaiting signature';
+  if (mailStatus === 'READY_TO_MAIL' || mailStatus === 'NOT_MAILED') return 'Ready to mail';
   if (mailStatus === 'MAILED_WITH_LOB') return 'Mailed with Lob';
   if (mailStatus === 'MAILED_MANUALLY') return 'Printed then mailed';
-  return 'Not mailed';
+  return 'Ready to mail';
 };
 
 export const getApplicationMailDetailLabel = ({
   mailStatus,
   mailedAt,
 }: ApplicationMailStatusInfo): string => {
-  if (mailStatus === 'NOT_MAILED') return 'Not mailed';
+  if (mailStatus === 'AWAITING_SIGNATURE') return 'Awaiting signature';
+  if (mailStatus === 'READY_TO_MAIL' || mailStatus === 'NOT_MAILED') return 'Ready to mail';
   const parsed = mailedAt ? new Date(mailedAt) : null;
   const date = parsed && !Number.isNaN(parsed.getTime())
     ? parsed.toLocaleDateString('en-US', {

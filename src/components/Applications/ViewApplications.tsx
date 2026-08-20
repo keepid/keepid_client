@@ -621,9 +621,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           createdByUsername: String(item.createdByUsername || ''),
           createdByFirstName: String(item.createdByFirstName || ''),
           createdByLastName: String(item.createdByLastName || ''),
-          mailStatus: item.mailStatus === 'MAILED_WITH_LOB' || item.mailStatus === 'MAILED_MANUALLY'
+          mailStatus: item.mailStatus === 'MAILED_WITH_LOB'
+            || item.mailStatus === 'MAILED_MANUALLY'
+            || item.mailStatus === 'AWAITING_SIGNATURE'
+            || item.mailStatus === 'READY_TO_MAIL'
             ? item.mailStatus
-            : 'NOT_MAILED',
+            : 'READY_TO_MAIL',
           mailedAt: String(item.mailedAt || ''),
           // index used by some table internals
           ...(index !== undefined ? { index } : {}),
@@ -940,7 +943,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         icon: <DriveFileRenameOutlineIcon fontSize="small" />,
         onClick: () => this.openRenameModal(row),
       }] : []),
-      ...(row.mailStatus === 'MAILED_WITH_LOB' ? [] : [{
+      ...(row.mailStatus === 'MAILED_WITH_LOB' || row.mailStatus === 'AWAITING_SIGNATURE' ? [] : [{
         label: row.mailStatus === 'MAILED_MANUALLY'
           ? 'Mark as not mailed'
           : 'Mark as printed and mailed',
@@ -1085,9 +1088,11 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         width: '18%',
         mobileWidth: '30%',
         renderCell: (row) => {
-          const status = row.mailStatus || 'NOT_MAILED';
+          const status = row.mailStatus || 'READY_TO_MAIL';
           let color = 'tw-bg-gray-100 tw-text-gray-700';
-          if (status === 'MAILED_WITH_LOB') {
+          if (status === 'AWAITING_SIGNATURE') {
+            color = 'tw-bg-amber-100 tw-text-amber-800';
+          } else if (status === 'MAILED_WITH_LOB') {
             color = 'tw-bg-blue-100 tw-text-blue-800';
           } else if (status === 'MAILED_MANUALLY') {
             color = 'tw-bg-green-100 tw-text-green-800';

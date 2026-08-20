@@ -152,6 +152,59 @@ export async function uploadCompletedPdf(
   return json;
 }
 
+export interface ApplicationSignatureState {
+  status: string;
+  message?: string;
+  applicationId: string;
+  applicationState: 'AWAITING_SIGNATURE' | 'READY_TO_MAIL' | 'MAILED' | string;
+  signatures: Array<{
+    key: string;
+    page: number;
+    rect: [number, number, number, number];
+    label?: string;
+    required: boolean;
+    status: 'PENDING' | 'SIGNED';
+    signedAt?: string | null;
+  }>;
+}
+
+const parseSignatureState = async (res: Response): Promise<ApplicationSignatureState> => {
+  const json = await res.json() as ApplicationSignatureState;
+  if (!res.ok || json.status !== 'SUCCESS') {
+    throw new Error(json.message || 'Could not save signature.');
+  }
+  return json;
+};
+
+export async function getApplicationSignatures(
+  applicationId: string,
+): Promise<ApplicationSignatureState> {
+  const res = await fetch(`${getServerURL()}/get-application-signatures`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ applicationId }),
+  });
+  return parseSignatureState(res);
+}
+
+export async function saveApplicationSignature(
+  applicationId: string,
+  placementKey: string,
+  signedPdf: Blob,
+): Promise<ApplicationSignatureState> {
+  const form = new FormData();
+  form.append('applicationId', applicationId);
+  form.append('placementKey', placementKey);
+  form.append('file', signedPdf, 'signed-application.pdf');
+  const res = await fetch(`${getServerURL()}/save-application-signature`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  return parseSignatureState(res);
+}
+
 export interface ApplicationCreateResult {
   status: string;
   applicationId?: string;
