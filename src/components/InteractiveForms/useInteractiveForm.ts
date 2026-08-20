@@ -566,6 +566,41 @@ export function extractDirectivesFromUiSchema(
     return isTitleCaseTextSchema(getSchemaForPath(jsonSchema, getScopePath(scope)));
   }
 
+  function sourceDirectiveForFormValue(directive: string): string {
+    return directive.replace(
+      /^(client|worker|director)\.\$(?:dob_month_day_year|dob_mmmm_d_yyyy|dobMonthDayYear|birthDateLong)$/i,
+      '$1.birthDate',
+    );
+  }
+
+  function addDirectiveValue(
+    directive: unknown,
+    scope: string,
+    targetName: string,
+  ) {
+    const value = getPropValue(scope);
+    if (value === undefined || value === null || value === '') return;
+
+    let selectedDirective: string | null = null;
+    if (typeof directive === 'string') {
+      selectedDirective = directive;
+    } else if (Array.isArray(directive)) {
+      selectedDirective = resolveConditionalDirective(
+        directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
+        data,
+      );
+    }
+    if (!selectedDirective) return;
+
+    // Computed DOB directives are document outputs, not writable profile fields. Send their
+    // birthDate source so the server can recompute every requested DOB format consistently.
+    const profileDirective = sourceDirectiveForFormValue(
+      canonicalDirectiveForTarget(selectedDirective, targetName),
+    );
+    if (!extractionOptions.includeExcluded && isExcludedFromProfileFormSync(profileDirective)) return;
+    directivesMap[profileDirective] = formatTextValue(value, isTitleCaseTextScope(scope));
+  }
+
   function processElement(element: Record<string, unknown>) {
     const type = element.type as string;
 
@@ -575,32 +610,70 @@ export function extractDirectivesFromUiSchema(
       const directive = options?.directive;
 
       if (scope && directive != null) {
-        const value = getPropValue(scope);
-        if (value !== undefined && value !== null && value !== '') {
-          const formattedValue = formatTextValue(value, isTitleCaseTextScope(scope));
-          if (typeof directive === 'string') {
-            const profileDirective = canonicalDirectiveForTarget(directive, targetText(element.label, scope));
-            if (extractionOptions.includeExcluded || !isExcludedFromProfileFormSync(profileDirective)) {
-              directivesMap[profileDirective] = formattedValue;
-            }
-          } else if (Array.isArray(directive)) {
-            const useDirective = resolveConditionalDirective(
-              directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
-              data,
+        addDirectiveValue(directive, scope, targetText(element.label, scope));
+      }
+
+      if (scope) {
+        const optionMappings = options?.optionMappings as Array<Record<string, unknown>> | undefined;
+        const currentValue = getPropValue(scope);
+        optionMappings?.forEach((mapping) => {
+          if (mapping.forOption !== currentValue) return;
+          addDirectiveValue(
+            mapping.directive,
+            scope,
+            targetText(element.label, mapping.pdfField, scope),
+          );
+        });
+
+        const conditionalFills = options?.conditionalFills as Array<Record<string, unknown>> | undefined;
+        conditionalFills?.forEach((fill) => {
+          const conditions = fill.fillCondition as Array<{ scope?: string; schema?: Record<string, unknown> }> | undefined;
+          if (!fillConditionMatches(conditions, data)) return;
+          addDirectiveValue(
+            fill.directive,
+            scope,
+            targetText(element.label, fill.pdfField, scope),
+          );
+        });
+      }
+      return;
+    }
+
+    if (type === 'Group') {
+      if (Array.isArray(element.elements)) {
+        (element.elements as Record<string, unknown>[]).forEach((el) => processElement(el));
+
+        const firstScope = (element.elements as Record<string, unknown>[])
+          .find((child) => typeof child.scope === 'string')?.scope as string | undefined;
+        const options = element.options as Record<string, unknown> | undefined;
+        if (firstScope) {
+          const currentValue = getPropValue(firstScope);
+          const optionMappings = options?.optionMappings as Array<Record<string, unknown>> | undefined;
+          optionMappings?.forEach((mapping) => {
+            if (mapping.forOption !== currentValue) return;
+            addDirectiveValue(
+              mapping.directive,
+              firstScope,
+              targetText(element.label, mapping.pdfField, firstScope),
             );
-            const profileDirective = useDirective
-              ? canonicalDirectiveForTarget(useDirective, targetText(element.label, scope))
-              : null;
-            if (profileDirective && (extractionOptions.includeExcluded || !isExcludedFromProfileFormSync(profileDirective))) {
-              directivesMap[profileDirective] = formattedValue;
-            }
-          }
+          });
+
+          const conditionalFills = options?.conditionalFills as Array<Record<string, unknown>> | undefined;
+          conditionalFills?.forEach((fill) => {
+            const conditions = fill.fillCondition as Array<{ scope?: string; schema?: Record<string, unknown> }> | undefined;
+            if (!fillConditionMatches(conditions, data)) return;
+            addDirectiveValue(
+              fill.directive,
+              firstScope,
+              targetText(element.label, fill.pdfField, firstScope),
+            );
+          });
         }
       }
       return;
     }
 
-    if (type === 'Group' || type === 'Category' || type === 'Categorization') {
+    if (type === 'Category' || type === 'Categorization') {
       if (Array.isArray(element.elements)) {
         (element.elements as Record<string, unknown>[]).forEach((el) => processElement(el));
       }

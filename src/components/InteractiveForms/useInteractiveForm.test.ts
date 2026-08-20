@@ -386,7 +386,7 @@ describe('interactive form PDF fill directives', () => {
     ).toEqual({ 'client.birthDate': '1987-01-19' });
   });
 
-  it('includes a computed DOB answer in current document generation values', () => {
+  it('sends the source birth date for a computed DOB answer', () => {
     const uiSchema = {
       type: 'VerticalLayout',
       elements: [{
@@ -400,10 +400,68 @@ describe('interactive form PDF fill directives', () => {
     expect(
       extractDirectivesFromUiSchema(
         uiSchema,
-        { birthDate: 'January 19, 1987' },
+        { birthDate: '1987-01-19' },
+        { type: 'object', properties: { birthDate: { type: 'string', format: 'date' } } },
+        { includeExcluded: true },
+      ),
+    ).toEqual({ 'client.birthDate': '1987-01-19' });
+  });
+
+  it('extracts directives from active secondary PDF destinations', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [{
+        type: 'Control',
+        label: 'Date of birth',
+        scope: '#/properties/birthDate',
+        options: {
+          pdfField: 'dob_numeric',
+          conditionalFills: [{
+            pdfField: 'dob_long',
+            directive: 'client.$dob_month_day_year',
+          }],
+        },
+      }],
+    };
+    const schema = {
+      type: 'object',
+      properties: { birthDate: { type: 'string', format: 'date' } },
+    };
+
+    expect(
+      extractDirectivesFromUiSchema(
+        uiSchema,
+        { birthDate: '1987-01-19' },
+        schema,
+        { includeExcluded: true },
+      ),
+    ).toEqual({ 'client.birthDate': '1987-01-19' });
+  });
+
+  it('ignores directives from inactive conditional PDF destinations', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [{
+        type: 'Control',
+        label: 'Date of birth',
+        scope: '#/properties/birthDate',
+        options: {
+          conditionalFills: [{
+            pdfField: 'dob_long',
+            directive: 'client.$dob_month_day_year',
+            fillCondition: [{ scope: '#/properties/useLongDate', schema: { const: true } }],
+          }],
+        },
+      }],
+    };
+
+    expect(
+      extractDirectivesFromUiSchema(
+        uiSchema,
+        { birthDate: '1987-01-19', useLongDate: false },
         undefined,
         { includeExcluded: true },
       ),
-    ).toEqual({ 'client.$dob_month_day_year': 'January 19, 1987' });
+    ).toEqual({});
   });
 });
