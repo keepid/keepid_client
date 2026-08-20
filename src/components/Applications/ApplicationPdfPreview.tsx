@@ -10,12 +10,14 @@ import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import SignAndDownloadViewer, { SignAndDownloadViewerHandle } from '../InteractiveForms/SignAndDownloadViewer';
+import type { SignaturePlacement } from '../InteractiveForms/types';
 import {
   ApplicationMailStatus,
   getApplicationMailDetailLabel,
   getApplicationMailStatus,
   setApplicationManuallyMailed,
 } from './api/applicationMailStatus';
+import { getApplicationSignatures } from './api/interactiveForm';
 
 interface PreviewLocationState {
   applicationId?: string;
@@ -53,7 +55,7 @@ export default function ApplicationPdfPreview({
   const uploadedByName = location.state?.uploadedByName || targetUser || clientUsername || '';
   const createdDate = location.state?.createdDate || '';
   const lastUpdatedDate = location.state?.lastUpdatedDate || '';
-  const initialMailStatus = location.state?.mailStatus || 'NOT_MAILED';
+  const initialMailStatus = location.state?.mailStatus || 'READY_TO_MAIL';
   const initialMailedAt = location.state?.mailedAt || null;
   const editTargetUsername = targetUser || clientUsername;
   const canUsePdfEditing = editable && canEditPdf;
@@ -70,6 +72,8 @@ export default function ApplicationPdfPreview({
   const [mailedAt, setMailedAt] = useState<string | null>(initialMailedAt);
   const [mailStatusUpdating, setMailStatusUpdating] = useState(false);
   const [mailStatusError, setMailStatusError] = useState<string | null>(null);
+  const [signaturePlacements, setSignaturePlacements] = useState<SignaturePlacement[]>([]);
+  const [signatureLoading, setSignatureLoading] = useState(true);
   const viewerRef = useRef<SignAndDownloadViewerHandle>(null);
   const goToPreviewRoute = () => {
     history.replace({
@@ -163,6 +167,32 @@ export default function ApplicationPdfPreview({
     return () => controller.abort();
   }, [applicationId, editTargetUsername]);
 
+  useEffect(() => {
+    if (!applicationId) {
+      setSignatureLoading(false);
+      return undefined;
+    }
+    let active = true;
+    setSignatureLoading(true);
+    getApplicationSignatures(applicationId)
+      .then((result) => {
+        if (!active) return;
+        setSignaturePlacements(result.signatures);
+      })
+      .catch((signatureError) => {
+        if (!active) return;
+        setError(signatureError instanceof Error
+          ? signatureError.message
+          : 'Could not load application signatures.');
+      })
+      .finally(() => {
+        if (active) setSignatureLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [applicationId]);
+
   const refreshApplicationMailStatus = useCallback(async () => {
     if (!applicationId) return;
     try {
@@ -197,6 +227,10 @@ export default function ApplicationPdfPreview({
       setMailStatusUpdating(false);
     }
   };
+
+  const handleSignatureStateChange = useCallback((applicationState: string) => {
+    if (applicationState === 'READY_TO_MAIL') setMailStatus('READY_TO_MAIL');
+  }, []);
 
   useEffect(() => () => {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -251,8 +285,13 @@ export default function ApplicationPdfPreview({
           </div>
           <div className="tw-flex tw-items-center tw-gap-2">
             {applicationId && canMail && (
-              <Button variant="primary" onClick={() => setMailDialogIsOpen(true)}>
-                Mail
+              <Button
+                variant="primary"
+                disabled={mailStatus === 'AWAITING_SIGNATURE'}
+                title={mailStatus === 'AWAITING_SIGNATURE' ? 'Complete the required signature first.' : undefined}
+                onClick={() => setMailDialogIsOpen(true)}
+              >
+                {mailStatus === 'AWAITING_SIGNATURE' ? 'Signature required' : 'Mail'}
               </Button>
             )}
             {applicationId && !editable && canEditPdf && (
@@ -332,7 +371,9 @@ export default function ApplicationPdfPreview({
               <div className="tw-mt-1 tw-text-sm tw-font-medium tw-text-gray-900">
                 {getApplicationMailDetailLabel({ mailStatus, mailedAt })}
               </div>
-              {mailStatus !== 'MAILED_WITH_LOB' && (
+              {(mailStatus === 'READY_TO_MAIL'
+                || mailStatus === 'NOT_MAILED'
+                || mailStatus === 'MAILED_MANUALLY') && (
                 <button
                   type="button"
                   className="tw-mt-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-left tw-text-xs tw-font-semibold tw-text-blue-700 hover:tw-underline disabled:tw-text-gray-400"
@@ -349,7 +390,7 @@ export default function ApplicationPdfPreview({
           </div>
         )}
 
-        {loading && (
+        {(loading || signatureLoading) && (
           <div className="d-flex justify-content-center align-items-center py-5">
             <Spinner animation="border" role="status">
               <span className="visually-hidden">Loading PDF preview...</span>
@@ -363,15 +404,16 @@ export default function ApplicationPdfPreview({
           </Alert>
         )}
 
-        {!loading && !error && pdfUrl && (
+        {!loading && !signatureLoading && !error && pdfUrl && (
           <SignAndDownloadViewer
             ref={viewerRef}
             fileUrl={pdfUrl}
-            signaturePlacements={[]}
+            signaturePlacements={signaturePlacements}
             title={previewTitle}
             applicationId={applicationId}
             formAnswers={{}}
             clientUsername={editTargetUsername}
+            onSignatureStateChange={handleSignatureStateChange}
             showSaveButton={false}
             showPdfEditControls={false}
             pdfFormsReadOnly={!canUsePdfEditing || !isEditMode}

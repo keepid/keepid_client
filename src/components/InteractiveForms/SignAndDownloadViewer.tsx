@@ -15,6 +15,7 @@ import {
   fillAttachmentPdfBlob,
   getQuestionsV2,
   renderApplicationPacket,
+  saveApplicationSignature,
   updateApplicationAttachmentPdf,
   uploadCompletedPdf,
 } from '../Applications/api/interactiveForm';
@@ -43,6 +44,7 @@ export interface SignAndDownloadViewerProps {
   formAnswers: Record<string, unknown>;
   clientUsername?: string;
   onSaveSuccess?: () => void | Promise<void>;
+  onSignatureStateChange?: (applicationState: string) => void;
   showSaveButton?: boolean;
   showPdfEditControls?: boolean;
   pdfFormsReadOnly?: boolean;
@@ -73,6 +75,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   formAnswers,
   clientUsername = '',
   onSaveSuccess,
+  onSignatureStateChange,
   showSaveButton = true,
   showPdfEditControls = false,
   pdfFormsReadOnly = false,
@@ -100,7 +103,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [showMailSuccess, setShowMailSuccess] = useState(false);
   const [activePlacementIdx, setActivePlacementIdx] = useState<number | null>(null);
   const [livePdfUrl, setLivePdfUrl] = useState<string>(fileUrl);
-  const [embeddedBoxes, setEmbeddedBoxes] = useState<Set<number>>(new Set());
+  const [embeddedBoxes, setEmbeddedBoxes] = useState<Set<number>>(
+    () => new Set(signaturePlacements
+      .map((placement, index) => (placement.status === 'SIGNED' ? index : -1))
+      .filter((index) => index >= 0)),
+  );
   const [applying, setApplying] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -134,6 +141,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setCurrentSigDataUrl(url);
     if (url === null) setInlineSigRestoreUrl(null);
   }, []);
+
+  useEffect(() => {
+    setEmbeddedBoxes(new Set(signaturePlacements
+      .map((placement, index) => (placement.status === 'SIGNED' ? index : -1))
+      .filter((index) => index >= 0)));
+  }, [signaturePlacements]);
 
   const openSigExpandModal = useCallback(() => {
     setModalSigSnapshot(currentSigRef.current);
@@ -382,6 +395,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       page.drawImage(sigImage, { x: x + (w - drawW) / 2, y: y + (h - drawH) / 2, width: drawW, height: drawH });
       const bytes = await pdfDoc.save();
       const blob = toPdfBlob(bytes);
+      const placementKey = p.key || `signature-${activePlacementIdx + 1}`;
+      const signatureState = await saveApplicationSignature(applicationId, placementKey, blob);
+      onSignatureStateChange?.(signatureState.applicationState);
       const oldUrl = livePdfUrl;
       const newUrl = URL.createObjectURL(blob);
       setLivePdfUrl(newUrl);
@@ -398,14 +414,17 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       } else {
         setActivePlacementIdx(null);
       }
+      setPdfEditSavedMessage('Signature saved.');
+      setSaveError(null);
       return true;
     } catch (err) {
       console.error('Failed to embed signature', err);
+      setSaveError(err instanceof Error ? err.message : 'Could not save signature. Please try again.');
       return false;
     } finally {
       setApplying(false);
     }
-  }, [activePlacementIdx, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, pdfWidgetsEditable]);
+  }, [activePlacementIdx, applicationId, currentSigDataUrl, livePdfUrl, fileUrl, signaturePlacements, embeddedBoxes, onSignatureStateChange, pdfWidgetsEditable]);
 
   const toggleStagedDoc = useCallback((docId: string) => {
     setStagedDocs((prev) => {
@@ -718,10 +737,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
    * RenderPacketPdfService that Lob mails as-is; Lob uses insert_blank_page for the address sheet.
    *
    * <p>We capture the client-side live state (pdf.js in-memory form widget edits and any
-   * embedded signatures that haven't been saved yet) by sending the current main PDF bytes as
+   * current signature state) by sending the current main PDF bytes as
    * an override -- the server uses those bytes as the APPLICATION_BASE part, fetches attachment
    * parts from storage, and flattens everything with PDFBox. The override is not persisted;
-   * "Save Application" remains the explicit commit path.
+   * the final finish action remains an explicit commit path for any form-widget edits.
    *
    * <p>This replaces the previous pdf-lib client-side flatten + copyPages pipeline, which
    * couldn't produce deterministic field appearances (pdf-lib's text appearance provider
@@ -974,22 +993,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setIsPdfEditMode(false);
   }, []);
 
-  const handleReset = useCallback(() => {
-    setCurrentSigDataUrl(null);
-    setInlineSigRestoreUrl(null);
-    setModalSigSnapshot(null);
-    setSigExpandModalOpen(false);
-    if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl);
-    setLivePdfUrl(fileUrl);
-    setPdfVersion((v) => v + 1);
-    setEmbeddedBoxes(new Set());
-    setSelectedDocs(new Set());
-    setStagedDocs(new Set());
-    const first = signaturePlacements.length > 0 ? 0 : null;
-    setActivePlacementIdx(first);
-    if (first !== null) setPageNum(signaturePlacements[first].page + 1);
-  }, [livePdfUrl, fileUrl, signaturePlacements]);
-
   useEffect(() => () => { if (livePdfUrl !== fileUrl) URL.revokeObjectURL(livePdfUrl); }, [livePdfUrl, fileUrl]);
 
   useEffect(() => {
@@ -1045,17 +1048,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         className={`keepid-pdf-preview ${effectivePdfFormsReadOnly ? 'keepid-pdf-edit-locked' : ''} ${renderPdfFormWidgets ? 'keepid-pdf-form-widgets-active' : ''} tw-space-y-4 tw-w-full`}
       >
       {allSigned && signaturePlacements.length > 0 && (
-        <div className="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
+        <div className="tw-flex tw-items-center tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-px-4 tw-py-2.5">
           <span className="tw-text-sm tw-font-medium tw-text-green-800">
-            All {signaturePlacements.length} signature{signaturePlacements.length > 1 ? 's' : ''} embedded
+            {signaturePlacements.length === 1
+              ? 'Signature saved'
+              : `All ${signaturePlacements.length} signatures saved`}
           </span>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="tw-text-xs tw-text-green-700 hover:tw-text-green-900 tw-underline tw-bg-transparent tw-border-0 tw-p-0 focus:tw-outline-none focus:tw-ring-0"
-          >
-            Reset &amp; re-sign
-          </button>
         </div>
       )}
 
@@ -1159,7 +1157,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
               </div>
               {effectivePdfFormsReadOnly && (
                 <div
-                  className="tw-absolute tw-inset-0 tw-z-30 tw-cursor-not-allowed"
+                  className="tw-absolute tw-inset-0 tw-z-10 tw-cursor-not-allowed"
                   title="PDF is read-only."
                 />
               )}
@@ -1194,7 +1192,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           {pdfEditSavedMessage}
         </div>
       )}
-      {selectedDocs.size === 0 && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
+      {activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
         <div ref={sigPadAreaRef} className="tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-px-4 tw-py-3 tw-space-y-2">
           <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
             <span className="tw-text-xs tw-font-semibold tw-text-gray-800">
@@ -1237,12 +1235,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                 : 'tw-text-gray-600 tw-bg-gray-300'
             }`}
           >
-            {applying ? 'Embedding...' : 'Embed signature'}
+            {applying ? 'Saving signature...' : 'Apply and save signature'}
           </button>
         </div>
       )}
 
-      {sigExpandModalOpen && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && selectedDocs.size === 0 && (
+      {sigExpandModalOpen && activePlacementIdx !== null && !embeddedBoxes.has(activePlacementIdx) && (
         <div
           className="tw-fixed tw-inset-0 tw-z-[1040] tw-flex tw-items-center tw-justify-center tw-p-3 sm:tw-p-6"
           role="dialog"
@@ -1306,7 +1304,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
                     : 'tw-bg-gray-300 tw-text-gray-600'
                 }`}
               >
-                {applying ? 'Embedding...' : 'Embed signature'}
+                {applying ? 'Saving signature...' : 'Apply and save signature'}
               </button>
             </div>
           </div>
@@ -1383,7 +1381,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         <button
           type="button"
           onClick={() => setMailDialogIsOpen(true)}
-          disabled={isPdfActionsLocked}
+          disabled={isPdfActionsLocked || !allSigned}
           className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${printButtonClass}`}
         >
           Mail
@@ -1391,11 +1389,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         {showSaveButton && (
           <button
             type="button"
-            disabled={saving}
+            disabled={saving || !allSigned}
             onClick={handleSave}
             className="tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-green-600 hover:tw-bg-green-700 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
           >
-            {saving ? 'Saving...' : 'Save Application'}
+            {saving ? 'Finishing...' : 'Finish application'}
           </button>
         )}
       </div>

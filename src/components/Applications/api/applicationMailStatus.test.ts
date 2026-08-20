@@ -6,8 +6,10 @@ import {
 } from './applicationMailStatus';
 
 describe('application mail status labels', () => {
-  it('uses concise table labels for all three states', () => {
-    expect(getApplicationMailTableLabel('NOT_MAILED')).toBe('Not mailed');
+  it('uses concise table labels for signing and mailing states', () => {
+    expect(getApplicationMailTableLabel('AWAITING_SIGNATURE')).toBe('Awaiting signature');
+    expect(getApplicationMailTableLabel('READY_TO_MAIL')).toBe('Ready to mail');
+    expect(getApplicationMailTableLabel('NOT_MAILED')).toBe('Ready to mail');
     expect(getApplicationMailTableLabel('MAILED_WITH_LOB')).toBe('Mailed with Lob');
     expect(getApplicationMailTableLabel('MAILED_MANUALLY')).toBe('Printed then mailed');
   });
