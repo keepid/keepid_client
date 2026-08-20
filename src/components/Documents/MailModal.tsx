@@ -4,6 +4,11 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { UserContext } from '../../App';
 import getServerURL from '../../serverOverride';
 import { LoadingButton } from '../BaseComponents/Button';
+import {
+  checkAmountError,
+  hasPositiveCheckAmount,
+  normalizeCheckAmount,
+} from './mailCheckAmount';
 
 interface Props {
   alert: any;
@@ -110,6 +115,9 @@ export const MailModal: React.FC<Props> = ({
   const [showInputError, setShowInputError] = useState(false);
   const [editingReturnAddress, setEditingReturnAddress] = useState(false);
   const [editingDestination, setEditingDestination] = useState(false);
+  const [includeCheck, setIncludeCheck] = useState(false);
+  const [checkWasPrefilled, setCheckWasPrefilled] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReturnAddress = async () => {
@@ -158,6 +166,7 @@ export const MailModal: React.FC<Props> = ({
       const data = await response.json();
       if (requestId !== undefined && requestId !== mailLoadRequestId.current) return;
       if (data.mailDestinationName || data.mailDestinationOfficeName || data.mailDestinationStreet1) {
+        const hasConfiguredCheck = hasPositiveCheckAmount(data.mailDestinationCheckAmount);
         setManualAddress({
           index: 'DYNAMIC',
           nameForCheck: data.mailDestinationNameForCheck || '',
@@ -169,8 +178,10 @@ export const MailModal: React.FC<Props> = ({
           zipcode: data.mailDestinationZip || '',
           description: data.mailDestinationDescription || '',
           name: data.mailDestinationName || '',
-          checkAmount: data.mailDestinationCheckAmount || '0',
+          checkAmount: hasConfiguredCheck ? String(data.mailDestinationCheckAmount) : '',
         });
+        setIncludeCheck(hasConfiguredCheck);
+        setCheckWasPrefilled(hasConfiguredCheck);
         setDestinationPrefilled(true);
       } else {
         setDestinationPrefilled(false);
@@ -230,6 +241,9 @@ export const MailModal: React.FC<Props> = ({
     setEditingDestination(false);
     setDestinationPrefilled(false);
     setManualAddress(EMPTY_MANUAL_ADDRESS);
+    setIncludeCheck(false);
+    setCheckWasPrefilled(false);
+    setCheckError(null);
     setMailHistory([]);
     setMailInfoLoading(true);
     (async () => {
@@ -260,7 +274,15 @@ export const MailModal: React.FC<Props> = ({
 
   const mailForm = async () => {
     if (mailInfoLoading) return;
-    const destination = manualAddress;
+    const amountError = includeCheck ? checkAmountError(manualAddress.checkAmount) : null;
+    if (amountError) {
+      setCheckError(amountError);
+      return;
+    }
+    const destination = {
+      ...manualAddress,
+      checkAmount: includeCheck ? normalizeCheckAmount(manualAddress.checkAmount) : '',
+    };
     const requiredDestFields: (keyof AddressData)[] = ['street1', 'city', 'state', 'zipcode'];
     const isDestValid = requiredDestFields.every((field) => manualAddress[field] !== '')
       && (manualAddress.name !== '' || manualAddress.officeName !== '');
@@ -275,6 +297,7 @@ export const MailModal: React.FC<Props> = ({
       return;
     }
     setShowInputError(false);
+    setCheckError(null);
 
     try {
       const response = await fetch(`${getServerURL()}/submit-mail`, {
@@ -469,6 +492,13 @@ export const MailModal: React.FC<Props> = ({
     </div>
   );
 
+  let destinationMailSummary = 'Application packet only (no check)';
+  if (includeCheck) {
+    destinationMailSummary = hasPositiveCheckAmount(manualAddress.checkAmount)
+      ? `Includes a $${manualAddress.checkAmount} check`
+      : 'Check amount required';
+  }
+
   return (
     <div>
       <Dialog open={isVisible} onClose={() => setIsVisible(false)} className="tw-relative tw-z-[100]">
@@ -513,7 +543,7 @@ export const MailModal: React.FC<Props> = ({
                 {!mailInfoLoading && destinationPrefilled && !editingDestination && (
                   <div className="tw-bg-blue-50 tw-mt-2 tw-p-4 tw-rounded-md tw-border tw-border-blue-200">
                     <h3 className="tw-text-lg tw-font-semibold tw-mb-2">
-                      {`${manualAddress.name || manualAddress.officeName || 'Recipient'} — $${manualAddress.checkAmount}`}
+                      {manualAddress.name || manualAddress.officeName || 'Recipient'}
                     </h3>
                     <div className="tw-text-sm tw-text-gray-700 tw-space-y-1">
                       {manualAddress.description && <p>{manualAddress.description}</p>}
@@ -524,6 +554,9 @@ export const MailModal: React.FC<Props> = ({
                       <p>
                         {manualAddress.city}, {manualAddress.state} {manualAddress.zipcode}
                       </p>
+                      <p className="tw-font-medium tw-text-gray-900">
+                        {destinationMailSummary}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -531,6 +564,67 @@ export const MailModal: React.FC<Props> = ({
                 {!mailInfoLoading && (!destinationPrefilled || editingDestination) && (
                   <div className="tw-mt-2">
                     {renderAddressFields(manualAddress, 'manual', true)}
+                  </div>
+                )}
+
+                {!mailInfoLoading && (
+                  <div className={`tw-mt-4 tw-rounded-md tw-border tw-p-4 ${includeCheck ? 'tw-border-emerald-300 tw-bg-emerald-50' : 'tw-border-gray-200 tw-bg-gray-50'}`}>
+                    <label className="tw-flex tw-cursor-pointer tw-items-start tw-gap-3">
+                      <input
+                        type="checkbox"
+                        className="tw-mt-1 tw-h-4 tw-w-4"
+                        checked={includeCheck}
+                        onChange={(event) => {
+                          const checked = event.target.checked;
+                          setIncludeCheck(checked);
+                          setCheckError(null);
+                          if (!checked) {
+                            setManualAddress((current) => ({ ...current, checkAmount: '' }));
+                            setCheckWasPrefilled(false);
+                          }
+                        }}
+                      />
+                      <span>
+                        <span className="tw-block tw-font-semibold tw-text-gray-900">Include a check with this mailing</span>
+                        <span className="tw-mt-1 tw-block tw-text-sm tw-text-gray-600">
+                          When enabled, Keep.id sends this packet through Lob Checks. Otherwise it is sent as a regular Lob letter with a separate address cover page.
+                        </span>
+                      </span>
+                    </label>
+                    {includeCheck && (
+                      <div className="tw-mt-4 tw-max-w-xs">
+                        <label htmlFor="mail-check-amount" className="tw-block tw-text-sm tw-font-semibold tw-text-gray-900">
+                          Check amount
+                        </label>
+                        {checkWasPrefilled && (
+                          <p className="tw-mt-1 tw-text-xs tw-text-emerald-800">Prefilled automatically for this application.</p>
+                        )}
+                        <div className="tw-relative tw-mt-2">
+                          <span className="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-flex tw-items-center tw-pl-3 tw-text-gray-500">$</span>
+                          <input
+                            id="mail-check-amount"
+                            name="checkAmount"
+                            type="text"
+                            inputMode="decimal"
+                            value={manualAddress.checkAmount}
+                            onChange={(event) => {
+                              setManualAddress((current) => ({ ...current, checkAmount: event.target.value }));
+                              setCheckWasPrefilled(false);
+                              setCheckError(null);
+                            }}
+                            placeholder="0.00"
+                            aria-invalid={Boolean(checkError)}
+                            aria-describedby={checkError ? 'mail-check-amount-error' : 'mail-check-amount-help'}
+                            className={`tw-w-full tw-rounded tw-border tw-py-2 tw-pl-7 tw-pr-3 ${checkError ? 'tw-border-red-500' : 'tw-border-gray-300'}`}
+                          />
+                        </div>
+                        {checkError ? (
+                          <p id="mail-check-amount-error" className="tw-mt-1 tw-text-sm tw-text-red-600">{checkError}</p>
+                        ) : (
+                          <p id="mail-check-amount-help" className="tw-mt-1 tw-text-xs tw-text-gray-600">Maximum $999,999.99. Lob prints up to six US-letter application pages after the check page.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -580,7 +674,9 @@ export const MailModal: React.FC<Props> = ({
                 >
                   Cancel
                 </button>
-                <LoadingButton onClick={mailForm}>Send mail</LoadingButton>
+                <LoadingButton onClick={mailForm}>
+                  {includeCheck ? 'Send check and application' : 'Send mail'}
+                </LoadingButton>
               </div>
             </div>
           </Dialog.Panel>
