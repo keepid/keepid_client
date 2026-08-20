@@ -407,6 +407,27 @@ describe('interactive form PDF fill directives', () => {
     ).toEqual({ 'client.birthDate': '1987-01-19' });
   });
 
+  it('sends the shared birth date source when the PDF uses numeric DOB formatting', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [{
+        type: 'Control',
+        label: 'Date of birth',
+        scope: '#/properties/birthDate',
+        options: { pdfField: 'date_of_birth', directive: 'client.$dob_mm/dd/yyyy' },
+      }],
+    };
+
+    expect(
+      extractDirectivesFromUiSchema(
+        uiSchema,
+        { birthDate: '1987-01-19' },
+        { type: 'object', properties: { birthDate: { type: 'string', format: 'date' } } },
+        { includeExcluded: true },
+      ),
+    ).toEqual({ 'client.birthDate': '1987-01-19' });
+  });
+
   it('extracts directives from active secondary PDF destinations', () => {
     const uiSchema = {
       type: 'VerticalLayout',

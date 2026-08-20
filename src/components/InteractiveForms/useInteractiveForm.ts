@@ -568,7 +568,7 @@ export function extractDirectivesFromUiSchema(
 
   function sourceDirectiveForFormValue(directive: string): string {
     return directive.replace(
-      /^(client|worker|director)\.\$(?:dob_month_day_year|dob_mmmm_d_yyyy|dobMonthDayYear|birthDateLong)$/i,
+      /^(client|worker|director)\.\$(?:dob_mm\/dd\/yyyy|dob_month_day_year|dob_mmmm_d_yyyy|dobMonthDayYear|birthDateLong)$/i,
       '$1.birthDate',
     );
   }
