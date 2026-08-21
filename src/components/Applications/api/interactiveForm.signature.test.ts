@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  getApplicationAttachmentOptions,
   getApplicationSignatures,
   saveApplicationSignature,
+  updateApplicationAttachmentOptions,
 } from './interactiveForm';
 
 const signatureState = {
@@ -59,5 +61,83 @@ describe('durable application signature API', () => {
     const body = request?.body as FormData;
     expect(body.get('applicationId')).toBe('app-1');
     expect(body.get('placementKey')).toBe('applicant-signature');
+  });
+});
+
+describe('application attachment option API', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const attachmentState = {
+    status: 'SUCCESS',
+    options: [{
+      key: 'template:birth-certificate',
+      type: 'DOCUMENT_TEMPLATE' as const,
+      label: 'Homeless Birth Certificate Request',
+      description: 'Generated request letter',
+      available: true,
+      unavailableReason: null,
+      selected: false,
+    }, {
+      key: 'photo:director',
+      type: 'DIRECTOR_PHOTO_ID' as const,
+      label: 'Director Photo ID',
+      description: 'Director identification',
+      available: true,
+      unavailableReason: null,
+      selected: false,
+    }, {
+      key: 'photo:client',
+      type: 'CLIENT_PHOTO_ID' as const,
+      label: 'Client Photo ID',
+      description: 'Client identification',
+      available: false,
+      unavailableReason: 'Upload a Client Photo ID first.',
+      selected: false,
+    }],
+    attachments: [],
+  };
+
+  it('loads only the server-curated packet choices', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify(attachmentState), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const result = await getApplicationAttachmentOptions('app-1');
+
+    expect(result.options.map((option) => option.label)).toEqual([
+      'Homeless Birth Certificate Request',
+      'Director Photo ID',
+      'Client Photo ID',
+    ]);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/get-application-attachment-options'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('sends stable option keys instead of organization file IDs', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        ...attachmentState,
+        options: attachmentState.options.map((option) => ({
+          ...option,
+          selected: option.key !== 'photo:client',
+        })),
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+
+    await updateApplicationAttachmentOptions('app-1', [
+      'template:birth-certificate',
+      'photo:director',
+    ]);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+    expect(body).toEqual({
+      applicationId: 'app-1',
+      selectedOptionKeys: ['template:birth-certificate', 'photo:director'],
+    });
   });
 });

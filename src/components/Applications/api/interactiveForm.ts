@@ -205,6 +205,56 @@ export async function saveApplicationSignature(
   return parseSignatureState(res);
 }
 
+export interface ApplicationAttachmentOption {
+  key: string;
+  type: 'DOCUMENT_TEMPLATE' | 'DIRECTOR_PHOTO_ID' | 'CLIENT_PHOTO_ID';
+  label: string;
+  description: string;
+  available: boolean;
+  unavailableReason?: string | null;
+  selected: boolean;
+}
+
+export interface ApplicationAttachmentOptionsState {
+  status: string;
+  message?: string;
+  options: ApplicationAttachmentOption[];
+  attachments: Array<{ fileId: string; filename: string }>;
+}
+
+const parseAttachmentOptions = async (res: Response): Promise<ApplicationAttachmentOptionsState> => {
+  const json = await res.json() as ApplicationAttachmentOptionsState;
+  if (!res.ok || json.status !== 'SUCCESS') {
+    throw new Error(json.message || 'Could not load application attachment options.');
+  }
+  return json;
+};
+
+export async function getApplicationAttachmentOptions(
+  applicationId: string,
+): Promise<ApplicationAttachmentOptionsState> {
+  const res = await fetch(`${getServerURL()}/get-application-attachment-options`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ applicationId }),
+  });
+  return parseAttachmentOptions(res);
+}
+
+export async function updateApplicationAttachmentOptions(
+  applicationId: string,
+  selectedOptionKeys: string[],
+): Promise<ApplicationAttachmentOptionsState> {
+  const res = await fetch(`${getServerURL()}/update-application-attachment-options`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ applicationId, selectedOptionKeys }),
+  });
+  return parseAttachmentOptions(res);
+}
+
 export interface ApplicationCreateResult {
   status: string;
   applicationId?: string;

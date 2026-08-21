@@ -12,15 +12,15 @@ import { Document, Page, pdfjs } from 'react-pdf';
 
 import getServerURL from '../../serverOverride';
 import {
-  fillAttachmentPdfBlob,
-  getQuestionsV2,
+  type ApplicationAttachmentOption,
+  getApplicationAttachmentOptions,
   renderApplicationPacket,
   saveApplicationSignature,
   updateApplicationAttachmentPdf,
+  updateApplicationAttachmentOptions,
   uploadCompletedPdf,
 } from '../Applications/api/interactiveForm';
 import { MailConfirmation, MailModal } from '../Documents/MailModal';
-import { buildOrgAttachmentAutofillAnswers } from './attachmentAutofill';
 import type { SignaturePlacement } from './types';
 
 // Vite-friendly pdf.js worker resolution. See the `?url` import above.
@@ -56,14 +56,6 @@ export interface SignAndDownloadViewerHandle {
   savePdfEdits: () => Promise<boolean>;
   discardPdfEdits: () => void;
 }
-
-type PacketPartResponse = {
-  fileId: string;
-  partType: string;
-  sourceFileId?: string;
-  order?: number;
-  enabled?: boolean;
-};
 
 type AttachmentPreviewDoc = { id: string; sourceFileId: string; url: string; filename: string; pageCount: number };
 
@@ -111,16 +103,13 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [applying, setApplying] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Org Documents State
-  const [orgDocs, setOrgDocs] = useState<{ id: string; filename: string }[]>([]);
+  // Application packet options. These are server-curated published templates and photo IDs,
+  // never the organization's raw asset uploads.
+  const [attachmentOptions, setAttachmentOptions] = useState<ApplicationAttachmentOption[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
   const [stagedDocs, setStagedDocs] = useState<Set<string>>(new Set());
   const [isAppendingDocs, setIsAppendingDocs] = useState(false);
-  const [packetStateLoaded, setPacketStateLoaded] = useState(false);
-  const [packetSelectionHydrated, setPacketSelectionHydrated] = useState(false);
-  const [packetPersistenceAvailable, setPacketPersistenceAvailable] = useState(true);
   const [attachmentPreviewDocs, setAttachmentPreviewDocs] = useState<AttachmentPreviewDoc[]>([]);
-  const [attachedCloneBySourceId, setAttachedCloneBySourceId] = useState<Map<string, string>>(new Map());
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
   /** Tracks which export button (if any) is currently building a combined PDF, so we can
    * disable both buttons and show a "Preparing..." label. Prevents rage-clicks from spawning
@@ -128,14 +117,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [preparingExport, setPreparingExport] = useState<null | 'download' | 'print'>(null);
   const [pdfEditSavedMessage, setPdfEditSavedMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [attachmentAutofillWarning, setAttachmentAutofillWarning] = useState<string | null>(null);
   const [isPdfEditMode, setIsPdfEditMode] = useState(startInEditMode);
   const [sigOverlays, setSigOverlays] = useState<{ left: number; top: number; width: number; height: number; placementIdx: number }[]>([]);
   const [pdfVersion, setPdfVersion] = useState(0);
   const [frameElement, setFrameElement] = useState<HTMLDivElement | null>(null);
   const pdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
   const attachmentPdfDocRef = useRef<{ saveDocument:() => Promise<Uint8Array> } | null>(null);
-  const hydrationComposeInFlightRef = useRef(false);
 
   const handleSignatureChange = useCallback((url: string | null) => {
     setCurrentSigDataUrl(url);
@@ -267,79 +254,77 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     [renderedWidth, signaturePlacements, pageNum],
   );
 
-  useEffect(() => {
-    async function fetchDocs() {
-      try {
-        const res = await fetch(`${getServerURL()}/get-files`, {
-          method: 'POST',
-          credentials: 'include',
-          body: JSON.stringify({ fileType: 'ORG_DOCUMENT' }),
+  const loadAttachmentPreviews = useCallback(async (
+    attachments: Array<{ fileId: string; filename: string }>,
+  ) => {
+    if (attachments.length === 0) {
+      setAttachmentPreviewDocs((prev) => {
+        prev.forEach((entry) => URL.revokeObjectURL(entry.url));
+        return [];
+      });
+      return;
+    }
+
+    const nextPreviewDocs: AttachmentPreviewDoc[] = [];
+    for (let i = 0; i < attachments.length; i += 1) {
+      const attachment = attachments[i];
+      /* eslint-disable-next-line no-await-in-loop */
+      const res = await fetch(`${getServerURL()}/download-file`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId: attachment.fileId, fileType: 'APPLICATION_PDF' }),
+      });
+      if (res.ok) {
+        /* eslint-disable-next-line no-await-in-loop */
+        const rawBytes = await res.arrayBuffer();
+        const pageCountBytes = rawBytes.slice(0);
+        const previewBytes = rawBytes.slice(0);
+        /* eslint-disable-next-line no-await-in-loop */
+        const pageCount = await pdfjs.getDocument({ data: pageCountBytes }).promise
+          .then((pdf) => pdf.numPages)
+          .catch(() => 0);
+        const url = URL.createObjectURL(new Blob([previewBytes], { type: 'application/pdf' }));
+        nextPreviewDocs.push({
+          id: attachment.fileId,
+          sourceFileId: attachment.fileId,
+          url,
+          filename: attachment.filename,
+          pageCount,
         });
-        const data = await res.json();
-        if (data.status === 'SUCCESS' && data.documents) {
-          setOrgDocs(data.documents);
-        }
-      } catch (err) {
-        console.error('Failed to load org docs', err);
       }
     }
-    fetchDocs();
-  }, []);
-
-  const readPacketSelection = useCallback((data: any) => {
-    if (data?.status === 'NO_SUCH_FILE') {
-      // Freshly created applications can have no packet yet; treat as empty selection, not a hard failure.
-      setPacketPersistenceAvailable(true);
-      setAttachedCloneBySourceId(new Map());
-      setSelectedDocs(new Set());
-      setStagedDocs(new Set());
-      return;
-    }
-    if (data?.status !== 'SUCCESS') {
-      setPacketPersistenceAvailable(false);
-      return;
-    }
-    setPacketPersistenceAvailable(true);
-    const parts: PacketPartResponse[] = Array.isArray(data.packet?.parts) ? data.packet.parts : [];
-    const attachmentParts = parts
-      .filter((part) => part.partType === 'ORG_ATTACHMENT' && part.enabled !== false)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    const sourceToCloneEntries = attachmentParts.map((part) => [part.sourceFileId || part.fileId, part.fileId] as const);
-    const selectedSourceIds = sourceToCloneEntries.map(([sourceId]) => sourceId);
-    setAttachedCloneBySourceId(new Map(sourceToCloneEntries));
-    setSelectedDocs(new Set(selectedSourceIds));
-    setStagedDocs(new Set(selectedSourceIds));
-  }, []);
-
-  const fetchPacketSelection = useCallback(async () => {
-    const res = await fetch(`${getServerURL()}/get-packet-for-application`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ applicationId }),
+    setAttachmentPreviewDocs((prev) => {
+      prev.forEach((entry) => URL.revokeObjectURL(entry.url));
+      return nextPreviewDocs;
     });
-    const data = await res.json();
-    readPacketSelection(data);
-    return data;
-  }, [applicationId, readPacketSelection]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    async function initPacketSelection() {
+    async function initAttachmentOptions() {
       try {
-        await fetchPacketSelection();
+        const state = await getApplicationAttachmentOptions(applicationId);
+        if (cancelled) return;
+        const selected = new Set(
+          state.options.filter((option) => option.selected).map((option) => option.key),
+        );
+        setAttachmentOptions(state.options);
+        setSelectedDocs(selected);
+        setStagedDocs(new Set(selected));
+        await loadAttachmentPreviews(state.attachments);
       } catch (err) {
-        console.error('Failed to load packet selection', err);
-        setPacketPersistenceAvailable(false);
-      } finally {
-        if (!cancelled) setPacketStateLoaded(true);
+        console.error('Failed to load application attachment options', err);
+        if (!cancelled) {
+          setSaveError(err instanceof Error ? err.message : 'Could not load attachment options.');
+        }
       }
     }
-    initPacketSelection();
+    initAttachmentOptions();
     return () => {
       cancelled = true;
     };
-  }, [fetchPacketSelection]);
+  }, [applicationId, loadAttachmentPreviews]);
 
   useEffect(() => {
     if (signaturePlacements.length > 0 && activePlacementIdx === null) {
@@ -435,229 +420,36 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     });
   }, []);
 
-  const composeWithSelection = useCallback(async (
-    nextSelected: Set<string>,
-    previousSelected: Set<string>,
-    persistSelection: boolean,
-  ) => {
+  const composeWithSelection = useCallback(async (nextSelected: Set<string>) => {
     setIsAppendingDocs(true);
-    setAttachmentAutofillWarning(null);
     try {
-      const nextCloneMap = new Map(attachedCloneBySourceId);
-      let effectiveSelected = new Set(nextSelected);
-      if (persistSelection) {
-        if (packetPersistenceAvailable) {
-          const toAttach = Array.from(nextSelected).filter((id) => !previousSelected.has(id));
-          const toDetach = Array.from(previousSelected).filter((id) => !nextSelected.has(id));
-          const attachmentFailures: string[] = [];
-          const attachedWithoutAutofill: string[] = [];
-          let attachmentAutofillAnswers: Record<string, string> | null = null;
-          let canResolveAutofill = true;
-
-          if (toAttach.length > 0) {
-            try {
-              const questionsResponse = await getQuestionsV2(applicationId, clientUsername);
-              attachmentAutofillAnswers = buildOrgAttachmentAutofillAnswers(questionsResponse.resolvedProfiles);
-            } catch {
-              canResolveAutofill = false;
-            }
-          }
-
-          for (let i = 0; i < toAttach.length; i += 1) {
-            const id = toAttach[i];
-            /* eslint-disable-next-line no-await-in-loop */
-            const attachResponse = await fetch(`${getServerURL()}/attach-packet-part`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ applicationId, fileId: id }),
-            });
-            /* eslint-disable-next-line no-await-in-loop */
-            const attachData = await attachResponse.json().catch(() => ({}));
-            if (!attachResponse.ok || attachData?.status !== 'SUCCESS') {
-              if (attachData?.status === 'NO_SUCH_FILE') {
-                setPacketPersistenceAvailable(false);
-              }
-              attachmentFailures.push(id);
-            } else {
-              const attachedFileId = typeof attachData?.attachedFileId === 'string'
-                ? attachData.attachedFileId
-                : undefined;
-              if (!attachedFileId) {
-                attachmentFailures.push(id);
-              } else {
-                nextCloneMap.set(id, attachedFileId);
-
-                const hasAutofillAnswers = !!attachmentAutofillAnswers
-                  && Object.keys(attachmentAutofillAnswers).length > 0;
-                if (!canResolveAutofill || !hasAutofillAnswers) {
-                  attachedWithoutAutofill.push(id);
-                } else {
-                  try {
-                    /* eslint-disable-next-line no-await-in-loop */
-                    const filledAttachmentBlob = await fillAttachmentPdfBlob(
-                      attachedFileId,
-                      attachmentAutofillAnswers,
-                      clientUsername,
-                    );
-                    /* eslint-disable-next-line no-await-in-loop */
-                    await updateApplicationAttachmentPdf(filledAttachmentBlob, applicationId, attachedFileId);
-                  } catch {
-                    attachedWithoutAutofill.push(id);
-                  }
-                }
-              }
-            }
-          }
-
-          for (let i = 0; i < toDetach.length; i += 1) {
-            const sourceId = toDetach[i];
-            const id = nextCloneMap.get(sourceId) || sourceId;
-            /* eslint-disable-next-line no-await-in-loop */
-            const detachResponse = await fetch(`${getServerURL()}/detach-packet-part`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ applicationId, fileId: id }),
-            });
-            /* eslint-disable-next-line no-await-in-loop */
-            const detachData = await detachResponse.json().catch(() => ({}));
-            if (!detachResponse.ok || detachData?.status !== 'SUCCESS') {
-              if (detachData?.status === 'NO_SUCH_FILE') {
-                setPacketPersistenceAvailable(false);
-              } else {
-                throw new Error(detachData?.message || 'Failed to detach document from application');
-              }
-            }
-            nextCloneMap.delete(sourceId);
-          }
-          if (attachmentFailures.length > 0) {
-            effectiveSelected = new Set(Array.from(nextSelected).filter((id) => !attachmentFailures.includes(id)));
-            const failedDocNames = attachmentFailures
-              .map((id) => orgDocs.find((doc) => doc.id === id)?.filename || id)
-              .join(', ');
-            setAttachmentAutofillWarning(
-              `Failed to attach: ${failedDocNames}. Other attachment changes were applied.`,
-            );
-            setStagedDocs(new Set(effectiveSelected));
-          }
-          if (attachedWithoutAutofill.length > 0) {
-            const unfilledDocNames = attachedWithoutAutofill
-              .map((id) => orgDocs.find((doc) => doc.id === id)?.filename || id)
-              .join(', ');
-            const prefix = attachmentFailures.length > 0
-              ? 'Some attached without autofill'
-              : 'Attached without autofill';
-            setAttachmentAutofillWarning(`${prefix}: ${unfilledDocNames}.`);
-          }
-          setAttachedCloneBySourceId(nextCloneMap);
-          await fetchPacketSelection();
-        }
-      }
-
-      await loadAttachmentPreviews(effectiveSelected, orgDocs, nextCloneMap);
-      if (effectiveSelected.size === 0 && livePdfUrl !== fileUrl) {
-        const oldUrl = livePdfUrl;
-        setLivePdfUrl(fileUrl);
-        setPdfVersion((v) => v + 1);
-        URL.revokeObjectURL(oldUrl);
-      }
-      setSelectedDocs((prev) => {
-        if (prev.size === effectiveSelected.size && Array.from(prev).every((id) => effectiveSelected.has(id))) {
-          return prev;
-        }
-        return effectiveSelected;
-      });
+      const state = await updateApplicationAttachmentOptions(
+        applicationId,
+        Array.from(nextSelected),
+      );
+      const effectiveSelected = new Set(
+        state.options.filter((option) => option.selected).map((option) => option.key),
+      );
+      setAttachmentOptions(state.options);
+      setSelectedDocs(effectiveSelected);
+      setStagedDocs(new Set(effectiveSelected));
+      await loadAttachmentPreviews(state.attachments);
+      setSaveError(null);
     } catch (err) {
       console.error('Failed to append doc', err);
       setSaveError(err instanceof Error ? err.message : 'Failed to apply attachment changes');
     } finally {
       setIsAppendingDocs(false);
     }
-  }, [
-    applicationId,
-    livePdfUrl,
-    fileUrl,
-    fetchPacketSelection,
-    packetPersistenceAvailable,
-    attachedCloneBySourceId,
-    orgDocs,
-    clientUsername,
-    setSaveError,
-  ]);
+  }, [applicationId, loadAttachmentPreviews]);
 
   const applyOrgDocs = useCallback(async () => {
     const nextSelected = new Set(stagedDocs);
-    await composeWithSelection(nextSelected, selectedDocs, true);
-  }, [composeWithSelection, stagedDocs, selectedDocs]);
+    await composeWithSelection(nextSelected);
+  }, [composeWithSelection, stagedDocs]);
   const hasAttachmentSelectionChanges =
     stagedDocs.size !== selectedDocs.size
     || Array.from(stagedDocs).some((id) => !selectedDocs.has(id));
-
-  async function loadAttachmentPreviews(
-    selectedIds: Set<string>,
-    docsMetadata: { id: string; filename: string }[],
-    sourceToCloneMap: Map<string, string>,
-  ) {
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) {
-      setAttachmentPreviewDocs((prev) => {
-        prev.forEach((entry) => URL.revokeObjectURL(entry.url));
-        return [];
-      });
-      return;
-    }
-
-    const nextPreviewDocs: Array<{ id: string; sourceFileId: string; url: string; filename: string; pageCount: number }> = [];
-    for (let i = 0; i < ids.length; i += 1) {
-      const sourceId = ids[i];
-      const fileIdToPreview = sourceToCloneMap.get(sourceId) || sourceId;
-      /* eslint-disable-next-line no-await-in-loop */
-      const res = await fetch(`${getServerURL()}/download-file`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId: fileIdToPreview, fileType: 'ORG_DOCUMENT' }),
-      });
-      if (res.ok) {
-        /* eslint-disable-next-line no-await-in-loop */
-        const rawBytes = await res.arrayBuffer();
-        // Use independent copies: pdfjs may transfer/detach the provided buffer.
-        const pageCountBytes = rawBytes.slice(0);
-        const previewBytes = rawBytes.slice(0);
-        /* eslint-disable-next-line no-await-in-loop */
-        const pageCount = await pdfjs.getDocument({ data: pageCountBytes }).promise.then((pdf) => pdf.numPages).catch(() => 0);
-        const filename = docsMetadata.find((doc) => doc.id === sourceId)?.filename || sourceId;
-        const url = URL.createObjectURL(new Blob([previewBytes], { type: 'application/pdf' }));
-        nextPreviewDocs.push({ id: fileIdToPreview, sourceFileId: sourceId, url, filename, pageCount });
-      }
-    }
-    setAttachmentPreviewDocs((prev) => {
-      prev.forEach((entry) => URL.revokeObjectURL(entry.url));
-      return nextPreviewDocs;
-    });
-  }
-
-  useEffect(() => {
-    if (!packetStateLoaded || packetSelectionHydrated || selectedDocs.size === 0 || hydrationComposeInFlightRef.current) {
-      return;
-    }
-    hydrationComposeInFlightRef.current = true;
-    setPacketSelectionHydrated(true);
-    composeWithSelection(new Set(selectedDocs), new Set(), false)
-      .catch((err) => {
-        console.error('Failed to hydrate packet document composition', err);
-      })
-      .finally(() => {
-        hydrationComposeInFlightRef.current = false;
-      });
-  }, [packetStateLoaded, packetSelectionHydrated, selectedDocs, composeWithSelection]);
-
-  useEffect(() => {
-    if (packetStateLoaded && selectedDocs.size === 0 && !packetSelectionHydrated) {
-      setPacketSelectionHydrated(true);
-    }
-  }, [packetStateLoaded, selectedDocs, packetSelectionHydrated]);
 
   useEffect(() => () => {
     setAttachmentPreviewDocs((prev) => {
@@ -887,8 +679,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         if (!canEditAttachments || effectivePdfFormsReadOnly) {
           throw new Error('Attachment editing is not available in this mode.');
         }
-        const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
-        const attachmentFileId = attachedCloneBySourceId.get(sourceFileId) || currentViewerPageMeta.doc.id;
+        const attachmentFileId = currentViewerPageMeta.doc.id;
         const attachmentBlob = await getCurrentAttachmentPdfBlob();
         await updateApplicationAttachmentPdf(attachmentBlob, applicationId, attachmentFileId);
         const updatedPageCount = await pdfjs
@@ -915,7 +706,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     }
   }, [
     applicationId,
-    attachedCloneBySourceId,
     canEditAttachments,
     clientUsername,
     currentViewerPageMeta.doc,
@@ -935,8 +725,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         if (!canEditAttachments || effectivePdfFormsReadOnly) {
           throw new Error('Attachment editing is not available in this mode.');
         }
-        const sourceFileId = currentViewerPageMeta.doc.sourceFileId || currentViewerPageMeta.doc.id;
-        const attachmentFileId = attachedCloneBySourceId.get(sourceFileId) || currentViewerPageMeta.doc.id;
+        const attachmentFileId = currentViewerPageMeta.doc.id;
         const blob = await getCurrentAttachmentPdfBlob();
         await updateApplicationAttachmentPdf(blob, applicationId, attachmentFileId);
         const updatedPageCount = await pdfjs
@@ -974,7 +763,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     }
   }, [
     applicationId,
-    attachedCloneBySourceId,
     canEditAttachments,
     clientUsername,
     currentViewerPageMeta.doc,
@@ -1311,9 +1099,9 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         </div>
       )}
 
-      {orgDocs.length > 0 && !effectivePdfFormsReadOnly && (!showPdfEditControls || isPdfEditMode) && (
+      {attachmentOptions.length > 0 && (
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
-          <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Attached Organization Documents</h4>
+          <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Add to application packet</h4>
           {!allSigned ? (
             <div className="tw-p-3 tw-rounded-lg tw-bg-yellow-50 tw-text-yellow-800 tw-text-sm tw-mb-2">
               Please complete all signatures above before appending additional documents to the application.
@@ -1321,32 +1109,34 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           ) : (
             <>
               <p className="tw-text-xs tw-text-gray-600 tw-mb-3">
-                Check the documents you want attached to this application PDF.
-                <i> (Note: Any unsaved form modifications may be reset when toggling documents.)</i>
+                Choose generated organization documents or photo identification to include with this application.
               </p>
-              {!packetPersistenceAvailable && (
-                <div className="tw-text-xs tw-text-amber-700 tw-bg-amber-50 tw-border tw-border-amber-200 tw-rounded tw-p-2 tw-mb-2">
-                  Packet persistence is currently unavailable for this application record. Attachment changes are disabled until persistence is restored.
-                </div>
-              )}
               <div className="tw-flex tw-flex-col tw-gap-2">
-                {orgDocs.map((doc) => (
-                  <label key={doc.id} className="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-text-gray-800 tw-cursor-pointer">
+                {attachmentOptions.map((option) => (
+                  <label key={option.key} className="tw-flex tw-items-start tw-gap-2 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-3 tw-text-sm tw-text-gray-800">
                     <input
                       type="checkbox"
-                      checked={stagedDocs.has(doc.id)}
-                      disabled={isAppendingDocs || !packetPersistenceAvailable}
-                      onChange={() => toggleStagedDoc(doc.id)}
-                      className="tw-form-checkbox tw-h-4 tw-w-4 tw-text-blue-600 tw-rounded tw-border-gray-300 disabled:tw-opacity-50"
+                      checked={stagedDocs.has(option.key)}
+                      disabled={isAppendingDocs || (!option.available && !option.selected)}
+                      onChange={() => toggleStagedDoc(option.key)}
+                      className="tw-form-checkbox tw-mt-0.5 tw-h-4 tw-w-4 tw-text-blue-600 tw-rounded tw-border-gray-300 disabled:tw-opacity-50"
                     />
-                    {doc.filename}
+                    <span className="tw-min-w-0">
+                      <span className="tw-block tw-font-medium tw-text-gray-900">{option.label}</span>
+                      {option.description && (
+                        <span className="tw-mt-0.5 tw-block tw-text-xs tw-text-gray-600">{option.description}</span>
+                      )}
+                      {!option.available && option.unavailableReason && (
+                        <span className="tw-mt-1 tw-block tw-text-xs tw-text-amber-700">{option.unavailableReason}</span>
+                      )}
+                    </span>
                   </label>
                 ))}
               </div>
               <button
                 type="button"
                 onClick={applyOrgDocs}
-                disabled={isAppendingDocs || !hasAttachmentSelectionChanges || !packetPersistenceAvailable}
+                disabled={isAppendingDocs || !hasAttachmentSelectionChanges}
                 className="tw-mt-3 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-transition-colors"
               >
                 {isAppendingDocs ? 'Applying changes...' : 'Apply Changes'}
@@ -1401,11 +1191,6 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       {saveError && (
         <div className="tw-p-3 tw-rounded-lg tw-bg-red-50 tw-border tw-border-red-200 tw-text-red-700 tw-text-sm">
           {saveError}
-        </div>
-      )}
-      {attachmentAutofillWarning && (
-        <div className="tw-p-3 tw-rounded-lg tw-bg-amber-50 tw-border tw-border-amber-200 tw-text-amber-800 tw-text-sm">
-          {attachmentAutofillWarning}
         </div>
       )}
       </div>
