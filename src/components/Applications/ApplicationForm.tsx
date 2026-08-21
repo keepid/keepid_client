@@ -662,8 +662,27 @@ export default function ApplicationForm({
     setWizardFormOutput(null);
     setWizardFormData(null);
     disablePrompt();
+    if (targetClientUsername) {
+      history.push({
+        pathname: '/applications',
+        search: `?client=${encodeURIComponent(targetClientUsername)}`,
+        state: {
+          clientUsername: targetClientUsername,
+          clientName: targetClientName,
+        },
+      });
+      return;
+    }
     history.push('/applications');
-  }, [filledPdfUrl, history, persistedApplicationId, selectorCompletion, serviceRecordId]);
+  }, [
+    filledPdfUrl,
+    history,
+    persistedApplicationId,
+    selectorCompletion,
+    serviceRecordId,
+    targetClientName,
+    targetClientUsername,
+  ]);
 
   useEffect(() => () => {
     if (filledPdfUrl) URL.revokeObjectURL(filledPdfUrl);
