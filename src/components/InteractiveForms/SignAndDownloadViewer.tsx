@@ -2,7 +2,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './sign-and-download-viewer.css';
 
-import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowsPointingOutIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { PDFDocument } from 'pdf-lib';
 // eslint-disable-next-line import/no-unresolved -- Vite ?url asset import
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -1100,55 +1100,57 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       )}
 
       {attachmentOptions.length > 0 && (
-        <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50 tw-px-4 tw-py-3">
-          <h4 className="tw-text-sm tw-font-bold tw-text-gray-900 tw-mb-2">Add to application packet</h4>
-          {!allSigned ? (
-            <div className="tw-p-3 tw-rounded-lg tw-bg-yellow-50 tw-text-yellow-800 tw-text-sm tw-mb-2">
-              Please complete all signatures above before appending additional documents to the application.
-            </div>
-          ) : (
-            <>
-              <p className="tw-text-xs tw-text-gray-600 tw-mb-3">
-                Choose generated organization documents or photo identification to include with this application.
-              </p>
-              <div className="tw-flex tw-flex-col tw-gap-2">
-                {attachmentOptions.map((option) => (
-                  <label key={option.key} className="tw-flex tw-items-start tw-gap-2 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-3 tw-text-sm tw-text-gray-800">
-                    <input
-                      type="checkbox"
-                      checked={stagedDocs.has(option.key)}
-                      disabled={isAppendingDocs || (!option.available && !option.selected)}
-                      onChange={() => toggleStagedDoc(option.key)}
-                      className="tw-form-checkbox tw-mt-0.5 tw-h-4 tw-w-4 tw-text-blue-600 tw-rounded tw-border-gray-300 disabled:tw-opacity-50"
-                    />
-                    <span className="tw-min-w-0">
-                      <span className="tw-block tw-font-medium tw-text-gray-900">{option.label}</span>
-                      {option.description && (
-                        <span className="tw-mt-0.5 tw-block tw-text-xs tw-text-gray-600">{option.description}</span>
-                      )}
-                      {!option.available && option.unavailableReason && (
-                        <span className="tw-mt-1 tw-block tw-text-xs tw-text-amber-700">{option.unavailableReason}</span>
-                      )}
-                    </span>
-                  </label>
-                ))}
+        <details className="tw-group tw-overflow-hidden tw-rounded-lg tw-border tw-border-gray-200 tw-bg-gray-50">
+          <summary className="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-justify-between tw-gap-3 tw-px-4 tw-py-3 [&::-webkit-details-marker]:tw-hidden">
+            <span className="tw-text-sm tw-font-bold tw-text-gray-900">Add to application packet</span>
+            <ChevronDownIcon className="tw-h-4 tw-w-4 tw-shrink-0 tw-text-gray-500 tw-transition-transform group-open:tw-rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="tw-border-t tw-border-gray-200 tw-px-4 tw-py-3">
+            {!allSigned ? (
+              <div className="tw-rounded-lg tw-bg-yellow-50 tw-p-3 tw-text-sm tw-text-yellow-800">
+                Please complete all signatures above before appending additional documents to the application.
               </div>
-              <button
-                type="button"
-                onClick={applyOrgDocs}
-                disabled={isAppendingDocs || !hasAttachmentSelectionChanges}
-                className="tw-mt-3 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-transition-colors"
-              >
-                {isAppendingDocs ? 'Applying changes...' : 'Apply Changes'}
-              </button>
-              {isAppendingDocs && (
-                <div className="tw-text-xs tw-text-blue-600 tw-mt-2 tw-font-medium">
-                  Updating PDF preview...
+            ) : (
+              <>
+                <div className="tw-flex tw-flex-col tw-gap-2">
+                  {attachmentOptions.map((option) => (
+                    <label key={option.key} className="tw-flex tw-items-start tw-gap-2 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-p-3 tw-text-sm tw-text-gray-800">
+                      <input
+                        type="checkbox"
+                        checked={stagedDocs.has(option.key)}
+                        disabled={isAppendingDocs || (!option.available && !option.selected)}
+                        onChange={() => toggleStagedDoc(option.key)}
+                        className="tw-form-checkbox tw-mt-0.5 tw-h-4 tw-w-4 tw-text-blue-600 tw-rounded tw-border-gray-300 disabled:tw-opacity-50"
+                      />
+                      <span className="tw-min-w-0">
+                        <span className="tw-block tw-font-medium tw-text-gray-900">{option.label}</span>
+                        {option.description && (
+                          <span className="tw-mt-0.5 tw-block tw-text-xs tw-text-gray-600">{option.description}</span>
+                        )}
+                        {!option.available && option.unavailableReason && (
+                          <span className="tw-mt-1 tw-block tw-text-xs tw-text-amber-700">{option.unavailableReason}</span>
+                        )}
+                      </span>
+                    </label>
+                  ))}
                 </div>
-              )}
-            </>
-          )}
-        </div>
+                <button
+                  type="button"
+                  onClick={applyOrgDocs}
+                  disabled={isAppendingDocs || !hasAttachmentSelectionChanges}
+                  className="tw-mt-3 tw-px-4 tw-py-2 tw-rounded-lg tw-text-sm tw-font-medium tw-text-white tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-transition-colors"
+                >
+                  {isAppendingDocs ? 'Applying changes...' : 'Apply Changes'}
+                </button>
+                {isAppendingDocs && (
+                  <div className="tw-text-xs tw-text-blue-600 tw-mt-2 tw-font-medium">
+                    Updating PDF preview...
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </details>
       )}
 
       <div className="tw-flex tw-gap-2 tw-flex-col sm:tw-flex-row tw-flex-wrap">
