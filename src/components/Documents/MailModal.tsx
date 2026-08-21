@@ -621,7 +621,7 @@ export const MailModal: React.FC<Props> = ({
                         {checkError ? (
                           <p id="mail-check-amount-error" className="tw-mt-1 tw-text-sm tw-text-red-600">{checkError}</p>
                         ) : (
-                          <p id="mail-check-amount-help" className="tw-mt-1 tw-text-xs tw-text-gray-600">Maximum $999,999.99. Lob prints up to six US-letter application pages after the check page.</p>
+                          <p id="mail-check-amount-help" className="tw-mt-1 tw-text-xs tw-text-gray-600">Maximum $100.00. Lob prints up to six US-letter application pages after the check page.</p>
                         )}
                       </div>
                     )}
