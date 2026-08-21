@@ -1,4 +1,4 @@
-export const MAX_LOB_CHECK_AMOUNT = 999999.99;
+export const MAX_LOB_CHECK_AMOUNT = 100;
 
 export const checkAmountError = (raw: string): string | null => {
   const value = raw.trim();
@@ -8,7 +8,7 @@ export const checkAmountError = (raw: string): string | null => {
   }
   const amount = Number(value);
   if (!Number.isFinite(amount) || amount <= 0) return 'Check amount must be greater than $0.00.';
-  if (amount > MAX_LOB_CHECK_AMOUNT) return 'Check amount cannot exceed $999,999.99.';
+  if (amount > MAX_LOB_CHECK_AMOUNT) return 'Check amount cannot exceed $100.00.';
   return null;
 };
 
