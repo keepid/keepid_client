@@ -43,12 +43,12 @@ interface MailHistoryEntry {
   id: string;
   mailStatus: string;
   lobId: string;
-  lobCreatedAt: number | null;
+  lobCreatedAt: number | string | null;
   expectedDeliveryDate: string | null;
   costCents: number;
   mailType: string;
-  checkAmount: string;
-  mailingAddressName: string;
+  checkAmountCents: number | null;
+  mailingAddress: Partial<AddressData>;
   requesterUsername: string;
   trackingEvents: { type: string; name: string; time: number | null; location: string }[];
 }
@@ -74,6 +74,28 @@ const EMPTY_MANUAL_ADDRESS: AddressData = {
   name: '',
   checkAmount: '0',
 };
+
+function AddressPreview({
+  address,
+  checkSummary,
+}: {
+  address: Partial<AddressData>;
+  checkSummary?: string | null;
+}) {
+  const recipient = address.name || address.officeName || 'Recipient';
+  const street = [address.street1, address.street2].filter(Boolean).join(', ');
+  const cityState = [address.city, address.state].filter(Boolean).join(', ');
+  const locality = [cityState, address.zipcode].filter(Boolean).join(' ');
+
+  return (
+    <address className="tw-m-0 tw-not-italic tw-text-sm tw-leading-5 tw-text-gray-700">
+      <div className="tw-font-semibold tw-text-gray-900">{recipient}</div>
+      {street && <div>{street}</div>}
+      {locality && <div>{locality}</div>}
+      {checkSummary && <div className="tw-font-semibold tw-text-gray-900">{checkSummary}</div>}
+    </address>
+  );
+}
 
 export const MailModal: React.FC<Props> = ({
   alert,
@@ -116,7 +138,6 @@ export const MailModal: React.FC<Props> = ({
   const [editingReturnAddress, setEditingReturnAddress] = useState(false);
   const [editingDestination, setEditingDestination] = useState(false);
   const [includeCheck, setIncludeCheck] = useState(false);
-  const [checkWasPrefilled, setCheckWasPrefilled] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -181,7 +202,6 @@ export const MailModal: React.FC<Props> = ({
           checkAmount: hasConfiguredCheck ? String(data.mailDestinationCheckAmount) : '',
         });
         setIncludeCheck(hasConfiguredCheck);
-        setCheckWasPrefilled(hasConfiguredCheck);
         setDestinationPrefilled(true);
       } else {
         setDestinationPrefilled(false);
@@ -242,7 +262,6 @@ export const MailModal: React.FC<Props> = ({
     setDestinationPrefilled(false);
     setManualAddress(EMPTY_MANUAL_ADDRESS);
     setIncludeCheck(false);
-    setCheckWasPrefilled(false);
     setCheckError(null);
     setMailHistory([]);
     setMailInfoLoading(true);
@@ -335,7 +354,7 @@ export const MailModal: React.FC<Props> = ({
     }
   };
 
-  const formatDate = (timestamp: number | null) => {
+  const formatDate = (timestamp: number | string | null) => {
     if (!timestamp) return '—';
     return new Date(timestamp).toLocaleDateString();
   };
@@ -344,7 +363,7 @@ export const MailModal: React.FC<Props> = ({
     if (mailHistory.length === 0) return null;
     return (
       <div className="tw-mb-4">
-        <h3 className="tw-text-lg tw-font-semibold tw-mb-2">Mail History</h3>
+        <h3 className="tw-mb-2 tw-font-sans tw-text-lg tw-font-semibold tw-text-gray-900">Mail History</h3>
         {alreadyMailed && (
           <div className="tw-bg-yellow-50 tw-border tw-border-yellow-300 tw-rounded tw-p-3 tw-mb-3 tw-text-sm tw-text-yellow-800">
             This document has already been mailed.
@@ -354,6 +373,9 @@ export const MailModal: React.FC<Props> = ({
           {mailHistory.map((entry) => {
             const latestEvent = entry.trackingEvents?.length > 0
               ? entry.trackingEvents[entry.trackingEvents.length - 1]
+              : null;
+            const historyCheckSummary = entry.checkAmountCents && entry.checkAmountCents > 0
+              ? `Includes a $${(entry.checkAmountCents / 100).toFixed(2)} check`
               : null;
             return (
               <div
@@ -365,9 +387,6 @@ export const MailModal: React.FC<Props> = ({
                     <span className={`tw-px-2 tw-py-0.5 tw-rounded tw-text-xs tw-font-medium ${STATUS_COLORS[entry.mailStatus] || 'tw-bg-gray-200'}`}>
                       {entry.mailStatus}
                     </span>
-                    <span className="tw-text-sm tw-text-gray-600">
-                      {entry.mailingAddressName}
-                    </span>
                   </div>
                   <button
                     type="button"
@@ -378,15 +397,18 @@ export const MailModal: React.FC<Props> = ({
                     {refreshingId === entry.id ? 'Refreshing...' : 'Refresh Status'}
                   </button>
                 </div>
-                <div className="tw-text-xs tw-text-gray-500 tw-flex tw-gap-4">
+                <div className="tw-flex tw-flex-wrap tw-gap-x-4 tw-gap-y-1 tw-text-xs tw-text-gray-500">
                   <span>Sent: {formatDate(entry.lobCreatedAt)}</span>
                   {entry.expectedDeliveryDate && (
                     <span>Expected: {entry.expectedDeliveryDate}</span>
                   )}
                   <span>Cost: ${(entry.costCents / 100).toFixed(2)}</span>
-                  {entry.checkAmount && entry.checkAmount !== '0' && (
-                    <span>Check: ${entry.checkAmount}</span>
-                  )}
+                </div>
+                <div className="tw-mt-2 tw-border-t tw-border-gray-200 tw-pt-2">
+                  <AddressPreview
+                    address={entry.mailingAddress || {}}
+                    checkSummary={historyCheckSummary}
+                  />
                 </div>
                 {latestEvent && (
                   <div className="tw-text-xs tw-text-gray-500 tw-mt-1">
@@ -492,10 +514,10 @@ export const MailModal: React.FC<Props> = ({
     </div>
   );
 
-  let destinationMailSummary = 'Application packet only (no check)';
+  let destinationCheckSummary: string | null = null;
   if (includeCheck) {
-    destinationMailSummary = hasPositiveCheckAmount(manualAddress.checkAmount)
-      ? `Includes a $${manualAddress.checkAmount} check`
+    destinationCheckSummary = hasPositiveCheckAmount(manualAddress.checkAmount)
+      ? `Includes a $${normalizeCheckAmount(manualAddress.checkAmount)} check`
       : 'Check amount required';
   }
 
@@ -509,10 +531,10 @@ export const MailModal: React.FC<Props> = ({
               <div className="tw-p-4">
                 {renderMailHistory()}
 
-                <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-1">
-                  <p className="tw-text-left tw-text-2xl tw-font-semibold">
+                <div className="tw-mb-2 tw-flex tw-items-center tw-justify-between tw-gap-3">
+                  <h3 className="tw-font-sans tw-text-lg tw-font-semibold tw-text-gray-900">
                     {destinationPrefilled ? 'Mail Destination (from application)' : 'Mail destination'}
-                  </p>
+                  </h3>
                   {destinationPrefilled && !mailInfoLoading && (
                     <button
                       type="button"
@@ -541,23 +563,11 @@ export const MailModal: React.FC<Props> = ({
                 )}
 
                 {!mailInfoLoading && destinationPrefilled && !editingDestination && (
-                  <div className="tw-bg-blue-50 tw-mt-2 tw-p-4 tw-rounded-md tw-border tw-border-blue-200">
-                    <h3 className="tw-text-lg tw-font-semibold tw-mb-2">
-                      {manualAddress.name || manualAddress.officeName || 'Recipient'}
-                    </h3>
-                    <div className="tw-text-sm tw-text-gray-700 tw-space-y-1">
-                      {manualAddress.description && <p>{manualAddress.description}</p>}
-                      <p>
-                        {manualAddress.street1}
-                        {manualAddress.street2 ? ` ${manualAddress.street2}` : ''}
-                      </p>
-                      <p>
-                        {manualAddress.city}, {manualAddress.state} {manualAddress.zipcode}
-                      </p>
-                      <p className="tw-font-medium tw-text-gray-900">
-                        {destinationMailSummary}
-                      </p>
-                    </div>
+                  <div className="tw-mt-2 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3">
+                    <AddressPreview
+                      address={manualAddress}
+                      checkSummary={destinationCheckSummary}
+                    />
                   </div>
                 )}
 
@@ -580,25 +590,16 @@ export const MailModal: React.FC<Props> = ({
                           setCheckError(null);
                           if (!checked) {
                             setManualAddress((current) => ({ ...current, checkAmount: '' }));
-                            setCheckWasPrefilled(false);
                           }
                         }}
                       />
-                      <span>
-                        <span className="tw-block tw-font-semibold tw-text-gray-900">Include a check with this mailing</span>
-                        <span className="tw-mt-1 tw-block tw-text-sm tw-text-gray-600">
-                          When enabled, Keep.id sends this packet through Lob Checks. Otherwise it is sent as a regular Lob letter with a separate address cover page.
-                        </span>
-                      </span>
+                      <span className="tw-font-semibold tw-text-gray-900">Include a check with this mailing</span>
                     </label>
                     {includeCheck && (
                       <div className="tw-mt-4 tw-max-w-xs">
                         <label htmlFor="mail-check-amount" className="tw-block tw-text-sm tw-font-semibold tw-text-gray-900">
                           Check amount
                         </label>
-                        {checkWasPrefilled && (
-                          <p className="tw-mt-1 tw-text-xs tw-text-emerald-800">Prefilled automatically for this application.</p>
-                        )}
                         <div className="tw-relative tw-mt-2">
                           <span className="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-flex tw-items-center tw-pl-3 tw-text-gray-500">$</span>
                           <input
@@ -609,7 +610,6 @@ export const MailModal: React.FC<Props> = ({
                             value={manualAddress.checkAmount}
                             onChange={(event) => {
                               setManualAddress((current) => ({ ...current, checkAmount: event.target.value }));
-                              setCheckWasPrefilled(false);
                               setCheckError(null);
                             }}
                             placeholder="0.00"
@@ -630,8 +630,8 @@ export const MailModal: React.FC<Props> = ({
               </div>
 
               <div className="tw-px-4 tw-pb-2">
-                <div className="tw-flex tw-items-center tw-justify-between tw-mb-3">
-                  <h3 className="tw-text-lg tw-font-semibold">Return Address</h3>
+                <div className="tw-mb-2 tw-flex tw-items-center tw-justify-between">
+                  <h3 className="tw-font-sans tw-text-lg tw-font-semibold tw-text-gray-900">Return Address</h3>
                   <button
                     type="button"
                     className="tw-text-sm tw-text-blue-600 hover:tw-text-blue-800 tw-font-medium"
@@ -644,18 +644,8 @@ export const MailModal: React.FC<Props> = ({
                 {editingReturnAddress ? (
                   renderAddressFields(returnAddressData, 'return', true)
                 ) : (
-                  <div className="tw-bg-gray-50 tw-rounded-md tw-border tw-border-gray-200 tw-p-4">
-                    <p className="tw-font-medium tw-text-gray-900">{returnAddressData.officeName || <span className="tw-text-gray-400 tw-italic">No office name</span>}</p>
-                    <p className="tw-text-sm tw-text-gray-700 tw-mt-1">
-                      {returnAddressData.street1 || <span className="tw-text-gray-400 tw-italic">No address</span>}
-                    </p>
-                    {returnAddressData.street2 && (
-                      <p className="tw-text-sm tw-text-gray-700">{returnAddressData.street2}</p>
-                    )}
-                    <p className="tw-text-sm tw-text-gray-700">
-                      {[returnAddressData.city, returnAddressData.state].filter(Boolean).join(', ')}
-                      {returnAddressData.zipcode ? ` ${returnAddressData.zipcode}` : ''}
-                    </p>
+                  <div className="tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3">
+                    <AddressPreview address={returnAddressData} />
                   </div>
                 )}
               </div>
