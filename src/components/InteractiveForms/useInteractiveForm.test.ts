@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ResolvedProfiles } from '../../utils/directives';
-import { applyAutoFillFields, extractAutoFillDirectiveValues } from './InteractiveFormWizard';
+import {
+  applyAutoFillFields,
+  buildTemplateDirectiveValues,
+  extractAutoFillDirectiveValues,
+} from './InteractiveFormWizard';
 import type { AutoFillField } from './types';
 import { buildFormAnswers, extractDirectivesFromUiSchema, normalizeTextFieldValues } from './useInteractiveForm';
 
@@ -243,6 +247,22 @@ describe('interactive form PDF fill directives', () => {
     expect(
       extractAutoFillDirectiveValues(autoFillFields, resolvedProfiles as Record<string, unknown>),
     ).toEqual({ 'client.$dob_month_day_year': 'December 10, 1815' });
+  });
+
+  it('passes the selected client birth date to picker attachment generation', () => {
+    expect(
+      buildTemplateDirectiveValues(undefined, resolvedProfiles as Record<string, unknown>, {}),
+    ).toEqual({ 'client.birthDate': '12/10/1815' });
+  });
+
+  it('prefers the birth date entered in the current form over the profile fallback', () => {
+    expect(
+      buildTemplateDirectiveValues(
+        undefined,
+        resolvedProfiles as Record<string, unknown>,
+        { 'client.birthDate': '1987-01-19' },
+      ),
+    ).toEqual({ 'client.birthDate': '1987-01-19' });
   });
 
   it('does not overwrite fixed auto-fill fields with unresolved directive values', () => {

@@ -56,6 +56,29 @@ export function extractAutoFillDirectiveValues(
   return values;
 }
 
+export function buildTemplateDirectiveValues(
+  autoFillFields: AutoFillField[] | undefined,
+  resolvedProfiles: Record<string, unknown> | null | undefined,
+  formDirectiveValues: Record<string, unknown>,
+): Record<string, unknown> {
+  const profileBirthDate = resolveDirectiveFromProfilesForTarget(
+    'client.birthDate',
+    resolvedProfiles as never,
+    'client birth date',
+  );
+  const profileFallback = profileBirthDate === undefined
+    || profileBirthDate === null
+    || profileBirthDate === ''
+    ? {}
+    : { 'client.birthDate': profileBirthDate };
+
+  return {
+    ...profileFallback,
+    ...extractAutoFillDirectiveValues(autoFillFields, resolvedProfiles),
+    ...formDirectiveValues,
+  };
+}
+
 export interface InteractiveFormWizardProps {
   applicationId: string;
   clientUsername?: string;
@@ -138,10 +161,11 @@ export default function InteractiveFormWizard({
         { includeExcluded: true },
       )
       : {};
-    const directiveValues = {
-      ...extractAutoFillDirectiveValues(effectiveAutoFillFields, resolvedProfiles),
-      ...formDirectiveValues,
-    };
+    const directiveValues = buildTemplateDirectiveValues(
+      effectiveAutoFillFields,
+      resolvedProfiles,
+      formDirectiveValues,
+    );
     const formOutput = { ...pdfFill, metadata };
     onSubmit(pdfFill, formOutput, normalizedData, profileUpdates, directiveValues);
   }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema, jsonSchema]);
