@@ -185,6 +185,23 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
+  it('does not fall back to a question answer when its PDF directive is unresolved', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/firstName',
+          options: { pdfField: 'unrelated_pdf_field', directive: 'client.missingField' },
+        },
+      ],
+    };
+
+    expect(
+      buildFormAnswers(uiSchema, jsonSchema, { firstName: 'Ada' }, resolvedProfiles),
+    ).toEqual({});
+  });
+
   it('preserves fixed literal outcomes for boolean and option annotations', () => {
     const uiSchema = {
       type: 'VerticalLayout',
