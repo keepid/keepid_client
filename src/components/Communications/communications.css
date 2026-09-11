@@ -1914,3 +1914,73 @@ body:has(.communications-shell),
     width: 100%;
   }
 }
+.call-cost-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.call-cost-button {
+  background: none;
+  border: 0;
+  padding: 5px 2px;
+  color: #6b7280;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.call-cost-button:focus-visible {
+  outline: 2px solid #4859dd;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.MuiTooltip-tooltip.call-cost-tooltip {
+  background: #fff;
+  color: #344054;
+  border: 1px solid #e4e7ec;
+  box-shadow: 0 4px 18px #1018281a;
+  padding: 10px 12px;
+  max-width: min(230px, calc(100vw - 40px));
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.call-cost-breakdown dl {
+  min-width: 190px;
+  margin: 0;
+}
+
+.call-cost-breakdown dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.call-cost-breakdown dd {
+  margin: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.call-cost-total {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.call-cost-provider {
+  color: #667085;
+  padding: 2px 0;
+}
+
+.call-cost-breakdown p {
+  margin: 8px 0 0;
+  color: #667085;
+  font-size: 11px;
+}
