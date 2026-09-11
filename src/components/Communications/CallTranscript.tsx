@@ -9,12 +9,15 @@ type TranscriptTurn = {
   text: string;
 };
 
-const SPEAKER_LABEL = /(?:^|\s)(Caller|Client|Staff|Agent|Keep\.?id(?: staff)?|Steffen|Stefan):\s*/gi;
+const SPEAKER_LABEL = /(?:^|\s)(Automated assistant|AI assistant|Keep\.?id AI|Caller|Client|Staff|Agent|Keep\.?id(?: staff)?|Steffen|Stefan):\s*/gi;
 
 function speakerDetails(value: string): Pick<TranscriptTurn, 'speaker' | 'side'> {
   const normalized = value.toLowerCase().replace(/[^a-z]/g, '');
   if (normalized === 'caller' || normalized === 'client') {
     return { speaker: 'Caller', side: 'left' };
+  }
+  if (normalized === 'automatedassistant' || normalized === 'aiassistant' || normalized === 'keepidai') {
+    return { speaker: 'Keep.id AI', side: 'right' };
   }
   if (normalized === 'steffen' || normalized === 'stefan') {
     return { speaker: value, side: 'right' };

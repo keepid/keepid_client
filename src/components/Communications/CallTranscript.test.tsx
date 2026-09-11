@@ -38,4 +38,18 @@ describe('CallTranscript', () => {
     expect(turns[1]).toHaveClass('right');
     expect(within(turns[1]).getByText('Steffen')).toBeInTheDocument();
   });
+
+  it('renders persisted automated assistant turns as Keep.id AI', () => {
+    render(
+      <CallTranscript transcript={'Caller: I need a photo ID.\nAutomated assistant: I can help you work through that.'} />,
+    );
+
+    const turns = screen.getAllByRole('listitem');
+    expect(turns).toHaveLength(2);
+    expect(turns[0]).toHaveClass('left');
+    expect(within(turns[0]).getByText('Caller')).toBeInTheDocument();
+    expect(turns[1]).toHaveClass('right');
+    expect(within(turns[1]).getByText('Keep.id AI')).toBeInTheDocument();
+    expect(within(turns[1]).getByText('I can help you work through that.')).toBeInTheDocument();
+  });
 });
