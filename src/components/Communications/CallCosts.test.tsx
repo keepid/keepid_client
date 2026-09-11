@@ -23,15 +23,18 @@ const sample: InteractionCosts = {
 describe('CallCosts', () => {
   it('distinguishes partial totals, estimates, pending charges and fractional cents', () => {
     render(<CostBreakdown costs={sample} />);
-    expect(screen.getByText('Known subtotal (USD)')).toBeInTheDocument();
+    expect(screen.getByText('Subtotal (USD)')).toBeInTheDocument();
     expect(screen.getByText('$0.000021')).toBeInTheDocument();
-    expect(screen.getByText('Estimated')).toBeInTheDocument();
-    expect(screen.getByText('Pending')).toBeInTheDocument();
+    expect(screen.getByText('~ Estimated · Some charges pending')).toBeInTheDocument();
+    expect(screen.getByText('Twilio')).toBeInTheDocument();
+    expect(screen.getByText('OpenRouter')).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.queryByText(sample.scope)).not.toBeInTheDocument();
     expect(screen.queryByText('$0.00')).not.toBeInTheDocument();
   });
   it('does not fabricate a zero for historical calls without data', () => {
     render(<CostBreakdown costs={{ ...sample, items: [], totals: [] }} />);
-    expect(screen.getByText('No cost data is available for this call.')).toBeInTheDocument();
+    expect(screen.getByText('No cost data available.')).toBeInTheDocument();
     expect(screen.queryByText('$0.00')).not.toBeInTheDocument();
   });
   it('loads on tap, not on transcript render, and closes with Escape', async () => {
@@ -40,7 +43,7 @@ describe('CallCosts', () => {
     expect(getInteractionCosts).not.toHaveBeenCalled();
     const button = screen.getByRole('button', { name: 'View call costs' });
     fireEvent.click(button);
-    expect(await screen.findByText('Interaction costs')).toBeInTheDocument();
+    expect(await screen.findByText('Subtotal (USD)')).toBeInTheDocument();
     expect(getInteractionCosts).toHaveBeenCalledWith('call-one', expect.any(AbortSignal));
     fireEvent.keyDown(button, { key: 'Escape' });
     expect(button).toHaveAttribute('aria-expanded', 'false');
@@ -50,5 +53,35 @@ describe('CallCosts', () => {
     render(<CallCosts callId="call-one" />);
     fireEvent.click(screen.getByRole('button', { name: 'View call costs' }));
     expect(await screen.findByText('Costs could not be loaded. Reopen to retry.')).toBeInTheDocument();
+  });
+  it('combines categories into provider rows and omits notes for final charges', () => {
+    render(<CostBreakdown costs={{ ...sample,
+      items: [
+        { ...sample.items[0], amount: 0.05, status: 'FINAL' },
+        { ...sample.items[1], amount: 0.2, status: 'FINAL' },
+        sample.items[2],
+      ],
+      totals: [{ currency: 'USD', amount: 0.250021, status: 'FINAL' }],
+    }}
+    />);
+    expect(screen.getAllByText('Twilio')).toHaveLength(1);
+    expect(screen.getByText('$0.25')).toBeInTheDocument();
+    expect(screen.getByText('Total (USD)')).toBeInTheDocument();
+    expect(screen.queryByText(/Estimated|pending|unavailable/)).not.toBeInTheDocument();
+  });
+  it('keeps currencies separate and unknown amounts distinct from zero', () => {
+    render(<CostBreakdown costs={{ ...sample,
+      items: [sample.items[0], { ...sample.items[1], amount: null, currency: 'EUR', status: 'UNAVAILABLE' }],
+      totals: [
+        { currency: 'USD', amount: null, status: 'PARTIAL' },
+        { currency: 'EUR', amount: null, status: 'PARTIAL' },
+      ],
+    }}
+    />);
+    expect(screen.getByText('Twilio (USD)')).toBeInTheDocument();
+    expect(screen.getByText('Twilio (EUR)')).toBeInTheDocument();
+    expect(screen.getByText('Pending')).toBeInTheDocument();
+    expect(screen.getAllByText('Unavailable')).toHaveLength(3);
+    expect(screen.queryByText('$0.00')).not.toBeInTheDocument();
   });
 });

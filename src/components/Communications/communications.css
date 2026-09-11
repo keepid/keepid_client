@@ -1946,43 +1946,37 @@ body:has(.communications-shell),
   color: #344054;
   border: 1px solid #e4e7ec;
   box-shadow: 0 4px 18px #1018281a;
-  padding: 14px;
-  max-width: min(350px, calc(100vw - 40px));
+  padding: 10px 12px;
+  max-width: min(230px, calc(100vw - 40px));
   font-size: 12px;
   line-height: 1.5;
 }
 
-.call-cost-breakdown table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 8px 0;
+.call-cost-breakdown dl {
+  min-width: 190px;
+  margin: 0;
 }
 
-.call-cost-breakdown th,
-.call-cost-breakdown td {
-  padding: 5px 0;
-  text-align: left;
-  vertical-align: top;
-  font-weight: 400;
+.call-cost-breakdown dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.call-cost-breakdown td,
-.call-cost-breakdown thead th:last-child {
-  text-align: right;
-  padding-left: 12px;
+.call-cost-breakdown dd {
+  margin: 0;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.call-cost-breakdown small {
-  display: block;
-  color: #667085;
-  text-transform: capitalize;
+.call-cost-total {
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
-.call-cost-breakdown tfoot {
-  border-top: 1px solid #e4e7ec;
-  font-weight: 600;
+.call-cost-provider {
+  color: #667085;
+  padding: 2px 0;
 }
 
 .call-cost-breakdown p {

@@ -4,11 +4,15 @@ A small gray Costs button appears beside the timestamp at the bottom-right of
 each call card. Hover or focus on desktop; tap on mobile. Escape closes it.
 The tooltip fetches the call's stored cost breakdown only when opened and
 refreshes every 30 seconds while open. It never calls Twilio/OpenRouter directly.
+The compact popup shows a total and one row per provider, not billing categories.
+A tilde marks amounts that include estimates; one short note explains estimates
+or missing charges. Fully reported actual costs need no note. The detailed
+backend ledger remains unchanged for reporting and metrics.
 
 Backend prerequisite: `GET /api/communications/calls/{callId}/costs` and the
 server's V41 `interaction_cost` migration. Existing call/message DTOs do not
 change. Deploy the backend first. Calls without historical data show unavailable,
-not zero. Unreported rows show Pending; estimated charges and partial subtotals
+not zero. Unreported providers show Pending; estimated charges and partial subtotals
 are explicitly labeled. Currency totals remain separate; fractional cents are
 shown to six decimal places in the UI (the database stores ten decimal places).
 

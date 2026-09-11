@@ -3,15 +3,6 @@ import React, { useEffect, useState } from 'react';
 
 import { getInteractionCosts, InteractionCosts } from './communicationsApi';
 
-const categoryNames: Record<string, string> = {
-  TELEPHONY: 'Phone connection',
-  CONVERSATION_RELAY: 'ConversationRelay',
-  STUDIO: 'Studio',
-  MODEL: 'AI model',
-  RECORDING: 'Recording',
-  TRANSCRIPTION: 'Transcription',
-};
-
 function money(amount: number | null, currency: string) {
   if (amount === null) return 'Pending';
   return new Intl.NumberFormat('en-US', {
@@ -20,13 +11,13 @@ function money(amount: number | null, currency: string) {
 }
 
 export function CostBreakdown({ costs }: { costs: InteractionCosts }) {
-  if (costs.items.length === 0) return <p>No cost data is available for this call.</p>;
+  if (costs.items.length === 0) return <span>No cost data available.</span>;
   const groups = new Map<string, { label: string; currency: string; amount: number;
     hasAmount: boolean; pending: boolean; unavailable: boolean; estimated: boolean }>();
   costs.items.forEach((line) => {
-    const key = `${line.provider}-${line.category}-${line.currency}`;
+    const key = `${line.provider}-${line.currency}`;
     const group = groups.get(key) || {
-      label: `${line.provider === 'TWILIO' ? 'Twilio' : 'OpenRouter'} · ${categoryNames[line.category] || line.category}`,
+      label: line.provider === 'TWILIO' ? 'Twilio' : 'OpenRouter',
       currency: line.currency,
       amount: 0,
       hasAmount: false,
@@ -40,35 +31,39 @@ export function CostBreakdown({ costs }: { costs: InteractionCosts }) {
     group.estimated ||= line.status === 'ESTIMATED';
     groups.set(key, group);
   });
+  const estimated = costs.items.some((line) => line.status === 'ESTIMATED');
+  const pending = costs.items.some((line) => line.status === 'PENDING');
+  const unavailable = costs.items.some((line) => line.status === 'UNAVAILABLE');
+  const notes = [
+    estimated && '~ Estimated',
+    pending && 'Some charges pending',
+    unavailable && 'Some charges unavailable',
+  ].filter(Boolean);
+  const multipleCurrencies = new Set(costs.items.map((line) => line.currency)).size > 1;
   return (
     <div className="call-cost-breakdown">
-      <strong>Interaction costs</strong>
-      <table aria-label="Interaction cost breakdown">
-        <thead><tr><th scope="col">Service</th><th scope="col">Cost</th></tr></thead>
-        <tbody>
-          {[...groups.entries()].map(([key, group]) => (
-            <tr key={key}>
-              <th scope="row">{group.label}</th>
-              <td>
-                {group.hasAmount && money(group.amount, group.currency)}
-                {!group.hasAmount && (group.unavailable ? 'Unavailable' : 'Pending')}
-                {(group.hasAmount && (group.pending || group.unavailable)) && <small>Partial</small>}
-                {(group.hasAmount && !group.pending && !group.unavailable && group.estimated) && <small>Estimated</small>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          {costs.totals.map((total) => (
-            <tr key={total.currency}>
-              <th scope="row">{total.status === 'PARTIAL' ? 'Known subtotal' : 'Total'} ({total.currency})</th>
-              <td>{total.amount === null ? 'Not available' : money(total.amount, total.currency)}<small>{total.status.toLowerCase()}</small></td>
-            </tr>
-          ))}
-        </tfoot>
-      </table>
-      <p>{costs.scope}</p>
-      <p>Pending charges update automatically. Missing amounts are not zero.</p>
+      <dl>
+        {costs.totals.map((total) => (
+          <div className="call-cost-total" key={total.currency}>
+            <dt>{total.status === 'PARTIAL' ? 'Subtotal' : 'Total'} ({total.currency})</dt>
+            <dd>
+              {total.amount !== null && costs.items.some((line) => line.currency === total.currency && line.status === 'ESTIMATED') && '~'}
+              {total.amount === null ? 'Unavailable' : money(total.amount, total.currency)}
+            </dd>
+          </div>
+        ))}
+        {[...groups.entries()].map(([key, group]) => (
+          <div className="call-cost-provider" key={key}>
+            <dt>{group.label}{multipleCurrencies && ` (${group.currency})`}</dt>
+            <dd>
+              {group.hasAmount && group.estimated && '~'}
+              {group.hasAmount && money(group.amount, group.currency)}
+              {!group.hasAmount && (group.pending ? 'Pending' : 'Unavailable')}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {notes.length > 0 && <p>{notes.join(' · ')}</p>}
     </div>
   );
 }
