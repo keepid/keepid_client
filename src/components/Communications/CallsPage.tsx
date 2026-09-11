@@ -9,6 +9,7 @@ import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import CallCosts from './CallCosts';
 import CallTranscript from './CallTranscript';
 import {
   addCommunicationContactNote,
@@ -824,7 +825,7 @@ export default function CallsPage() {
                       <div className="chat-item-top">
                         <strong>{title}</strong>
                         <span>
-                          {formatTime(item.occurredAt)}
+                          {item.type !== 'call' && formatTime(item.occurredAt)}
                           {item.type === 'note' && (
                             <button
                               type="button"
@@ -885,6 +886,12 @@ export default function CallsPage() {
                         </div>
                       )}
                       {item.status && item.type !== 'call' && item.type !== 'voicemail' && <small>{item.status}</small>}
+                      {item.type === 'call' && (
+                        <div className="call-cost-footer">
+                          <time dateTime={item.occurredAt}>{formatTime(item.occurredAt)}</time>
+                          <CallCosts callId={item.sourceId} />
+                        </div>
+                      )}
                     </div>
                   </article>
                 );

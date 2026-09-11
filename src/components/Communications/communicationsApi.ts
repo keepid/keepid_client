@@ -1,5 +1,33 @@
 import getServerURL from '../../serverOverride';
 
+export type InteractionCostLine = {
+  id: string;
+  provider: 'TWILIO' | 'OPENROUTER';
+  category: string;
+  model?: string;
+  amount: number | null;
+  currency: string;
+  status: 'PENDING' | 'ESTIMATED' | 'FINAL' | 'UNAVAILABLE';
+  quantity?: number;
+  unit?: string;
+  unitPrice?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  pricingBasis: string;
+  updatedAt: string;
+};
+
+export type InteractionCosts = {
+  callId: string;
+  items: InteractionCostLine[];
+  totals: { currency: string; amount: number | null; status: 'PARTIAL' | 'ESTIMATED' | 'FINAL' }[];
+  scope: string;
+};
+
+export function getInteractionCosts(callId: string, signal?: AbortSignal) {
+  return jsonFetch<InteractionCosts>(`/api/communications/calls/${encodeURIComponent(callId)}/costs`, { signal });
+}
+
 export type CallLog = {
   id: string;
   direction: 'inbound' | 'outbound';
