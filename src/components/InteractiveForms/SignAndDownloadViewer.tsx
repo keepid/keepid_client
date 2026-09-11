@@ -110,6 +110,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const [stagedDocs, setStagedDocs] = useState<Set<string>>(new Set());
   const [isAppendingDocs, setIsAppendingDocs] = useState(false);
   const [attachmentPreviewDocs, setAttachmentPreviewDocs] = useState<AttachmentPreviewDoc[]>([]);
+  const [hasMainPdf, setHasMainPdf] = useState(true);
   const [savingPdfEdits, setSavingPdfEdits] = useState(false);
   /** Tracks which export button (if any) is currently building a combined PDF, so we can
    * disable both buttons and show a "Preparing..." label. Prevents rage-clicks from spawning
@@ -313,6 +314,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         setSelectedDocs(selected);
         setStagedDocs(new Set(selected));
         await loadAttachmentPreviews(state.attachments);
+        if (!cancelled) setHasMainPdf(state.hasMainPdf !== false);
       } catch (err) {
         console.error('Failed to load application attachment options', err);
         if (!cancelled) {
@@ -434,6 +436,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       setSelectedDocs(effectiveSelected);
       setStagedDocs(new Set(effectiveSelected));
       await loadAttachmentPreviews(state.attachments);
+      setHasMainPdf(state.hasMainPdf !== false);
       setSaveError(null);
     } catch (err) {
       console.error('Failed to append doc', err);
@@ -461,7 +464,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   const totalAttachedPages = attachmentPreviewDocs.reduce((sum, doc) => sum + doc.pageCount, 0);
   const combinedViewerDocs = useMemo(
     () => [
-      { id: 'main', url: livePdfUrl, pageCount: numPages, kind: 'main' as const },
+      ...(hasMainPdf ? [{ id: 'main', url: livePdfUrl, pageCount: numPages, kind: 'main' as const }] : []),
       ...attachmentPreviewDocs
         .filter((doc) => doc.pageCount > 0)
         .map((doc) => ({
@@ -472,7 +475,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           kind: 'attachment' as const,
         })),
     ],
-    [attachmentPreviewDocs, livePdfUrl, numPages],
+    [attachmentPreviewDocs, hasMainPdf, livePdfUrl, numPages],
   );
   const totalViewerPages = useMemo(
     () => combinedViewerDocs.reduce((sum, doc) => sum + doc.pageCount, 0),
@@ -487,9 +490,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       }
       remaining -= doc.pageCount;
     }
-    const fallbackDoc = combinedViewerDocs[0];
+    const fallbackDoc = combinedViewerDocs[0]
+      || { id: 'main', url: livePdfUrl, pageCount: numPages, kind: 'main' as const };
     return { doc: fallbackDoc, localPage: 1 };
-  }, [combinedViewerDocs, pageNum]);
+  }, [combinedViewerDocs, livePdfUrl, numPages, pageNum]);
   const isViewingMainPdf = currentViewerPageMeta.doc.kind === 'main';
   const canEditCurrentAttachment =
     currentViewerPageMeta.doc.kind === 'attachment' && canEditAttachments && !effectivePdfFormsReadOnly;
@@ -543,10 +547,11 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
    * preview render.
    */
   const getRenderedPacketBlob = useCallback(async (): Promise<Blob> => {
+    if (!hasMainPdf) return renderApplicationPacket(applicationId);
     const mainBytes = await getMainPdfBytes();
     const mainOverride = toPdfBlob(mainBytes);
     return renderApplicationPacket(applicationId, mainOverride);
-  }, [applicationId, getMainPdfBytes]);
+  }, [applicationId, getMainPdfBytes, hasMainPdf]);
 
   const handlePrint = useCallback(() => {
     if (preparingExport !== null) return;
@@ -654,6 +659,12 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
+      if (!hasMainPdf) {
+        setSaveError(err instanceof Error
+          ? `Couldn't download the attachment packet: ${err.message}`
+          : "Couldn't download the attachment packet. Please try again.");
+        return;
+      }
       console.error('Download failed; falling back to unmerged main PDF', err);
       // Surface the failure so the user knows why the download lacks attachments -- otherwise
       // the fallback looks like a silent regression in the attachment-merge feature.
@@ -669,7 +680,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     } finally {
       setPreparingExport((current) => (current === 'download' ? null : current));
     }
-  }, [livePdfUrl, title, getRenderedPacketBlob, preparingExport]);
+  }, [livePdfUrl, title, getRenderedPacketBlob, hasMainPdf, preparingExport]);
 
   const handleSave = useCallback(async () => {
     setSaveError(null);
@@ -922,7 +933,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
             </div>
             {attachmentPreviewDocs.length > 0 && (
               <div className="tw-px-3 tw-pb-2 tw-text-xs tw-text-blue-700 tw-font-medium">
-                Attached pages appended: {totalAttachedPages}
+                {hasMainPdf ? 'Attached pages appended' : 'Attachment pages'}: {totalAttachedPages}
               </div>
             )}
             {!effectivePdfFormsReadOnly && !isViewingMainPdf && !canEditCurrentAttachment && (

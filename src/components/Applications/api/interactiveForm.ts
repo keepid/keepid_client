@@ -216,6 +216,7 @@ export interface ApplicationAttachmentOption {
 }
 
 export interface ApplicationAttachmentOptionsState {
+  hasMainPdf?: boolean;
   status: string;
   message?: string;
   options: ApplicationAttachmentOption[];

@@ -353,7 +353,8 @@ const ApplicationSelectorFlow = ({
         ? { ...created, fulfillmentMode: 'INSTRUCTIONS_ONLY' as const }
         : created;
       setRecord(effectiveCreated);
-      if (effectiveCreated.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
+      if (effectiveCreated.fulfillmentMode === 'INSTRUCTIONS_ONLY'
+        || effectiveCreated.fulfillmentMode === 'ATTACHMENTS_ONLY') {
         await completeServiceRecord(created.applicationId);
         openPdfRecord(created.applicationId, created.serviceTitle || resolved.serviceTitle);
       }
@@ -630,11 +631,15 @@ const ApplicationSelectorFlow = ({
         </div>
       );
     }
-    if (record?.fulfillmentMode === 'INSTRUCTIONS_ONLY') {
+    if (record?.fulfillmentMode === 'INSTRUCTIONS_ONLY' || record?.fulfillmentMode === 'ATTACHMENTS_ONLY') {
       return (
         <div className="tw-rounded-lg tw-border tw-border-green-200 tw-bg-green-50 tw-p-6">
           <h2 className="tw-text-2xl tw-font-semibold tw-text-green-950">Service recorded</h2>
-          <p className="tw-mt-2 tw-text-green-900">The client instruction sheet was saved to the service record.</p>
+          <p className="tw-mt-2 tw-text-green-900">
+            {record.fulfillmentMode === 'ATTACHMENTS_ONLY'
+              ? 'The selected attachments were saved to the service record.'
+              : 'The client instruction sheet was saved to the service record.'}
+          </p>
           <button type="button" className="btn btn-primary tw-mt-5" onClick={backToApplications}>Return to applications</button>
         </div>
       );
@@ -642,12 +647,18 @@ const ApplicationSelectorFlow = ({
     let createLabel = 'Create PDF record';
     if (busy) createLabel = 'Creating PDF record…';
     else if (hasWebFormTarget(resolved)) createLabel = 'Continue to application';
+    else if (resolved.fulfillmentMode === 'ATTACHMENTS_ONLY') createLabel = 'Create attachments and review';
     return (
       <div>
         <div className="tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-p-5">
           <h2 className="tw-text-2xl tw-font-semibold tw-text-gray-950">{resolved.serviceTitle}</h2>
           <h3 className="tw-mt-5 tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wide tw-text-gray-500">Worker instructions</h3>
           <div className="tw-prose tw-prose-sm tw-mt-2 tw-max-w-none"><ReactMarkdown>{resolved.workerInstructionsMarkdown}</ReactMarkdown></div>
+          {resolved.fulfillmentMode === 'ATTACHMENTS_ONLY' && (
+            <p className="tw-mt-4 tw-text-sm tw-text-gray-600">
+              Create the selected document attachments and review the packet. No application form or PDF upload is needed.
+            </p>
+          )}
         </div>
         {resolved.proposedActions.length > 0 && (
           <div className="tw-mt-5 tw-grid tw-gap-3">
