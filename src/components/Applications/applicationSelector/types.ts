@@ -1,4 +1,4 @@
-export type FulfillmentMode = 'WEB_FORM' | 'PDF_UPLOAD' | 'INSTRUCTIONS_ONLY';
+export type FulfillmentMode = 'WEB_FORM' | 'PDF_UPLOAD' | 'INSTRUCTIONS_ONLY' | 'ATTACHMENTS_ONLY';
 
 export interface SelectorTransition {
   id: string;
