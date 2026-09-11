@@ -193,8 +193,14 @@ export function buildFormAnswers(
       // that are not valid PDF option tokens.
       if (options?.pdfField && scope && !hasOptionMappings) {
         const pdfField = options.pdfField as string;
-        let value: unknown = getPropValue(scope);
         const directive = options.directive;
+        const hasConfiguredDirective = typeof directive === 'string'
+          ? directive.trim() !== ''
+          : Array.isArray(directive) && directive.length > 0;
+        // A configured directive is the source of truth for this destination. If it is
+        // invalid or its profile value is missing, leave the PDF field blank instead of
+        // silently substituting the question answer (often the client's first name).
+        let value: unknown = hasConfiguredDirective ? undefined : getPropValue(scope);
         const targetName = targetText(element.label, pdfField);
         if (directive != null && resolvedProfiles) {
           if (typeof directive === 'string') {
