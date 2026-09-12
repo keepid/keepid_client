@@ -18,8 +18,9 @@ import {
   setApplicationManuallyMailed,
 } from './api/applicationMailStatus';
 import { getApplicationSignatures } from './api/interactiveForm';
+import { applicationSearch } from './applicationLinks';
 
-interface PreviewLocationState {
+export interface PreviewLocationState {
   applicationId?: string;
   applicationFilename?: string;
   clientUsername?: string;
@@ -37,26 +38,29 @@ export default function ApplicationPdfPreview({
   allowAttachmentEditing = false,
   canMail = true,
   canEditPdf = true,
+  applicationDetails,
 }: {
   editable?: boolean;
   allowAttachmentEditing?: boolean;
   canMail?: boolean;
   canEditPdf?: boolean;
+  applicationDetails?: PreviewLocationState;
 }) {
   const location = useLocation<PreviewLocationState>();
   const history = useHistory();
   const alert = useAlert();
 
-  const applicationId = location.state?.applicationId || '';
-  const applicationFilename = location.state?.applicationFilename || 'application-preview.pdf';
-  const clientUsername = location.state?.clientUsername || '';
-  const targetUser = location.state?.targetUser || '';
-  const applicantName = location.state?.applicantName || '';
-  const uploadedByName = location.state?.uploadedByName || targetUser || clientUsername || '';
-  const createdDate = location.state?.createdDate || '';
-  const lastUpdatedDate = location.state?.lastUpdatedDate || '';
-  const initialMailStatus = location.state?.mailStatus || 'READY_TO_MAIL';
-  const initialMailedAt = location.state?.mailedAt || null;
+  const detailsState = applicationDetails || location.state;
+  const applicationId = detailsState?.applicationId || '';
+  const applicationFilename = detailsState?.applicationFilename || 'application-preview.pdf';
+  const clientUsername = detailsState?.clientUsername || '';
+  const targetUser = detailsState?.targetUser || '';
+  const applicantName = detailsState?.applicantName || '';
+  const uploadedByName = detailsState?.uploadedByName || targetUser || clientUsername || '';
+  const createdDate = detailsState?.createdDate || '';
+  const lastUpdatedDate = detailsState?.lastUpdatedDate || '';
+  const initialMailStatus = detailsState?.mailStatus || 'READY_TO_MAIL';
+  const initialMailedAt = detailsState?.mailedAt || null;
   const editTargetUsername = targetUser || clientUsername;
   const canUsePdfEditing = editable && canEditPdf;
   const canEditAttachments = canUsePdfEditing && allowAttachmentEditing;
@@ -78,6 +82,7 @@ export default function ApplicationPdfPreview({
   const goToPreviewRoute = () => {
     history.replace({
       pathname: '/applications/preview',
+      search: applicationSearch(applicationId),
       state: {
         applicationId,
         applicationFilename,
@@ -269,7 +274,8 @@ export default function ApplicationPdfPreview({
       </Helmet>
 
       <div className="tw-mx-auto tw-w-full tw-max-w-4xl">
-        <div className="tw-mb-4 tw-flex tw-items-center tw-justify-between tw-gap-2">
+        <h1 className="tw-mb-4 tw-text-xl tw-font-semibold tw-text-gray-900">{previewTitle}</h1>
+        <div className="tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
           <div>
             <Button
               variant="outline-primary"
@@ -298,6 +304,7 @@ export default function ApplicationPdfPreview({
               <Link
                 to={{
                   pathname: '/applications/edit',
+                  search: applicationSearch(applicationId),
                   state: {
                     applicationId,
                     applicationFilename,
@@ -371,7 +378,7 @@ export default function ApplicationPdfPreview({
               <div className="tw-mt-1 tw-text-sm tw-font-medium tw-text-gray-900">
                 {getApplicationMailDetailLabel({ mailStatus, mailedAt })}
               </div>
-              {(mailStatus === 'READY_TO_MAIL'
+              {canMail && (mailStatus === 'READY_TO_MAIL'
                 || mailStatus === 'NOT_MAILED'
                 || mailStatus === 'MAILED_MANUALLY') && (
                 <button

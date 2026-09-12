@@ -20,6 +20,8 @@ import OurPartners from './components/AboutUs/OurPartners';
 import OurTeam from './components/AboutUs/OurTeam';
 import PrivacyPolicy from './components/AboutUs/PrivacyPolicy';
 import MyOrganization from './components/AccountSettings/MyOrganization';
+import ApplicationLinkReturn from './components/Applications/ApplicationLinkReturn';
+import { APPLICATION_RETURN_KEY, rememberApplicationLink } from './components/Applications/applicationLinks';
 import CreateApplication from './components/Applications/CreateApplication';
 import ViewApplications from './components/Applications/ViewApplications';
 import CallsPage from './components/Communications/CallsPage';
@@ -53,6 +55,7 @@ window.onload = () => {
 };
 
 interface State {
+  authReady: boolean;
   role: Role;
   username: string;
   email: string;
@@ -74,12 +77,14 @@ export const UserContext = React.createContext<ContextInterface>({
 class App extends React.Component<{}, State, {}> {
   constructor(props: {}) {
     super(props);
+    rememberApplicationLink();
 
     // set the original state based on session storage
     const jsonData = sessionStorage.getItem('mySessionStorageData');
     if (jsonData) {
       const data = JSON.parse(jsonData);
       this.state = {
+        authReady: false,
         role: data.role,
         username: data.username,
         email: data.email || '',
@@ -88,6 +93,7 @@ class App extends React.Component<{}, State, {}> {
       };
     } else {
       this.state = {
+        authReady: false,
         role: Role.LoggedOut,
         username: '',
         email: '',
@@ -119,7 +125,8 @@ class App extends React.Component<{}, State, {}> {
     });
   }
 
-  logOut() {
+  logOut(preserveApplicationLink = false) {
+    const pending = preserveApplicationLink ? sessionStorage.getItem(APPLICATION_RETURN_KEY) : null;
     this.setState({
       username: '',
       email: '',
@@ -133,6 +140,7 @@ class App extends React.Component<{}, State, {}> {
       credentials: 'include',
     });
     sessionStorage.clear();
+    if (pending) sessionStorage.setItem(APPLICATION_RETURN_KEY, pending);
   }
 
   hydrateCurrentUserEmail = (expectedUsername: string) => {
@@ -228,7 +236,7 @@ class App extends React.Component<{}, State, {}> {
                 && username === data.username
                 && organization === data.organization);
             if (identityMismatch && data.name === serverName) {
-              this.logOut();
+              this.logOut(true);
             } else if (data.name !== serverName) {
               // Identity matches but the name drifted — happens after
               // /update-user-profile or /change-account-setting changes
@@ -246,14 +254,15 @@ class App extends React.Component<{}, State, {}> {
             this.logIn(role(), username, organization, `${firstName} ${lastName}`);
           }
         } else if (this.state.role !== Role.LoggedOut) {
-          this.logOut();
+          this.logOut(true);
         } else {
-          this.logOut();
+          this.logOut(true);
         }
       })
       .catch((e) => {
         console.log('Server is not running: ', e);
-      });
+      })
+      .finally(() => this.setState({ authReady: true }));
   };
 
   render() {
@@ -271,6 +280,7 @@ class App extends React.Component<{}, State, {}> {
     );
     return (
       <Router>
+        <ApplicationLinkReturn authenticated={role !== Role.LoggedOut} ready={this.state.authReady} />
         <UserContext.Provider value={{
           username: this.state.username,
           email: this.state.email,
@@ -559,9 +569,11 @@ class App extends React.Component<{}, State, {}> {
               <Route
                 path="/applications"
                 render={() => {
+                  if (!this.state.authReady) return <div role="status" className="tw-p-6">Loading application...</div>;
                   if (
                     role === Role.Client ||
                     role === Role.Admin ||
+                    role === Role.Director ||
                     role === Role.Worker ||
                     role === Role.Developer
                   ) {
