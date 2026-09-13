@@ -21,7 +21,8 @@ import {
 import {
   createUploadedApplication,
 } from './api/interactiveForm';
-import ApplicationPdfPreview from './ApplicationPdfPreview';
+import { applicationSearch } from './applicationLinks';
+import ApplicationPreviewRoute from './ApplicationPreviewRoute';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
 
 interface DocumentInformation {
@@ -696,6 +697,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       () => {
         this.props.history.push({
           pathname: '/applications/preview',
+          search: applicationSearch(id),
           state: {
             applicationId: id,
             applicationFilename: filename,
@@ -837,6 +839,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     this.loadDocuments(clientUsername, clientName);
     this.props.history.push({
       pathname: '/applications/preview',
+      search: applicationSearch(applicationId),
       state: {
         applicationId,
         applicationFilename: `${applicationName}.pdf`,
@@ -1453,7 +1456,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           )}
         </Route>
         <Route path="/applications/preview">
-          <ApplicationPdfPreview
+          <ApplicationPreviewRoute
             editable={false}
             allowAttachmentEditing={false}
             canMail={!isClientUser}
@@ -1461,7 +1464,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           />
         </Route>
         <Route path="/applications/edit">
-          <ApplicationPdfPreview
+          <ApplicationPreviewRoute
             editable={!isClientUser}
             allowAttachmentEditing={
               this.props.role === Role.Worker
