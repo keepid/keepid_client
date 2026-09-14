@@ -55,6 +55,7 @@ export default function ApplicationPdfPreview({
   const applicationFilename = detailsState?.applicationFilename || 'application-preview.pdf';
   const clientUsername = detailsState?.clientUsername || '';
   const targetUser = detailsState?.targetUser || '';
+  const profileUsername = clientUsername || targetUser;
   const applicantName = detailsState?.applicantName || '';
   const uploadedByName = detailsState?.uploadedByName || targetUser || clientUsername || '';
   const createdDate = detailsState?.createdDate || '';
@@ -276,13 +277,21 @@ export default function ApplicationPdfPreview({
       <div className="tw-mx-auto tw-w-full tw-max-w-4xl">
         <h1 className="tw-mb-4 tw-text-xl tw-font-semibold tw-text-gray-900">{previewTitle}</h1>
         <div className="tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
-          <div>
+          <div className="tw-flex tw-flex-wrap tw-gap-2">
             <Button
               variant="outline-primary"
               onClick={() => history.push('/applications')}
             >
               Back to Applications
             </Button>
+            {profileUsername && (
+              <Link
+                className="btn btn-outline-primary"
+                to={`/profile/${encodeURIComponent(profileUsername)}`}
+              >
+                Back to Profile
+              </Link>
+            )}
             {!applicationId && (
               <Link to="/applications" className="tw-ml-2">
                 <Button variant="primary">Go to Applications</Button>
