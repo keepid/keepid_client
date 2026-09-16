@@ -1,4 +1,16 @@
+import './ApplicationStartTabs.scss';
+
 import { Tab } from '@headlessui/react';
+import {
+  ArrowRightIcon,
+  ArrowUpTrayIcon,
+  BoltIcon,
+  ClipboardDocumentListIcon,
+  DocumentDuplicateIcon,
+  DocumentTextIcon,
+  MagnifyingGlassIcon,
+  MapIcon,
+} from '@heroicons/react/24/outline';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -11,7 +23,15 @@ interface Props {
   clientUsername?: string;
   clientName?: string;
   initialTab?: 'applications' | 'outcomes';
+  onUpload?: () => void;
 }
+
+const outcomePresentation = {
+  WEB_FORM: { label: 'Application form', Icon: DocumentTextIcon },
+  PDF_UPLOAD: { label: 'PDF application', Icon: ArrowUpTrayIcon },
+  INSTRUCTIONS_ONLY: { label: 'Instructions', Icon: ClipboardDocumentListIcon },
+  ATTACHMENTS_ONLY: { label: 'Document packet', Icon: DocumentDuplicateIcon },
+};
 
 const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUsername' | 'clientName'>) => {
   const [flow, setFlow] = useState<SelectorFlow | null>(null);
@@ -32,13 +52,13 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
 
   if (error) {
     return (
-      <div className="tw-rounded-md tw-border tw-border-red-200 tw-bg-red-50 tw-p-4" role="alert">
-        <p className="tw-mb-3">{error}</p>
-        <button type="button" className="btn btn-outline-dark" onClick={() => setAttempt(attempt + 1)}>Try again</button>
+      <div className="application-start__message application-start__message--error" role="alert">
+        <p>{error}</p>
+        <button type="button" className="application-start__secondary" onClick={() => setAttempt(attempt + 1)}>Try again</button>
       </div>
     );
   }
-  if (!flow) return <p role="status" className="tw-text-gray-600">Loading outcome shortcuts…</p>;
+  if (!flow) return <p role="status" className="application-start__message">Loading outcome shortcuts…</p>;
 
   const shortcuts = getOutcomeShortcuts(flow);
   const search = query.trim().toLocaleLowerCase();
@@ -47,43 +67,49 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
   ));
   return (
     <div>
-      <p className="tw-mb-4 tw-text-sm tw-text-gray-600">
-        Know the outcome? Skip the picker questions and go straight to the next steps.
-        Any client details or uploads on that route will still be available.
-      </p>
       {!clientUsername && (
-        <p className="tw-rounded-md tw-bg-blue-50 tw-p-3 tw-text-sm tw-text-blue-950">
+        <p className="application-start__message">
           Open a client’s applications to use an outcome shortcut.
         </p>
       )}
       {shortcuts.length > 0 && (
-        <label className="tw-mb-4 tw-block tw-text-sm tw-font-medium tw-text-gray-700">
-          Search outcomes
-          <input
-            type="search"
-            className="form-control tw-mt-1"
-            placeholder="Search by outcome or picker answer"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
+        <div className="application-start__toolbar">
+          <label className="application-start__search">
+            <MagnifyingGlassIcon aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="Search outcomes"
+              placeholder="Find an outcome…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <span className="application-start__count" role="status">
+            {filtered.length} {filtered.length === 1 ? 'outcome' : 'outcomes'}
+          </span>
+        </div>
       )}
-      <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
+      <div className="application-start__outcomes">
         {filtered.map(({ nodeId, outcome, labels }) => {
+          const { label, Icon } = outcomePresentation[outcome.fulfillmentMode];
+          const title = outcome.displayName || outcome.title;
           const content = (
             <>
-              <span className="tw-min-w-0">
-                <span className="tw-block tw-font-medium tw-text-gray-900">{outcome.displayName || outcome.title}</span>
-                {labels.length > 0 && <span className="tw-mt-1 tw-block tw-text-xs tw-text-gray-600">{labels.join(' → ')}</span>}
+              <span className="application-start__outcome-icon"><Icon aria-hidden="true" /></span>
+              <span className="application-start__outcome-content">
+                <span className="application-start__outcome-title">{title}</span>
+                {labels.length > 0 && <span id={`outcome-route-${nodeId}`} className="application-start__route">{labels.join(' / ')}</span>}
+                <span className="application-start__kind">{label}</span>
               </span>
-              <span aria-hidden="true" className="tw-shrink-0 tw-text-twprimary">→</span>
+              <ArrowRightIcon className="application-start__arrow" aria-hidden="true" />
             </>
           );
-          const className = 'tw-flex tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-gray-100 tw-px-4 tw-py-3 tw-text-sm last:tw-border-b-0';
           return clientUsername ? (
             <Link
               key={nodeId}
-              className={`${className} tw-no-underline hover:tw-bg-blue-50 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-blue-500`}
+              className="application-start__outcome"
+              aria-label={title}
+              aria-describedby={labels.length ? `outcome-route-${nodeId}` : undefined}
               to={{
                 pathname: '/applications/selector',
                 search: `?client=${encodeURIComponent(clientUsername)}`,
@@ -93,36 +119,66 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
                   outcomeShortcut: { nodeId, publishToken: flow.publishToken },
                 },
               }}
-            >{content}
+            >
+              {content}
             </Link>
-          ) : <div key={nodeId} className={`${className} tw-opacity-60`}>{content}</div>;
+          ) : <div key={nodeId} className="application-start__outcome application-start__outcome--disabled">{content}</div>;
         })}
-        {filtered.length === 0 && (
-          <p className="tw-mb-0 tw-p-4 tw-text-sm tw-text-gray-600" role="status">
-            {shortcuts.length ? 'No outcomes match your search.' : 'No outcome shortcuts are available in the published picker.'}
-          </p>
-        )}
       </div>
+      {filtered.length === 0 && (
+        <p className="application-start__message" role="status">
+          {shortcuts.length ? 'No outcomes match your search.' : 'No outcome shortcuts are available in the published picker.'}
+        </p>
+      )}
     </div>
   );
 };
 
-const ApplicationStartTabs = ({ children, clientUsername, clientName, initialTab }: Props) => (
-  <Tab.Group defaultIndex={initialTab === 'outcomes' ? 1 : 0}>
-    <Tab.List aria-label="Start a new application" className="tw-mb-4 tw-flex tw-border-b tw-border-gray-200">
-      {['Application list', 'Outcome shortcuts'].map((label) => (
-        <Tab
-          key={label}
-          className={({ selected }) => `tw-flex-1 tw-border-0 tw-border-b-2 tw-border-solid tw-bg-transparent tw-px-3 tw-py-3 tw-text-sm tw-font-semibold focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-blue-500 sm:tw-flex-none sm:tw-px-5 ${selected ? 'tw-border-blue-600 tw-text-twprimary' : 'tw-border-transparent tw-text-gray-600 hover:tw-text-gray-900'}`}
-        >{label}
-        </Tab>
-      ))}
-    </Tab.List>
-    <Tab.Panels>
-      <Tab.Panel>{children}</Tab.Panel>
-      <Tab.Panel><OutcomeShortcuts clientUsername={clientUsername} clientName={clientName} /></Tab.Panel>
-    </Tab.Panels>
-  </Tab.Group>
+const ApplicationStartTabs = ({ children, clientUsername, clientName, initialTab, onUpload }: Props) => (
+  <section className="application-start" aria-label="Start a new application">
+    <div className="application-start__header">
+      <div>
+        <h2>Start a new application</h2>
+        <p>Choose an outcome to jump to its next steps.</p>
+      </div>
+      {clientUsername && (
+        <Link
+          className="application-start__secondary"
+          to={{ pathname: '/applications/selector', state: { clientUsername, clientName: clientName || '' } }}
+        >
+          <MapIcon aria-hidden="true" />
+          Use guided picker
+          <ArrowRightIcon aria-hidden="true" />
+        </Link>
+      )}
+    </div>
+    <Tab.Group defaultIndex={initialTab === 'applications' ? 1 : 0}>
+      <Tab.List aria-label="Start a new application" className="application-start__tabs">
+        {[
+          { label: 'Outcome shortcuts', Icon: BoltIcon },
+          { label: 'Application list', Icon: DocumentTextIcon },
+        ].map(({ label, Icon }) => (
+          <Tab key={label} className={({ selected }) => `application-start__tab${selected ? ' application-start__tab--selected' : ''}`}>
+            <Icon aria-hidden="true" />
+            {label}
+          </Tab>
+        ))}
+      </Tab.List>
+      <Tab.Panels className="application-start__panels">
+        <Tab.Panel unmount={false}><OutcomeShortcuts clientUsername={clientUsername} clientName={clientName} /></Tab.Panel>
+        <Tab.Panel>{children}</Tab.Panel>
+      </Tab.Panels>
+    </Tab.Group>
+    {onUpload && (
+      <div className="application-start__footer">
+        <span>Already have a completed application?</span>
+        <button type="button" className="application-start__upload" onClick={onUpload}>
+          <ArrowUpTrayIcon aria-hidden="true" />
+          Upload PDF
+        </button>
+      </div>
+    )}
+  </section>
 );
 
 export default ApplicationStartTabs;

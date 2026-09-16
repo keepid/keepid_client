@@ -43,12 +43,10 @@ const setup = (clientUsername?: string) => {
 };
 
 describe('application start tabs', () => {
-  it('keeps the legacy list first, searches outcomes, and passes the selected client and published target', async () => {
+  it('defaults to outcomes, searches them, and passes the selected client and published target', async () => {
     const history = setup('demo-client');
-    expect(screen.getByRole('tab', { name: 'Application list' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('link', { name: 'Legacy form' })).toBeInTheDocument();
-    expect(loadCaseSelector).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('tab', { name: 'Outcome shortcuts' }));
+    expect(screen.getByRole('tab', { name: 'Outcome shortcuts' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('link', { name: 'Legacy form' })).not.toBeInTheDocument();
     await screen.findByRole('link', { name: 'Replace ID' });
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search outcomes' }), { target: { value: 'no match' } });
     expect(screen.getByText('No outcomes match your search.')).toBeInTheDocument();
@@ -63,7 +61,6 @@ describe('application start tabs', () => {
 
   it('shows outcomes without offering clientless navigation', async () => {
     setup();
-    fireEvent.click(screen.getByRole('tab', { name: 'Outcome shortcuts' }));
     await screen.findByText('Replace ID');
     expect(screen.getByText('Open a client’s applications to use an outcome shortcut.')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Replace ID' })).not.toBeInTheDocument();
@@ -72,7 +69,6 @@ describe('application start tabs', () => {
   it('can retry a failed load and return to the legacy list', async () => {
     vi.mocked(loadCaseSelector).mockRejectedValueOnce(new Error('Picker unavailable'));
     setup('demo-client');
-    fireEvent.click(screen.getByRole('tab', { name: 'Outcome shortcuts' }));
     await screen.findByText('Picker unavailable');
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     await screen.findByRole('link', { name: 'Replace ID' });
