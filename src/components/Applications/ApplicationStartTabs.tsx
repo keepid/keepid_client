@@ -137,10 +137,7 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
 const ApplicationStartTabs = ({ children, clientUsername, clientName, initialTab, onUpload }: Props) => (
   <section className="application-start" aria-label="Start a new application">
     <div className="application-start__header">
-      <div>
-        <h2>Start a new application</h2>
-        <p>Choose an outcome to jump to its next steps.</p>
-      </div>
+      <h2>Start a new application</h2>
       {clientUsername && (
         <Link
           className="application-start__secondary"
