@@ -24,6 +24,8 @@ import {
 import { applicationSearch } from './applicationLinks';
 import ApplicationPreviewRoute from './ApplicationPreviewRoute';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
+import type { OutcomeShortcutTarget } from './applicationSelector/types';
+import ApplicationStartTabs from './ApplicationStartTabs';
 
 interface DocumentInformation {
   uploader: string,
@@ -115,6 +117,8 @@ interface State {
 interface LocationState {
   clientUsername: string;
   clientName?: string;
+  applicationTab?: 'applications' | 'outcomes';
+  outcomeShortcut?: OutcomeShortcutTarget;
 }
 
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
@@ -1266,7 +1270,11 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                     </span>
                   </Link>
                 )}
-                <div>
+                <ApplicationStartTabs
+                  clientUsername={clientUsername}
+                  clientName={clientName}
+                  initialTab={(this.props.location.state as LocationState)?.applicationTab}
+                >
                   {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
                   <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
                     {this.renderAvailableApplicationRows(
@@ -1276,7 +1284,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                       clientName,
                     )}
                   </div>
-                </div>
+                </ApplicationStartTabs>
                 <button
                   type="button"
                   className="tw-mt-3 tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-shadow-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
@@ -1445,6 +1453,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             <Redirect to="/applications" />
           ) : (
             <ApplicationSelectorFlow
+              key={`${clientUsername}:${(this.props.location.state as LocationState)?.outcomeShortcut?.nodeId || 'guided'}`}
+              initialShortcut={(this.props.location.state as LocationState)?.outcomeShortcut}
               availableApplications={availableApplications}
               clientUsername={clientUsername}
               clientName={clientName}

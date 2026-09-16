@@ -28,8 +28,10 @@ import {
   savePennDotNumber,
   uploadServicePdf,
 } from './flowApi';
+import { type OutcomeShortcut, advanceShortcut, getOutcomeShortcuts } from './outcomeShortcuts';
 import type {
   FulfillmentMode,
+  OutcomeShortcutTarget,
   ProposedAction,
   RegistryApplicationOption,
   ResolvedOutcome,
@@ -42,6 +44,7 @@ import type {
 } from './types';
 
 interface Props {
+  initialShortcut?: OutcomeShortcutTarget;
   availableApplications: RegistryApplicationOption[];
   clientUsername?: string;
   clientName?: string;
@@ -70,6 +73,7 @@ const descriptionMarkdownComponents: Components = {
 };
 
 const ApplicationSelectorFlow = ({
+  initialShortcut,
   availableApplications,
   clientUsername = '',
   clientName = '',
@@ -81,6 +85,7 @@ const ApplicationSelectorFlow = ({
   const history = useHistory();
   const alert = useAlert();
   const [flow, setFlow] = useState<SelectorFlow | null>(null);
+  const [shortcut, setShortcut] = useState<OutcomeShortcut | null>(null);
   const [nodeId, setNodeId] = useState('');
   const [path, setPath] = useState<SelectorPathStep[]>([]);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -117,13 +122,25 @@ const ApplicationSelectorFlow = ({
       .then((loaded) => {
         if (!active) return;
         setFlow(loaded);
-        setNodeId(loaded.rootNodeId);
+        if (initialShortcut) {
+          const target = getOutcomeShortcuts(loaded).find((item) => item.nodeId === initialShortcut.nodeId);
+          if (loaded.publishToken !== initialShortcut.publishToken || !target) {
+            setError('This outcome shortcut has changed. Return to applications to choose it again, or start over with the picker.');
+            return;
+          }
+          setShortcut(target);
+          const next = advanceShortcut(loaded, target);
+          setNodeId(next.nodeId);
+          setPath(next.path);
+        } else {
+          setNodeId(loaded.rootNodeId);
+        }
       })
       .catch((loadError) => {
         if (active) setError(errorMessage(loadError));
       });
     return () => { active = false; };
-  }, []);
+  }, [initialShortcut?.nodeId, initialShortcut?.publishToken]);
 
   const nodes = useMemo(
     () => new Map((flow?.nodes || []).map((node) => [node.id, node])),
@@ -132,7 +149,8 @@ const ApplicationSelectorFlow = ({
   const currentNode = nodes.get(nodeId);
 
   useEffect(() => {
-    if (!flow || currentNode?.type !== 'OUTCOME') return;
+    if (!flow || currentNode?.type !== 'OUTCOME') return undefined;
+    let active = true;
     setBusy(true);
     setError(null);
     resolveCaseOutcome({
@@ -142,11 +160,14 @@ const ApplicationSelectorFlow = ({
       responses,
     })
       .then((outcome) => {
+        if (!active) return;
         setResolved(outcome);
         setConfirmedEffects(outcome.proposedActions.map((action) => action.effectId));
       })
-      .catch((resolveError) => setError(errorMessage(resolveError)))
-      .finally(() => setBusy(false));
+      .catch((resolveError) => { if (active) setError(errorMessage(resolveError)); })
+      .finally(() => { if (active) setBusy(false); });
+    // Ignore responses from an outcome the worker has already left.
+    return () => { active = false; };
   }, [clientUsername, currentNode?.id, currentNode?.type, flow, path, responses]);
 
   useEffect(() => {
@@ -191,41 +212,53 @@ const ApplicationSelectorFlow = ({
   const backToApplications = () => history.push({
     pathname: '/applications',
     search: `?client=${encodeURIComponent(clientUsername)}`,
-    state: { clientUsername, clientName },
+    state: { clientUsername, clientName, applicationTab: initialShortcut ? 'outcomes' : 'applications' },
   });
 
   const reset = () => {
     if (!flow) return;
     setNodeId(flow.rootNodeId);
+    setShortcut(null);
     setPath([]);
     setResponses({});
     setResolved(null);
     setRecord(null);
     setPdf(null);
     setError(null);
+    setBusy(false);
+    setConfirmedEffects([]);
     setManualMode(false);
   };
 
   const follow = (transition: SelectorTransition, nextResponses = responses) => {
     if (!currentNode) return;
-    setPath((steps) => [...steps, { nodeId: currentNode.id, transitionKey: transition.key }]);
+    const next = shortcut && flow ? advanceShortcut(flow, shortcut, path.length + 1) : {
+      path: [...path, { nodeId: currentNode.id, transitionKey: transition.key }],
+      nodeId: transition.childNodeId,
+    };
+    setPath(next.path);
     setResponses(nextResponses);
-    setNodeId(transition.childNodeId);
+    setNodeId(next.nodeId);
     setResolved(null);
     setError(null);
   };
 
   const goBack = () => {
     if (record) return;
-    const prior = path[path.length - 1];
+    const priorIndex = shortcut
+      ? path.map((step) => Boolean(nodes.get(step.nodeId)?.componentKey)).lastIndexOf(true)
+      : path.length - 1;
+    const prior = path[priorIndex];
     if (!prior) {
       backToApplications();
       return;
     }
     const priorNode = nodes.get(prior.nodeId);
-    setPath((steps) => steps.slice(0, -1));
+    setPath((steps) => steps.slice(0, priorIndex));
     setNodeId(prior.nodeId);
     setResolved(null);
+    setError(null);
+    setBusy(false);
     if (priorNode?.responseKey) {
       setResponses((values) => {
         const next = { ...values };
@@ -557,7 +590,8 @@ const ApplicationSelectorFlow = ({
         );
       })()}
       <div className={`tw-grid tw-gap-4 ${node.transitions.length === 2 ? 'md:tw-grid-cols-2' : 'md:tw-grid-cols-3'}`}>
-        {node.transitions.map((transition) => (
+        {node.transitions.filter((transition) => !shortcut
+          || transition.key === shortcut.path[path.length]?.transitionKey).map((transition) => (
           <div
             key={transition.id}
             className="tw-flex tw-min-h-48 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-solid tw-border-gray-300 tw-bg-white tw-text-center tw-shadow-sm tw-transition hover:tw-border-blue-500 hover:tw-shadow-md"
@@ -778,13 +812,22 @@ const ApplicationSelectorFlow = ({
         </div>
         {!record && !manualMode && (
           <div className="tw-flex tw-flex-wrap tw-gap-2">
-            {path.length > 0 && (
+            {flow && (path.length > 0 || initialShortcut) && (
               <button type="button" className="btn btn-outline-secondary" onClick={reset}>Start over</button>
             )}
             <button type="button" className="btn btn-outline-primary" onClick={() => setManualMode(true)}>This case does not fit the tree</button>
           </div>
         )}
       </div>
+      {shortcut && !manualMode && (
+        <div className="tw-mb-5 tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-4">
+          <p className="tw-mb-1 tw-text-sm tw-font-semibold tw-text-blue-950">
+            Outcome shortcut: {shortcut.outcome.displayName || shortcut.outcome.title}
+          </p>
+          {shortcut.labels.length > 0 && <p className="tw-mb-1 tw-text-sm tw-text-blue-900">{shortcut.labels.join(' → ')}</p>}
+          <p className="tw-mb-0 tw-text-sm tw-text-blue-900">Review the next steps for this outcome. To choose a different route, start over.</p>
+        </div>
+      )}
       {error && <div className="alert alert-danger tw-mb-5">{error}</div>}
       {!flow && !error && <p className="tw-text-gray-600">Loading the published case tree…</p>}
       {manualMode ? renderManual() : currentNode && (
