@@ -24,6 +24,8 @@ import {
 import { applicationSearch } from './applicationLinks';
 import ApplicationPreviewRoute from './ApplicationPreviewRoute';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
+import type { OutcomeShortcutTarget } from './applicationSelector/types';
+import ApplicationStartTabs from './ApplicationStartTabs';
 
 interface DocumentInformation {
   uploader: string,
@@ -115,6 +117,8 @@ interface State {
 interface LocationState {
   clientUsername: string;
   clientName?: string;
+  applicationTab?: 'applications' | 'outcomes';
+  outcomeShortcut?: OutcomeShortcutTarget;
 }
 
 class ViewApplications extends Component<Props & RouteComponentProps, State, {}> {
@@ -432,7 +436,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     if (availableApplications.length === 0) return null;
 
     return (
-      <div className="tw-mb-3 tw-bg-blue-50 tw-px-4 tw-py-3">
+      <div className="application-start__filters">
         <div className="tw-mb-2 tw-flex tw-justify-end">
           <span className="tw-text-xs tw-font-medium tw-text-gray-500">
             Showing {filteredApplications.length} of {availableApplications.length}
@@ -1235,59 +1239,22 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               />
             </div>
             {!isClientUser && (
-              <div className="tw-mt-8">
-                <div className="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-mb-3">
-                  <h2 className="h5 tw-mb-0">Start a new application</h2>
+              <ApplicationStartTabs
+                clientUsername={clientUsername}
+                clientName={clientName}
+                initialTab={(this.props.location.state as LocationState)?.applicationTab}
+                onUpload={this.openUploadModal}
+              >
+                {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
+                <div className="application-start__legacy-list">
+                  {this.renderAvailableApplicationRows(
+                    availableApplications,
+                    filteredAvailableApplications,
+                    clientUsername,
+                    clientName,
+                  )}
                 </div>
-                {clientUsername && (
-                  <Link
-                    to={{
-                      pathname: '/applications/selector',
-                      state: {
-                        clientUsername,
-                        clientName: clientName || '',
-                      },
-                    }}
-                    className="tw-mb-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-rounded-md tw-border tw-border-blue-100 tw-bg-blue-50 tw-px-4 tw-py-4 tw-text-sm tw-no-underline tw-shadow-sm hover:tw-bg-blue-100"
-                  >
-                    <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
-                      <img
-                        src="/SelectApplicationForm/pennsylvania.svg"
-                        alt=""
-                        aria-hidden="true"
-                        className="tw-h-10 tw-w-10 tw-shrink-0"
-                      />
-                      <span className="tw-block tw-min-w-0 tw-truncate tw-font-semibold tw-text-gray-900">
-                        Application Selector
-                      </span>
-                    </span>
-                    <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-font-medium tw-text-twprimary">
-                      <span className="tw-hidden sm:tw-inline">Start</span>
-                    </span>
-                  </Link>
-                )}
-                <div>
-                  {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
-                  <div className="tw-overflow-hidden tw-rounded-md tw-border tw-border-gray-200 tw-bg-white">
-                    {this.renderAvailableApplicationRows(
-                      availableApplications,
-                      filteredAvailableApplications,
-                      clientUsername,
-                      clientName,
-                    )}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="tw-mt-3 tw-flex tw-w-full tw-appearance-none tw-items-center tw-justify-between tw-gap-4 tw-rounded-md tw-border tw-border-gray-200 tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-shadow-sm hover:tw-bg-blue-50 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
-                  onClick={this.openUploadModal}
-                >
-                  <span className="tw-font-medium tw-text-gray-900">Upload PDF</span>
-                  <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-text-twprimary">
-                    <span className="tw-hidden sm:tw-inline">Upload</span>
-                  </span>
-                </button>
-              </div>
+              </ApplicationStartTabs>
             )}
           </div>
           {uploadModalOpen && (
@@ -1445,6 +1412,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
             <Redirect to="/applications" />
           ) : (
             <ApplicationSelectorFlow
+              key={`${clientUsername}:${(this.props.location.state as LocationState)?.outcomeShortcut?.nodeId || 'guided'}`}
+              initialShortcut={(this.props.location.state as LocationState)?.outcomeShortcut}
               availableApplications={availableApplications}
               clientUsername={clientUsername}
               clientName={clientName}

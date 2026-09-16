@@ -59,6 +59,11 @@ export interface SelectorPathStep {
   transitionKey: string;
 }
 
+export interface OutcomeShortcutTarget {
+  nodeId: string;
+  publishToken: string;
+}
+
 export interface SelectorCompletionContext {
   publishToken: string;
   path: SelectorPathStep[];
