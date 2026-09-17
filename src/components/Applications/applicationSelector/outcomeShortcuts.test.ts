@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { advanceShortcut, getOutcomeShortcuts } from './outcomeShortcuts';
+import { advanceShortcut, getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
 import type { SelectorFlow, SelectorNode, SelectorOutcomeSummary } from './types';
 
 const outcome = (id: string, status: 'ACTIVE' | 'DEPRECATED' = 'ACTIVE'): SelectorOutcomeSummary => ({
@@ -28,6 +28,25 @@ const flow: SelectorFlow = {
 };
 
 describe('published outcome shortcuts', () => {
+  it('uses service labels with fallbacks for older published outcomes', () => {
+    expect(getOutcomeShortcutLabel({ ...outcome('New outcome'), shortLabel: 'PA Housed BC' })).toBe('PA Housed BC');
+    expect(getOutcomeShortcutLabel(outcome('Existing name'))).toBe('Existing name');
+    expect(getOutcomeShortcutLabel({ ...outcome('Existing name'), shortLabel: ' ' })).toBe('Existing name');
+    expect(getOutcomeShortcutLabel({ ...outcome('Service title'), displayName: '' })).toBe('Service title');
+  });
+
+  it('sorts shortcuts by the service label shown on each card', () => {
+    const sorted = getOutcomeShortcuts({
+      ...flow,
+      nodes: [choice('root', ['a', 'b']), leaf('a'), leaf('b')],
+      outcomes: [
+        { ...outcome('a'), shortLabel: 'PA Housed BC' },
+        { ...outcome('b'), shortLabel: 'PA Homeless BC' },
+      ],
+    });
+    expect(sorted.map((item) => item.nodeId)).toEqual(['b', 'a']);
+  });
+
   it('only includes reachable active outcomes and preserves distinct routes to a shared outcome', () => {
     const shortcuts = getOutcomeShortcuts(flow);
     expect(shortcuts.map((item) => item.nodeId).sort()).toEqual(['direct', 'other']);

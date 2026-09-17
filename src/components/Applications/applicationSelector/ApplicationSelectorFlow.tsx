@@ -28,7 +28,7 @@ import {
   savePennDotNumber,
   uploadServicePdf,
 } from './flowApi';
-import { type OutcomeShortcut, advanceShortcut, getOutcomeShortcuts } from './outcomeShortcuts';
+import { type OutcomeShortcut, advanceShortcut, getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
 import type {
   FulfillmentMode,
   OutcomeShortcutTarget,
@@ -822,7 +822,7 @@ const ApplicationSelectorFlow = ({
       {shortcut && !manualMode && (
         <div className="tw-mb-5 tw-rounded-lg tw-border tw-border-blue-200 tw-bg-blue-50 tw-p-4">
           <p className="tw-mb-1 tw-text-sm tw-font-semibold tw-text-blue-950">
-            Outcome shortcut: {shortcut.outcome.displayName || shortcut.outcome.title}
+            Outcome shortcut: {getOutcomeShortcutLabel(shortcut.outcome)}
           </p>
           {shortcut.labels.length > 0 && <p className="tw-mb-1 tw-text-sm tw-text-blue-900">{shortcut.labels.join(' → ')}</p>}
           <p className="tw-mb-0 tw-text-sm tw-text-blue-900">Review the next steps for this outcome. To choose a different route, start over.</p>

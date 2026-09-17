@@ -36,6 +36,7 @@ export interface SelectorOutcomeSummary {
   id: string;
   code: string;
   displayName: string;
+  shortLabel?: string | null;
   title: string;
   status: 'ACTIVE' | 'DEPRECATED';
   fulfillmentMode: FulfillmentMode;

@@ -7,6 +7,10 @@ export interface OutcomeShortcut {
   labels: string[];
 }
 
+export const getOutcomeShortcutLabel = (outcome: SelectorOutcomeSummary): string => (
+  outcome.shortLabel?.trim() || outcome.displayName || outcome.title
+);
+
 // Keep each route when several leaves share an outcome: their responses and
 // instructions may depend on different questions along the way.
 export const getOutcomeShortcuts = (flow: SelectorFlow): OutcomeShortcut[] => {
@@ -29,7 +33,7 @@ export const getOutcomeShortcuts = (flow: SelectorFlow): OutcomeShortcut[] => {
   };
   visit(flow.rootNodeId, [], []);
   return shortcuts.sort((a, b) => (
-    a.outcome.displayName.localeCompare(b.outcome.displayName)
+    getOutcomeShortcutLabel(a.outcome).localeCompare(getOutcomeShortcutLabel(b.outcome))
     || a.labels.join(' / ').localeCompare(b.labels.join(' / '))
   ));
 };

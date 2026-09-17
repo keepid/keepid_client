@@ -5,8 +5,6 @@ import {
   ArrowRightIcon,
   ArrowUpTrayIcon,
   BoltIcon,
-  ClipboardDocumentListIcon,
-  DocumentDuplicateIcon,
   DocumentTextIcon,
   MagnifyingGlassIcon,
   MapIcon,
@@ -15,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { loadCaseSelector } from './applicationSelector/flowApi';
-import { getOutcomeShortcuts } from './applicationSelector/outcomeShortcuts';
+import { getOutcomeShortcutLabel, getOutcomeShortcuts } from './applicationSelector/outcomeShortcuts';
 import type { SelectorFlow } from './applicationSelector/types';
 
 interface Props {
@@ -27,10 +25,10 @@ interface Props {
 }
 
 const outcomePresentation = {
-  WEB_FORM: { label: 'Application form', Icon: DocumentTextIcon },
-  PDF_UPLOAD: { label: 'PDF application', Icon: ArrowUpTrayIcon },
-  INSTRUCTIONS_ONLY: { label: 'Instructions', Icon: ClipboardDocumentListIcon },
-  ATTACHMENTS_ONLY: { label: 'Document packet', Icon: DocumentDuplicateIcon },
+  WEB_FORM: 'Application form',
+  PDF_UPLOAD: 'PDF application',
+  INSTRUCTIONS_ONLY: 'Instructions',
+  ATTACHMENTS_ONLY: 'Document packet',
 };
 
 const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUsername' | 'clientName'>) => {
@@ -63,7 +61,7 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
   const shortcuts = getOutcomeShortcuts(flow);
   const search = query.trim().toLocaleLowerCase();
   const filtered = shortcuts.filter(({ outcome, labels }) => (
-    [outcome.displayName, outcome.title, ...labels].join(' ').toLocaleLowerCase().includes(search)
+    [getOutcomeShortcutLabel(outcome), outcome.displayName, outcome.title, ...labels].join(' ').toLocaleLowerCase().includes(search)
   ));
   return (
     <div>
@@ -89,42 +87,42 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
           </span>
         </div>
       )}
-      <div className="application-start__outcomes">
-        {filtered.map(({ nodeId, outcome, labels }) => {
-          const { label, Icon } = outcomePresentation[outcome.fulfillmentMode];
-          const title = outcome.displayName || outcome.title;
+      <ul className="application-start__outcomes" aria-label="Outcome shortcuts">
+        {filtered.map(({ nodeId, outcome }) => {
+          const label = outcomePresentation[outcome.fulfillmentMode];
+          const title = getOutcomeShortcutLabel(outcome);
           const content = (
             <>
-              <span className="application-start__outcome-icon"><Icon aria-hidden="true" /></span>
               <span className="application-start__outcome-content">
                 <span className="application-start__outcome-title">{title}</span>
-                {labels.length > 0 && <span id={`outcome-route-${nodeId}`} className="application-start__route">{labels.join(' / ')}</span>}
                 <span className="application-start__kind">{label}</span>
               </span>
               <ArrowRightIcon className="application-start__arrow" aria-hidden="true" />
             </>
           );
-          return clientUsername ? (
-            <Link
-              key={nodeId}
-              className="application-start__outcome"
-              aria-label={title}
-              aria-describedby={labels.length ? `outcome-route-${nodeId}` : undefined}
-              to={{
-                pathname: '/applications/selector',
-                search: `?client=${encodeURIComponent(clientUsername)}`,
-                state: {
-                  clientUsername,
-                  clientName: clientName || '',
-                  outcomeShortcut: { nodeId, publishToken: flow.publishToken },
-                },
-              }}
-            >
-              {content}
-            </Link>
-          ) : <div key={nodeId} className="application-start__outcome application-start__outcome--disabled">{content}</div>;
+          return (
+            <li key={nodeId}>
+              {clientUsername ? (
+                <Link
+                  className="application-start__outcome"
+                  aria-label={title}
+                  to={{
+                    pathname: '/applications/selector',
+                    search: `?client=${encodeURIComponent(clientUsername)}`,
+                    state: {
+                      clientUsername,
+                      clientName: clientName || '',
+                      outcomeShortcut: { nodeId, publishToken: flow.publishToken },
+                    },
+                  }}
+                >
+                  {content}
+                </Link>
+              ) : <div className="application-start__outcome application-start__outcome--disabled">{content}</div>}
+            </li>
+          );
         })}
-      </div>
+      </ul>
       {filtered.length === 0 && (
         <p className="application-start__message" role="status">
           {shortcuts.length ? 'No outcomes match your search.' : 'No outcome shortcuts are available in the published picker.'}

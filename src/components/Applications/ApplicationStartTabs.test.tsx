@@ -17,12 +17,18 @@ beforeEach(() => {
     selectorId: 'picker',
     publishToken: 'published',
     title: 'Picker',
-    rootNodeId: 'leaf',
-    nodes: [{ id: 'leaf', outcomeId: 'outcome', type: 'OUTCOME', transitions: [] }],
+    rootNodeId: 'root',
+    nodes: [
+      { id: 'root',
+        type: 'CHOICE',
+        transitions: [{ id: 'pa', key: 'pa', type: 'CHOICE', label: 'Birth Certificate / Pennsylvania', childNodeId: 'leaf' }] },
+      { id: 'leaf', outcomeId: 'outcome', type: 'OUTCOME', transitions: [] },
+    ],
     outcomes: [{ id: 'outcome',
       code: 'outcome',
-      displayName: 'Replace ID',
-      title: 'Replace ID',
+      displayName: 'New outcome',
+      shortLabel: 'PA Housed BC',
+      title: 'Birth certificate',
       status: 'ACTIVE',
       fulfillmentMode: 'WEB_FORM',
       components: [] }],
@@ -47,11 +53,13 @@ describe('application start tabs', () => {
     const history = setup('demo-client');
     expect(screen.getByRole('tab', { name: 'Outcome shortcuts' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('link', { name: 'Legacy form' })).not.toBeInTheDocument();
-    await screen.findByRole('link', { name: 'Replace ID' });
+    await screen.findByRole('link', { name: 'PA Housed BC' });
+    expect(screen.queryByText('New outcome')).not.toBeInTheDocument();
+    expect(screen.queryByText('Birth Certificate / Pennsylvania')).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search outcomes' }), { target: { value: 'no match' } });
     expect(screen.getByText('No outcomes match your search.')).toBeInTheDocument();
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search outcomes' }), { target: { value: 'replace' } });
-    fireEvent.click(screen.getByRole('link', { name: 'Replace ID' }));
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search outcomes' }), { target: { value: 'housed' } });
+    fireEvent.click(screen.getByRole('link', { name: 'PA Housed BC' }));
     expect(history.location).toMatchObject({ pathname: '/applications/selector',
       search: '?client=demo-client',
       state: {
@@ -61,9 +69,9 @@ describe('application start tabs', () => {
 
   it('shows outcomes without offering clientless navigation', async () => {
     setup();
-    await screen.findByText('Replace ID');
+    await screen.findByText('PA Housed BC');
     expect(screen.getByText('Open a client’s applications to use an outcome shortcut.')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Replace ID' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'PA Housed BC' })).not.toBeInTheDocument();
   });
 
   it('can retry a failed load and return to the legacy list', async () => {
@@ -71,7 +79,7 @@ describe('application start tabs', () => {
     setup('demo-client');
     await screen.findByText('Picker unavailable');
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    await screen.findByRole('link', { name: 'Replace ID' });
+    await screen.findByRole('link', { name: 'PA Housed BC' });
     await waitFor(() => expect(loadCaseSelector).toHaveBeenCalledTimes(2));
     fireEvent.click(screen.getByRole('tab', { name: 'Application list' }));
     expect(screen.getByRole('link', { name: 'Legacy form' })).toBeInTheDocument();
