@@ -8,6 +8,7 @@ import type {
 } from './types';
 
 interface TraversalRequest {
+  shortcutOutcomeNodeId?: string;
   clientUsername: string;
   publishToken: string;
   path: SelectorPathStep[];

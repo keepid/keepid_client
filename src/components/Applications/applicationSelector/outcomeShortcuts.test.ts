@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { advanceShortcut, getOutcomeShortcuts } from './outcomeShortcuts';
+import { getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
 import type { SelectorFlow, SelectorNode, SelectorOutcomeSummary } from './types';
 
 const outcome = (id: string, status: 'ACTIVE' | 'DEPRECATED' = 'ACTIVE'): SelectorOutcomeSummary => ({
@@ -28,22 +28,28 @@ const flow: SelectorFlow = {
 };
 
 describe('published outcome shortcuts', () => {
+  it('uses service labels with fallbacks for older published outcomes', () => {
+    expect(getOutcomeShortcutLabel({ ...outcome('New outcome'), shortLabel: 'PA Housed BC' })).toBe('PA Housed BC');
+    expect(getOutcomeShortcutLabel(outcome('Existing name'))).toBe('Existing name');
+    expect(getOutcomeShortcutLabel({ ...outcome('Existing name'), shortLabel: ' ' })).toBe('Existing name');
+    expect(getOutcomeShortcutLabel({ ...outcome('Service title'), displayName: '' })).toBe('Service title');
+  });
+
+  it('sorts shortcuts by the service label shown on each card', () => {
+    const sorted = getOutcomeShortcuts({
+      ...flow,
+      nodes: [choice('root', ['a', 'b']), leaf('a'), leaf('b')],
+      outcomes: [
+        { ...outcome('a'), shortLabel: 'PA Housed BC' },
+        { ...outcome('b'), shortLabel: 'PA Homeless BC' },
+      ],
+    });
+    expect(sorted.map((item) => item.nodeId)).toEqual(['b', 'a']);
+  });
+
   it('only includes reachable active outcomes and preserves distinct routes to a shared outcome', () => {
     const shortcuts = getOutcomeShortcuts(flow);
     expect(shortcuts.map((item) => item.nodeId).sort()).toEqual(['direct', 'other']);
     expect(shortcuts.find((item) => item.nodeId === 'other')?.labels).toEqual(['details', 'other']);
-  });
-
-  it('skips decisions but stops at components and retains a contiguous path when resuming', () => {
-    const shortcut = getOutcomeShortcuts(flow).find((item) => item.nodeId === 'other')!;
-    expect(advanceShortcut(flow, shortcut)).toEqual({
-      nodeId: 'details', path: [{ nodeId: 'root', transitionKey: 'details' }],
-    });
-    expect(advanceShortcut(flow, shortcut, 2)).toEqual({ nodeId: 'other', path: shortcut.path });
-  });
-
-  it('can jump directly to an outcome without interaction steps', () => {
-    const shortcut = getOutcomeShortcuts(flow).find((item) => item.nodeId === 'direct')!;
-    expect(advanceShortcut(flow, shortcut)).toEqual({ nodeId: 'direct', path: shortcut.path });
   });
 });

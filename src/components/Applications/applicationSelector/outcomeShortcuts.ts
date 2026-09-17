@@ -1,4 +1,4 @@
-import type { SelectorFlow, SelectorOutcomeSummary, SelectorPathStep } from './types';
+import type { OutcomeShortcutTarget, SelectorFlow, SelectorOutcomeSummary, SelectorPathStep } from './types';
 
 export interface OutcomeShortcut {
   nodeId: string;
@@ -6,6 +6,10 @@ export interface OutcomeShortcut {
   path: SelectorPathStep[];
   labels: string[];
 }
+
+export const getOutcomeShortcutLabel = (outcome: SelectorOutcomeSummary): string => (
+  outcome.shortLabel?.trim() || outcome.displayName || outcome.title
+);
 
 // Keep each route when several leaves share an outcome: their responses and
 // instructions may depend on different questions along the way.
@@ -29,25 +33,13 @@ export const getOutcomeShortcuts = (flow: SelectorFlow): OutcomeShortcut[] => {
   };
   visit(flow.rootNodeId, [], []);
   return shortcuts.sort((a, b) => (
-    a.outcome.displayName.localeCompare(b.outcome.displayName)
+    getOutcomeShortcutLabel(a.outcome).localeCompare(getOutcomeShortcutLabel(b.outcome))
     || a.labels.join(' / ').localeCompare(b.labels.join(' / '))
   ));
 };
 
-// Skip only decisions. Components still run normally for validation, saved
-// client details, information, and uploads before the server resolves the path.
-export const advanceShortcut = (
-  flow: SelectorFlow,
-  shortcut: OutcomeShortcut,
-  completedSteps = 0,
-): { nodeId: string; path: SelectorPathStep[] } => {
-  const nodes = new Map(flow.nodes.map((node) => [node.id, node]));
-  let index = completedSteps;
-  while (index < shortcut.path.length && !nodes.get(shortcut.path[index].nodeId)?.componentKey) {
-    index += 1;
-  }
-  return {
-    nodeId: shortcut.path[index]?.nodeId || shortcut.nodeId,
-    path: shortcut.path.slice(0, index),
-  };
-};
+export const outcomeShortcutLocation = (clientUsername: string, clientName: string, target: OutcomeShortcutTarget) => ({
+  pathname: '/applications/selector',
+  search: `?${new URLSearchParams({ client: clientUsername, outcomeNode: target.nodeId, publishToken: target.publishToken })}`,
+  state: { clientUsername, clientName, outcomeShortcut: target },
+});
