@@ -1,3 +1,4 @@
+import { Dialog } from '@headlessui/react';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
@@ -24,6 +25,7 @@ import {
 import { applicationSearch } from './applicationLinks';
 import ApplicationPreviewRoute from './ApplicationPreviewRoute';
 import ApplicationSelectorFlow from './applicationSelector/ApplicationSelectorFlow';
+import { outcomeShortcutLocation } from './applicationSelector/outcomeShortcuts';
 import type { OutcomeShortcutTarget } from './applicationSelector/types';
 import ApplicationStartTabs from './ApplicationStartTabs';
 
@@ -81,6 +83,7 @@ interface AvailableApplication {
 type ApplicationFilterKey = 'state' | 'idType' | 'housingStatus';
 
 interface State {
+  pendingShortcut: OutcomeShortcutTarget | null;
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
   currentApplicationUploader: string | undefined,
@@ -125,6 +128,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   constructor(props: Props & RouteComponentProps) {
     super(props);
     this.state = {
+      pendingShortcut: null,
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
       currentApplicationUploader: undefined,
@@ -297,6 +301,18 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       modalClientError: null,
       modalClientResultsOpen: false,
     });
+  };
+
+  selectShortcutClient = (target: OutcomeShortcutTarget) => {
+    this.resetModalClientPicker();
+    this.setState({ pendingShortcut: target });
+  };
+
+  openShortcut = () => {
+    const { pendingShortcut, modalClientUsername, modalClientName } = this.state;
+    if (!pendingShortcut || !modalClientUsername) return;
+    this.setState({ pendingShortcut: null });
+    this.props.history.push(outcomeShortcutLocation(modalClientUsername, modalClientName, pendingShortcut));
   };
 
   openUploadModal = () => {
@@ -1052,6 +1068,12 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       mailStatusUpdatingId,
       mailStatusError,
     } = this.state;
+    const params = new URLSearchParams(this.props.location.search);
+    const locationState = this.props.location.state as LocationState | undefined;
+    const selectorClient = params.get('client')?.trim() || locationState?.clientUsername;
+    const shortcutTarget = params.get('outcomeNode') && params.get('publishToken')
+      ? { nodeId: params.get('outcomeNode')!, publishToken: params.get('publishToken')! }
+      : locationState?.outcomeShortcut;
     const isClientUser = this.props.role === Role.Client;
     const pageTitle = isClientUser ? 'My Applications' : 'Applications';
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
@@ -1244,6 +1266,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                 clientName={clientName}
                 initialTab={(this.props.location.state as LocationState)?.applicationTab}
                 onUpload={this.openUploadModal}
+                onSelectClient={this.selectShortcutClient}
               >
                 {this.renderApplicationFilters(availableApplications, filteredAvailableApplications)}
                 <div className="application-start__legacy-list">
@@ -1257,6 +1280,19 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               </ApplicationStartTabs>
             )}
           </div>
+          <Dialog open={Boolean(this.state.pendingShortcut)} onClose={() => this.setState({ pendingShortcut: null })} className="tw-relative tw-z-50">
+            <div className="tw-fixed tw-inset-0 tw-bg-black/40" aria-hidden="true" />
+            <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-4">
+              <Dialog.Panel className="tw-w-full tw-max-w-md tw-rounded-xl tw-bg-white tw-p-6 tw-shadow-xl">
+                <Dialog.Title className="tw-mb-4 tw-text-lg tw-font-semibold">Select a client</Dialog.Title>
+                {this.renderModalClientPicker(false)}
+                <div className="tw-mt-5 tw-flex tw-justify-end tw-gap-3">
+                  <button type="button" className="btn btn-outline-dark" onClick={() => this.setState({ pendingShortcut: null })}>Cancel</button>
+                  <button type="button" className="btn btn-primary" disabled={!modalClientUsername} onClick={this.openShortcut}>Open worker instructions</button>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </Dialog>
           {uploadModalOpen && (
             <div
               className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black tw-bg-opacity-50"
@@ -1408,15 +1444,15 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           )}
         </Route>
         <Route path="/applications/selector">
-          {isClientUser || !clientUsername ? (
+          {isClientUser || !selectorClient ? (
             <Redirect to="/applications" />
           ) : (
             <ApplicationSelectorFlow
-              key={`${clientUsername}:${(this.props.location.state as LocationState)?.outcomeShortcut?.nodeId || 'guided'}`}
-              initialShortcut={(this.props.location.state as LocationState)?.outcomeShortcut}
+              key={`${selectorClient}:${shortcutTarget?.nodeId || 'guided'}`}
+              initialShortcut={shortcutTarget}
               availableApplications={availableApplications}
-              clientUsername={clientUsername}
-              clientName={clientName}
+              clientUsername={selectorClient}
+              clientName={locationState?.clientName || clientName}
               viewerUsername={this.props.username}
               viewerRole={this.props.role}
               viewerName={this.props.name}

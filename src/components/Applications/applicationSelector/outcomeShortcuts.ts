@@ -1,4 +1,4 @@
-import type { SelectorFlow, SelectorOutcomeSummary, SelectorPathStep } from './types';
+import type { OutcomeShortcutTarget, SelectorFlow, SelectorOutcomeSummary, SelectorPathStep } from './types';
 
 export interface OutcomeShortcut {
   nodeId: string;
@@ -38,20 +38,8 @@ export const getOutcomeShortcuts = (flow: SelectorFlow): OutcomeShortcut[] => {
   ));
 };
 
-// Skip only decisions. Components still run normally for validation, saved
-// client details, information, and uploads before the server resolves the path.
-export const advanceShortcut = (
-  flow: SelectorFlow,
-  shortcut: OutcomeShortcut,
-  completedSteps = 0,
-): { nodeId: string; path: SelectorPathStep[] } => {
-  const nodes = new Map(flow.nodes.map((node) => [node.id, node]));
-  let index = completedSteps;
-  while (index < shortcut.path.length && !nodes.get(shortcut.path[index].nodeId)?.componentKey) {
-    index += 1;
-  }
-  return {
-    nodeId: shortcut.path[index]?.nodeId || shortcut.nodeId,
-    path: shortcut.path.slice(0, index),
-  };
-};
+export const outcomeShortcutLocation = (clientUsername: string, clientName: string, target: OutcomeShortcutTarget) => ({
+  pathname: '/applications/selector',
+  search: `?${new URLSearchParams({ client: clientUsername, outcomeNode: target.nodeId, publishToken: target.publishToken })}`,
+  state: { clientUsername, clientName, outcomeShortcut: target },
+});

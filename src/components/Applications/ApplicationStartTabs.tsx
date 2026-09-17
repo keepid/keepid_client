@@ -13,8 +13,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { loadCaseSelector } from './applicationSelector/flowApi';
-import { getOutcomeShortcutLabel, getOutcomeShortcuts } from './applicationSelector/outcomeShortcuts';
-import type { SelectorFlow } from './applicationSelector/types';
+import { getOutcomeShortcutLabel, getOutcomeShortcuts, outcomeShortcutLocation } from './applicationSelector/outcomeShortcuts';
+import type { OutcomeShortcutTarget, SelectorFlow } from './applicationSelector/types';
 
 interface Props {
   children: React.ReactNode;
@@ -22,6 +22,7 @@ interface Props {
   clientName?: string;
   initialTab?: 'applications' | 'outcomes';
   onUpload?: () => void;
+  onSelectClient?: (target: OutcomeShortcutTarget) => void;
 }
 
 const outcomePresentation = {
@@ -31,7 +32,7 @@ const outcomePresentation = {
   ATTACHMENTS_ONLY: 'Document packet',
 };
 
-const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUsername' | 'clientName'>) => {
+const OutcomeShortcuts = ({ clientUsername, clientName, onSelectClient }: Pick<Props, 'clientUsername' | 'clientName' | 'onSelectClient'>) => {
   const [flow, setFlow] = useState<SelectorFlow | null>(null);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -65,7 +66,7 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
   ));
   return (
     <div>
-      {!clientUsername && (
+      {!clientUsername && !onSelectClient && (
         <p className="application-start__message">
           Open a client’s applications to use an outcome shortcut.
         </p>
@@ -106,19 +107,21 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
                 <Link
                   className="application-start__outcome"
                   aria-label={title}
-                  to={{
-                    pathname: '/applications/selector',
-                    search: `?client=${encodeURIComponent(clientUsername)}`,
-                    state: {
-                      clientUsername,
-                      clientName: clientName || '',
-                      outcomeShortcut: { nodeId, publishToken: flow.publishToken },
-                    },
-                  }}
+                  to={outcomeShortcutLocation(clientUsername, clientName || '', { nodeId, publishToken: flow.publishToken })}
                 >
                   {content}
                 </Link>
-              ) : <div className="application-start__outcome application-start__outcome--disabled">{content}</div>}
+              ) : (
+                <button
+                  type="button"
+                  className="application-start__outcome"
+                  aria-label={title}
+                  disabled={!onSelectClient}
+                  onClick={() => onSelectClient?.({ nodeId, publishToken: flow.publishToken })}
+                >
+                  {content}
+                </button>
+              )}
             </li>
           );
         })}
@@ -132,7 +135,7 @@ const OutcomeShortcuts = ({ clientUsername, clientName }: Pick<Props, 'clientUse
   );
 };
 
-const ApplicationStartTabs = ({ children, clientUsername, clientName, initialTab, onUpload }: Props) => (
+const ApplicationStartTabs = ({ children, clientUsername, clientName, initialTab, onUpload, onSelectClient }: Props) => (
   <section className="application-start" aria-label="Start a new application">
     <div className="application-start__header">
       <h2>Start a new application</h2>
@@ -160,7 +163,7 @@ const ApplicationStartTabs = ({ children, clientUsername, clientName, initialTab
         ))}
       </Tab.List>
       <Tab.Panels className="application-start__panels">
-        <Tab.Panel unmount={false}><OutcomeShortcuts clientUsername={clientUsername} clientName={clientName} /></Tab.Panel>
+        <Tab.Panel unmount={false}><OutcomeShortcuts clientUsername={clientUsername} clientName={clientName} onSelectClient={onSelectClient} /></Tab.Panel>
         <Tab.Panel>{children}</Tab.Panel>
       </Tab.Panels>
     </Tab.Group>

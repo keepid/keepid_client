@@ -28,7 +28,7 @@ import {
   savePennDotNumber,
   uploadServicePdf,
 } from './flowApi';
-import { type OutcomeShortcut, advanceShortcut, getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
+import { type OutcomeShortcut, getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
 import type {
   FulfillmentMode,
   OutcomeShortcutTarget,
@@ -129,9 +129,8 @@ const ApplicationSelectorFlow = ({
             return;
           }
           setShortcut(target);
-          const next = advanceShortcut(loaded, target);
-          setNodeId(next.nodeId);
-          setPath(next.path);
+          setNodeId(target.nodeId);
+          setPath(target.path);
         } else {
           setNodeId(loaded.rootNodeId);
         }
@@ -156,6 +155,7 @@ const ApplicationSelectorFlow = ({
     resolveCaseOutcome({
       clientUsername,
       publishToken: flow.publishToken,
+      ...(shortcut ? { shortcutOutcomeNodeId: shortcut.nodeId } : {}),
       path,
       responses,
     })
@@ -168,7 +168,7 @@ const ApplicationSelectorFlow = ({
       .finally(() => { if (active) setBusy(false); });
     // Ignore responses from an outcome the worker has already left.
     return () => { active = false; };
-  }, [clientUsername, currentNode?.id, currentNode?.type, flow, path, responses]);
+  }, [clientUsername, currentNode?.id, currentNode?.type, flow, path, responses, shortcut]);
 
   useEffect(() => {
     if (!currentNode?.responseKey) {
@@ -232,7 +232,7 @@ const ApplicationSelectorFlow = ({
 
   const follow = (transition: SelectorTransition, nextResponses = responses) => {
     if (!currentNode) return;
-    const next = shortcut && flow ? advanceShortcut(flow, shortcut, path.length + 1) : {
+    const next = {
       path: [...path, { nodeId: currentNode.id, transitionKey: transition.key }],
       nodeId: transition.childNodeId,
     };
@@ -245,9 +245,11 @@ const ApplicationSelectorFlow = ({
 
   const goBack = () => {
     if (record) return;
-    const priorIndex = shortcut
-      ? path.map((step) => Boolean(nodes.get(step.nodeId)?.componentKey)).lastIndexOf(true)
-      : path.length - 1;
+    if (shortcut) {
+      backToApplications();
+      return;
+    }
+    const priorIndex = path.length - 1;
     const prior = path[priorIndex];
     if (!prior) {
       backToApplications();
@@ -344,6 +346,7 @@ const ApplicationSelectorFlow = ({
     const selectorCompletion: SelectorCompletionContext | undefined = !created && flow
       ? {
         publishToken: flow.publishToken,
+        ...(shortcut ? { shortcutOutcomeNodeId: shortcut.nodeId } : {}),
         path,
         responses,
         idempotencyKey: uuid(),
@@ -377,6 +380,7 @@ const ApplicationSelectorFlow = ({
       const created = await createClassifiedService({
         clientUsername,
         publishToken: flow.publishToken,
+        ...(shortcut ? { shortcutOutcomeNodeId: shortcut.nodeId } : {}),
         path,
         responses,
         idempotencyKey: uuid(),
@@ -824,7 +828,6 @@ const ApplicationSelectorFlow = ({
           <p className="tw-mb-1 tw-text-sm tw-font-semibold tw-text-blue-950">
             Outcome shortcut: {getOutcomeShortcutLabel(shortcut.outcome)}
           </p>
-          {shortcut.labels.length > 0 && <p className="tw-mb-1 tw-text-sm tw-text-blue-900">{shortcut.labels.join(' → ')}</p>}
           <p className="tw-mb-0 tw-text-sm tw-text-blue-900">Review the next steps for this outcome. To choose a different route, start over.</p>
         </div>
       )}

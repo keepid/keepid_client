@@ -66,6 +66,7 @@ export interface OutcomeShortcutTarget {
 }
 
 export interface SelectorCompletionContext {
+  shortcutOutcomeNodeId?: string;
   publishToken: string;
   path: SelectorPathStep[];
   responses: Record<string, string>;

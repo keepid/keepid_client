@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { advanceShortcut, getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
+import { getOutcomeShortcutLabel, getOutcomeShortcuts } from './outcomeShortcuts';
 import type { SelectorFlow, SelectorNode, SelectorOutcomeSummary } from './types';
 
 const outcome = (id: string, status: 'ACTIVE' | 'DEPRECATED' = 'ACTIVE'): SelectorOutcomeSummary => ({
@@ -51,18 +51,5 @@ describe('published outcome shortcuts', () => {
     const shortcuts = getOutcomeShortcuts(flow);
     expect(shortcuts.map((item) => item.nodeId).sort()).toEqual(['direct', 'other']);
     expect(shortcuts.find((item) => item.nodeId === 'other')?.labels).toEqual(['details', 'other']);
-  });
-
-  it('skips decisions but stops at components and retains a contiguous path when resuming', () => {
-    const shortcut = getOutcomeShortcuts(flow).find((item) => item.nodeId === 'other')!;
-    expect(advanceShortcut(flow, shortcut)).toEqual({
-      nodeId: 'details', path: [{ nodeId: 'root', transitionKey: 'details' }],
-    });
-    expect(advanceShortcut(flow, shortcut, 2)).toEqual({ nodeId: 'other', path: shortcut.path });
-  });
-
-  it('can jump directly to an outcome without interaction steps', () => {
-    const shortcut = getOutcomeShortcuts(flow).find((item) => item.nodeId === 'direct')!;
-    expect(advanceShortcut(flow, shortcut)).toEqual({ nodeId: 'direct', path: shortcut.path });
   });
 });

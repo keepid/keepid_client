@@ -121,6 +121,7 @@ describe('outcome shortcut navigation', () => {
         presetApplication: expect.objectContaining({ applicationId: 'form' }),
         selectorCompletion: expect.objectContaining({
           publishToken: 'token',
+          shortcutOutcomeNodeId: 'leaf',
           path: [{ nodeId: 'root', transitionKey: 'letter' }],
           responses: {},
           confirmedEffectIds: ['note'],
@@ -130,8 +131,26 @@ describe('outcome shortcut navigation', () => {
     expect(createClassifiedService).not.toHaveBeenCalled();
   });
 
-  it('skips decisions, collects required responses, and preserves the complete path for creation', async () => {
+  it('opens worker instructions directly without collecting picker responses', async () => {
     render(<ApplicationSelectorFlow availableApplications={[]} clientUsername="demo-client" initialShortcut={{ nodeId: 'leaf', publishToken: 'token' }} />);
+    await screen.findByRole('heading', { name: 'Worker instructions' });
+    expect(screen.getByText('Review the letter with the client.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Reference number' })).not.toBeInTheDocument();
+    expect(resolveCaseOutcome).toHaveBeenCalledWith({
+      clientUsername: 'demo-client',
+      publishToken: 'token',
+      shortcutOutcomeNodeId: 'leaf',
+      responses: {},
+      path: [{ nodeId: 'root', transitionKey: 'letter' }, { nodeId: 'details', transitionKey: 'continue' }],
+    });
+    expect(createClassifiedService).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Back', exact: true }));
+    expect(push).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/applications' }));
+  });
+
+  it('still collects required responses when using the guided picker', async () => {
+    render(<ApplicationSelectorFlow availableApplications={[]} clientUsername="demo-client" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ID letter' }));
     await screen.findByRole('textbox', { name: 'Reference number' });
     expect(screen.queryByRole('heading', { name: 'Which document?' })).not.toBeInTheDocument();
     expect(resolveCaseOutcome).not.toHaveBeenCalled();
@@ -155,9 +174,9 @@ describe('outcome shortcut navigation', () => {
     await waitFor(() => expect(createClassifiedService).toHaveBeenCalledWith(expect.objectContaining(traversal)));
   });
 
-  it('returns to outcome shortcuts from the first retained step and can restart the full picker', async () => {
+  it('returns from worker instructions to shortcuts and can restart the full picker', async () => {
     render(<ApplicationSelectorFlow availableApplications={[]} clientUsername="demo-client" initialShortcut={{ nodeId: 'leaf', publishToken: 'token' }} />);
-    await screen.findByRole('textbox');
+    await screen.findByRole('heading', { name: 'Worker instructions' });
     fireEvent.click(screen.getByRole('button', { name: 'Back', exact: true }));
     expect(push).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/applications', state: expect.objectContaining({ applicationTab: 'outcomes' }) }));
     fireEvent.click(screen.getByRole('button', { name: 'Start over' }));

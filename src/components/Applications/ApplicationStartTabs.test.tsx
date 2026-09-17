@@ -36,11 +36,11 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-const setup = (clientUsername?: string) => {
+const setup = (clientUsername?: string, onSelectClient = vi.fn()) => {
   const history = createMemoryHistory();
   render(
     <Router history={history}>
-      <ApplicationStartTabs clientUsername={clientUsername} clientName="Demo Client">
+      <ApplicationStartTabs clientUsername={clientUsername} clientName="Demo Client" onSelectClient={onSelectClient}>
         <a href="/applications/createnew">Legacy form</a>
       </ApplicationStartTabs>
     </Router>,
@@ -61,17 +61,17 @@ describe('application start tabs', () => {
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search outcomes' }), { target: { value: 'housed' } });
     fireEvent.click(screen.getByRole('link', { name: 'PA Housed BC' }));
     expect(history.location).toMatchObject({ pathname: '/applications/selector',
-      search: '?client=demo-client',
+      search: '?client=demo-client&outcomeNode=leaf&publishToken=published',
       state: {
         clientUsername: 'demo-client', clientName: 'Demo Client', outcomeShortcut: { nodeId: 'leaf', publishToken: 'published' },
       } });
   });
 
-  it('shows outcomes without offering clientless navigation', async () => {
-    setup();
-    await screen.findByText('PA Housed BC');
-    expect(screen.getByText('Open a client’s applications to use an outcome shortcut.')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'PA Housed BC' })).not.toBeInTheDocument();
+  it('opens client selection for an organization-level shortcut', async () => {
+    const onSelectClient = vi.fn();
+    setup(undefined, onSelectClient);
+    fireEvent.click(await screen.findByRole('button', { name: 'PA Housed BC' }));
+    expect(onSelectClient).toHaveBeenCalledWith({ nodeId: 'leaf', publishToken: 'published' });
   });
 
   it('can retry a failed load and return to the legacy list', async () => {
