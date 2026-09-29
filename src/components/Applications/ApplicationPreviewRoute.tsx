@@ -47,6 +47,8 @@ export default function ApplicationPreviewRoute(props: Props) {
             lastUpdatedDate: item.updatedAt,
             mailStatus: item.mailStatus as ApplicationMailStatus,
             mailedAt: item.mailedAt,
+            deliveryMode: item.deliveryMode,
+            applicationState: item.state,
           },
         });
       })

@@ -15,8 +15,11 @@ import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../..
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import {
+  DeliveryFilter, deliveryLabels, DeliveryMode, DeliveryStatusFilter, deliveryStatusLabel,
+  matchesDeliveryFilters, setApplicationPrinted,
+} from './api/applicationDelivery';
+import {
   ApplicationMailStatus,
-  getApplicationMailTableLabel,
   setApplicationManuallyMailed,
 } from './api/applicationMailStatus';
 import {
@@ -46,6 +49,7 @@ interface DocumentInformation {
   status?: string,
   applicationStatus?: string,
   applicationState?: string,
+  deliveryMode?: DeliveryMode,
   clientFirstName?: string,
   clientLastName?: string,
   clientName?: string,
@@ -83,6 +87,8 @@ interface AvailableApplication {
 type ApplicationFilterKey = 'state' | 'idType' | 'housingStatus';
 
 interface State {
+  deliveryFilter: DeliveryFilter;
+  deliveryStatusFilter: DeliveryStatusFilter;
   pendingShortcut: OutcomeShortcutTarget | null;
   currentApplicationId: string | undefined,
   currentApplicationFilename: string | undefined,
@@ -128,6 +134,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
   constructor(props: Props & RouteComponentProps) {
     super(props);
     this.state = {
+      deliveryFilter: '',
+      deliveryStatusFilter: '',
       pendingShortcut: null,
       currentApplicationId: undefined,
       currentApplicationFilename: undefined,
@@ -634,6 +642,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           applicationName: String(item.applicationName || ''),
           applicationPublicId: String(item.applicationPublicId || ''),
           applicationState: String(item.state || ''),
+          deliveryMode: item.deliveryMode || 'MAIL',
           applicationStatus: String(item.applicationStatus || ''),
           status: String(item.applicationStatus || ''),
           clientFirstName: String(item.clientFirstName || ''),
@@ -642,7 +651,11 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           createdByUsername: String(item.createdByUsername || ''),
           createdByFirstName: String(item.createdByFirstName || ''),
           createdByLastName: String(item.createdByLastName || ''),
-          mailStatus: item.mailStatus === 'MAILED_WITH_LOB'
+          mailStatus: item.mailStatus === 'DRAFT'
+            || item.mailStatus === 'CANCELLED'
+            || item.mailStatus === 'NOT_APPLICABLE'
+            || item.mailStatus === 'MAILED'
+            || item.mailStatus === 'MAILED_WITH_LOB'
             || item.mailStatus === 'MAILED_MANUALLY'
             || item.mailStatus === 'AWAITING_SIGNATURE'
             || item.mailStatus === 'READY_TO_MAIL'
@@ -883,6 +896,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
               ? {
                 ...document,
                 mailStatus: result.mailStatus,
+                applicationState: result.mailStatus === 'READY_TO_MAIL' ? 'READY_TO_MAIL' : 'MAILED',
                 mailedAt: result.mailedAt || '',
               }
               : document
@@ -938,6 +952,20 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       });
   };
 
+  handleSetPrinted = async (row: DocumentInformation) => {
+    this.setState({ mailStatusUpdatingId: row.id, mailStatusError: null });
+    try {
+      const applicationState = await setApplicationPrinted(row.id, row.applicationState !== 'PRINTED');
+      this.setState((previous) => ({
+        documents: previous.documents.map((item) => (item.id === row.id ? { ...item, applicationState } : item)),
+      }));
+    } catch (error) {
+      this.setState({ mailStatusError: error instanceof Error ? error.message : 'Could not update print status.' });
+    } finally {
+      this.setState({ mailStatusUpdatingId: null });
+    }
+  };
+
   getRowActions = (row: DocumentInformation): RowAction[] => {
     if (this.props.role === Role.Client) {
       return [
@@ -961,18 +989,24 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         icon: <FileDownloadOutlinedIcon fontSize="small" />,
         onClick: () => this.handleDownloadApplication(row),
       },
+      ...(row.deliveryMode === 'PRINT_ONLY'
+        && ['READY_TO_PRINT', 'PRINTED'].includes(row.applicationState || '') ? [{
+          label: row.applicationState === 'PRINTED' ? 'Mark as ready to print' : 'Mark as printed and given to client',
+          onClick: () => this.handleSetPrinted(row),
+        }] : []),
       ...(row.applicationName ? [{
         label: 'Rename',
         icon: <DriveFileRenameOutlineIcon fontSize="small" />,
         onClick: () => this.openRenameModal(row),
       }] : []),
-      ...(row.mailStatus === 'MAILED_WITH_LOB' || row.mailStatus === 'AWAITING_SIGNATURE' ? [] : [{
-        label: row.mailStatus === 'MAILED_MANUALLY'
-          ? 'Mark as not mailed'
-          : 'Mark as printed and mailed',
-        icon: <MarkEmailReadOutlinedIcon fontSize="small" />,
-        onClick: () => this.handleSetMailStatus(row, row.mailStatus !== 'MAILED_MANUALLY'),
-      }]),
+      ...((row.deliveryMode || 'MAIL') !== 'MAIL'
+        || !['READY_TO_MAIL', 'NOT_MAILED', 'MAILED_MANUALLY'].includes(row.mailStatus || '') ? [] : [{
+          label: row.mailStatus === 'MAILED_MANUALLY'
+            ? 'Mark as not mailed'
+            : 'Mark as printed and mailed',
+          icon: <MarkEmailReadOutlinedIcon fontSize="small" />,
+          onClick: () => this.handleSetMailStatus(row, row.mailStatus !== 'MAILED_MANUALLY'),
+        }]),
       {
         label: 'Delete',
         icon: <DeleteOutlineIcon fontSize="small" />,
@@ -1050,6 +1084,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
       currentApplicationId,
       currentApplicationUploader,
       documents,
+      deliveryFilter,
+      deliveryStatusFilter,
       isLoadingDocuments,
       documentsError,
       clientUsername,
@@ -1079,6 +1115,8 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
       : `${clientName || clientUsername || 'Client'}'s`;
+    const emptyApplicationsMessage = clientName || clientUsername
+      ? `No applications for ${clientName || clientUsername}` : 'No applications found';
     const filteredAvailableApplications = this.getFilteredAvailableApplications();
 
     const columns: DataTableColumn<DocumentInformation>[] = [
@@ -1111,26 +1149,26 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         renderCell: (row) => row.applicationName || '—',
       },
       {
-        field: 'mailStatus',
-        headerName: 'Mail',
+        field: 'status',
+        headerName: 'Status',
         sortable: true,
         width: '18%',
         mobileWidth: '30%',
         renderCell: (row) => {
           const status = row.mailStatus || 'READY_TO_MAIL';
           let color = 'tw-bg-gray-100 tw-text-gray-700';
-          if (status === 'AWAITING_SIGNATURE') {
+          if (row.applicationState === 'AWAITING_SIGNATURE' || status === 'AWAITING_SIGNATURE') {
             color = 'tw-bg-amber-100 tw-text-amber-800';
           } else if (status === 'MAILED_WITH_LOB') {
             color = 'tw-bg-blue-100 tw-text-blue-800';
-          } else if (status === 'MAILED_MANUALLY') {
+          } else if (status === 'MAILED_MANUALLY' || row.applicationState === 'PRINTED' || row.applicationState === 'RECORDED') {
             color = 'tw-bg-green-100 tw-text-green-800';
           }
           return (
             <span className={`tw-inline-flex tw-rounded-full tw-px-2 tw-py-1 tw-text-xs tw-font-semibold ${color}`}>
               {mailStatusUpdatingId === row.id
                 ? 'Updating...'
-                : getApplicationMailTableLabel(status)}
+                : deliveryStatusLabel(row)}
             </span>
           );
         },
@@ -1247,12 +1285,43 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   {mailStatusError}
                 </div>
               )}
+              <div className="tw-mb-4 tw-flex tw-flex-wrap tw-items-end tw-gap-3">
+                <label className="tw-text-sm tw-font-semibold" htmlFor="delivery-filter">
+                  Document outcome
+                  <select
+                    id="delivery-filter"
+                    className="form-select tw-mt-1"
+                    value={deliveryFilter}
+                    onChange={(event) => this.setState({ deliveryFilter: event.target.value as DeliveryFilter, deliveryStatusFilter: '' })}
+                  >
+                    <option value="">All outcomes</option>
+                    {Object.entries(deliveryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </label>
+                {deliveryFilter === 'MAIL' && (
+                  <label className="tw-text-sm tw-font-semibold" htmlFor="delivery-status-filter">
+                    Mailing status
+                    <select
+                      id="delivery-status-filter"
+                      className="form-select tw-mt-1"
+                      value={deliveryStatusFilter}
+                      onChange={(event) => this.setState({ deliveryStatusFilter: event.target.value as DeliveryStatusFilter })}
+                    >
+                      <option value="">All mail</option>
+                      <option value="NEEDS_MAILING">Needs to be mailed</option>
+                      <option value="MAILED">Already mailed</option>
+                    </select>
+                  </label>
+                )}
+              </div>
               <DataTable
                 columns={columns}
-                data={documents}
+                data={documents
+                  .filter((row) => matchesDeliveryFilters(row, deliveryFilter, deliveryStatusFilter))
+                  .map((row) => ({ ...row, status: deliveryStatusLabel(row) }))}
                 isLoading={isLoadingDocuments}
                 errorMessage={documentsError}
-                emptyMessage={clientName || clientUsername ? `No applications for ${clientName || clientUsername}` : 'No applications found'}
+                emptyMessage={deliveryFilter ? 'No applications match these filters' : emptyApplicationsMessage}
                 showSearch={false}
                 pageSize={10}
                 defaultSortField="createdDate"

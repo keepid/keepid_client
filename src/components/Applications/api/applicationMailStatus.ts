@@ -1,6 +1,10 @@
 import getServerURL from '../../../serverOverride';
 
 export type ApplicationMailStatus =
+  | 'DRAFT'
+  | 'CANCELLED'
+  | 'NOT_APPLICABLE'
+  | 'MAILED'
   | 'AWAITING_SIGNATURE'
   | 'READY_TO_MAIL'
   | 'NOT_MAILED'
@@ -59,6 +63,10 @@ export const setApplicationManuallyMailed = async (
 };
 
 export const getApplicationMailTableLabel = (mailStatus: ApplicationMailStatus): string => {
+  if (mailStatus === 'DRAFT') return 'Draft';
+  if (mailStatus === 'CANCELLED') return 'Cancelled';
+  if (mailStatus === 'NOT_APPLICABLE') return 'Not for mailing';
+  if (mailStatus === 'MAILED') return 'Mailed';
   if (mailStatus === 'AWAITING_SIGNATURE') return 'Awaiting signature';
   if (mailStatus === 'READY_TO_MAIL' || mailStatus === 'NOT_MAILED') return 'Ready to mail';
   if (mailStatus === 'MAILED_WITH_LOB') return 'Mailed with Lob';
@@ -70,6 +78,10 @@ export const getApplicationMailDetailLabel = ({
   mailStatus,
   mailedAt,
 }: ApplicationMailStatusInfo): string => {
+  if (mailStatus === 'DRAFT') return 'Draft';
+  if (mailStatus === 'CANCELLED') return 'Cancelled';
+  if (mailStatus === 'NOT_APPLICABLE') return 'Not for mailing';
+  if (mailStatus === 'MAILED') return 'Mailed';
   if (mailStatus === 'AWAITING_SIGNATURE') return 'Awaiting signature';
   if (mailStatus === 'READY_TO_MAIL' || mailStatus === 'NOT_MAILED') return 'Ready to mail';
   const parsed = mailedAt ? new Date(mailedAt) : null;

@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getApplicationMailStatus } from '../Applications/api/applicationMailStatus';
 import {
   getApplicationAttachmentOptions,
   renderApplicationPacket,
@@ -13,6 +14,7 @@ import {
 } from '../Applications/api/interactiveForm';
 import SignAndDownloadViewer from './SignAndDownloadViewer';
 
+vi.mock('../Applications/api/applicationMailStatus', () => ({ getApplicationMailStatus: vi.fn() }));
 vi.mock('react-alert', () => ({ useAlert: () => ({ error: vi.fn() }) }));
 vi.mock('../Documents/MailModal', () => ({ MailConfirmation: () => null, MailModal: () => null }));
 vi.mock('../Applications/api/interactiveForm', () => ({
@@ -45,6 +47,7 @@ vi.mock('react-pdf', async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(getApplicationMailStatus).mockResolvedValue({ mailStatus: 'READY_TO_MAIL', mailedAt: null });
   vi.stubGlobal('ResizeObserver', class {
     observe() {}
 
@@ -83,9 +86,17 @@ describe('attachments-only PDF packets', () => {
     />,
   );
 
+  it('hides the embedded mail action for non-mail applications', async () => {
+    vi.mocked(getApplicationMailStatus).mockResolvedValue({ mailStatus: 'NOT_APPLICABLE', mailedAt: null });
+    openViewer();
+    await screen.findByText('Attachment pages: 1');
+    expect(screen.queryByRole('button', { name: 'Mail' })).not.toBeInTheDocument();
+  });
+
   it('shows the attachment once and exports without a main-PDF override', async () => {
     openViewer();
     await screen.findByText('Attachment pages: 1');
+    expect(await screen.findByRole('button', { name: 'Mail' })).toBeInTheDocument();
     expect(screen.getByText('Page 1 / 1')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Download filled PDF' }));
     await waitFor(() => expect(renderApplicationPacket).toHaveBeenCalledWith('packet'));

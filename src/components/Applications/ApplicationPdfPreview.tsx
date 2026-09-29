@@ -11,6 +11,7 @@ import FileType from '../../static/FileType';
 import { MailConfirmation, MailModal } from '../Documents/MailModal';
 import SignAndDownloadViewer, { SignAndDownloadViewerHandle } from '../InteractiveForms/SignAndDownloadViewer';
 import type { SignaturePlacement } from '../InteractiveForms/types';
+import { DeliveryMode, deliveryStatusLabel, setApplicationPrinted } from './api/applicationDelivery';
 import {
   ApplicationMailStatus,
   getApplicationMailDetailLabel,
@@ -31,6 +32,8 @@ export interface PreviewLocationState {
   lastUpdatedDate?: string;
   mailStatus?: ApplicationMailStatus;
   mailedAt?: string;
+  deliveryMode?: DeliveryMode;
+  applicationState?: string;
 }
 
 export default function ApplicationPdfPreview({
@@ -60,6 +63,9 @@ export default function ApplicationPdfPreview({
   const uploadedByName = detailsState?.uploadedByName || targetUser || clientUsername || '';
   const createdDate = detailsState?.createdDate || '';
   const lastUpdatedDate = detailsState?.lastUpdatedDate || '';
+  const deliveryMode = detailsState?.deliveryMode || 'MAIL';
+  const [applicationState, setApplicationState] = useState(detailsState?.applicationState || '');
+  const isMailDelivery = deliveryMode === 'MAIL';
   const initialMailStatus = detailsState?.mailStatus || 'READY_TO_MAIL';
   const initialMailedAt = detailsState?.mailedAt || null;
   const editTargetUsername = targetUser || clientUsername;
@@ -94,6 +100,8 @@ export default function ApplicationPdfPreview({
         createdDate,
         lastUpdatedDate,
         mailStatus,
+        deliveryMode,
+        applicationState,
         mailedAt: mailedAt || '',
       },
     });
@@ -234,8 +242,9 @@ export default function ApplicationPdfPreview({
     }
   };
 
-  const handleSignatureStateChange = useCallback((applicationState: string) => {
-    if (applicationState === 'READY_TO_MAIL') setMailStatus('READY_TO_MAIL');
+  const handleSignatureStateChange = useCallback((nextState: string) => {
+    setApplicationState(nextState);
+    if (nextState === 'READY_TO_MAIL') setMailStatus('READY_TO_MAIL');
   }, []);
 
   useEffect(() => () => {
@@ -299,10 +308,10 @@ export default function ApplicationPdfPreview({
             )}
           </div>
           <div className="tw-flex tw-items-center tw-gap-2">
-            {applicationId && canMail && (
+            {applicationId && canMail && isMailDelivery && (
               <Button
                 variant="primary"
-                disabled={mailStatus === 'AWAITING_SIGNATURE'}
+                disabled={['AWAITING_SIGNATURE', 'DRAFT', 'CANCELLED', 'NOT_APPLICABLE'].includes(mailStatus)}
                 title={mailStatus === 'AWAITING_SIGNATURE' ? 'Complete the required signature first.' : undefined}
                 onClick={() => setMailDialogIsOpen(true)}
               >
@@ -382,12 +391,33 @@ export default function ApplicationPdfPreview({
             ))}
             <div className="tw-min-w-0">
               <div className="tw-text-xs tw-font-semibold tw-uppercase tw-text-gray-500">
-                Mail
+                Status
               </div>
               <div className="tw-mt-1 tw-text-sm tw-font-medium tw-text-gray-900">
-                {getApplicationMailDetailLabel({ mailStatus, mailedAt })}
+                {isMailDelivery ? getApplicationMailDetailLabel({ mailStatus, mailedAt })
+                  : deliveryStatusLabel({ deliveryMode, applicationState, mailStatus })}
               </div>
-              {canMail && (mailStatus === 'READY_TO_MAIL'
+              {canMail && deliveryMode === 'PRINT_ONLY' && ['READY_TO_PRINT', 'PRINTED'].includes(applicationState) && (
+                <button
+                  type="button"
+                  className="tw-mt-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-left tw-text-xs tw-font-semibold tw-text-blue-700"
+                  disabled={mailStatusUpdating}
+                  onClick={async () => {
+                    setMailStatusUpdating(true);
+                    setMailStatusError(null);
+                    try {
+                      setApplicationState(await setApplicationPrinted(applicationId, applicationState !== 'PRINTED'));
+                    } catch (statusError) {
+                      setMailStatusError(statusError instanceof Error ? statusError.message : 'Could not update print status.');
+                    } finally {
+                      setMailStatusUpdating(false);
+                    }
+                  }}
+                >
+                  {applicationState === 'PRINTED' ? 'Mark as ready to print' : 'Mark as printed and given to client'}
+                </button>
+              )}
+              {canMail && isMailDelivery && (mailStatus === 'READY_TO_MAIL'
                 || mailStatus === 'NOT_MAILED'
                 || mailStatus === 'MAILED_MANUALLY') && (
                 <button
@@ -434,6 +464,7 @@ export default function ApplicationPdfPreview({
             showPdfEditControls={false}
             pdfFormsReadOnly={!canUsePdfEditing || !isEditMode}
             canEditAttachments={canEditAttachments}
+            canMail={canMail && isMailDelivery}
           />
         )}
       </div>

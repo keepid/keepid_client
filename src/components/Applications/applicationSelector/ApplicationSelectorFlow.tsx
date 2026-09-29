@@ -16,6 +16,7 @@ import { isValidPennDotNumber } from '../../BaseComponents/pennDotNumber';
 import PennDotNumberField from '../../BaseComponents/PennDotNumberField';
 import DocumentsInlineUpload from '../../Documents/DocumentsInlineUpload';
 import { IdCategories } from '../../Documents/IdCategories';
+import { applicationSearch } from '../applicationLinks';
 import {
   completeServiceRecord,
   createClassifiedService,
@@ -325,6 +326,7 @@ const ApplicationSelectorFlow = ({
     const now = new Date().toISOString();
     history.push({
       pathname: '/applications/preview',
+      search: applicationSearch(applicationId),
       state: {
         applicationId,
         applicationFilename: `${serviceTitle || 'Application packet'}.pdf`,
