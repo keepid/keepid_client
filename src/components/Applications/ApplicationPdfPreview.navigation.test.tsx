@@ -97,3 +97,17 @@ describe('application preview profile navigation', () => {
     expect(history.location.pathname).toBe('/profile/demo-client');
   });
 });
+
+it('shows print completion without a mailing action on print-only previews', async () => {
+  await openPreview({ deliveryMode: 'PRINT_ONLY', applicationState: 'READY_TO_PRINT' });
+  expect(screen.queryByRole('button', { name: 'Mail' })).toBeNull();
+  expect(screen.getByText('Ready to print')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Mark as printed and given to client' })).toBeTruthy();
+});
+
+it('shows record-only status without print or mail completion actions', async () => {
+  await openPreview({ deliveryMode: 'RECORD_ONLY', applicationState: 'RECORDED' });
+  expect(screen.getByText('Saved for records')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Mail' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Mark as printed and given to client' })).toBeNull();
+});

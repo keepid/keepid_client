@@ -94,3 +94,35 @@ it('opens a client shortcut directly and supports reloading its URL', async () =
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.getByText('Review the birth certificate instructions.')).toBeInTheDocument();
 });
+
+it('filters mail work by readiness and preserves print and record statuses', async () => {
+  const records = [
+    { id: 'ready', applicationName: 'Ready letter', state: 'READY_TO_MAIL', deliveryMode: 'MAIL', mailStatus: 'READY_TO_MAIL' },
+    { id: 'signed', applicationName: 'Signature letter', state: 'AWAITING_SIGNATURE', deliveryMode: 'MAIL', mailStatus: 'AWAITING_SIGNATURE' },
+    { id: 'sent', applicationName: 'Sent letter', state: 'MAILED', deliveryMode: 'MAIL', mailStatus: 'MAILED_WITH_LOB' },
+    { id: 'draft', applicationName: 'Draft letter', state: 'DRAFT', deliveryMode: 'MAIL', mailStatus: 'DRAFT' },
+    { id: 'print', applicationName: 'Client instructions', state: 'READY_TO_PRINT', deliveryMode: 'PRINT_ONLY', mailStatus: 'NOT_APPLICABLE' },
+    { id: 'record', applicationName: 'Intake record', state: 'RECORDED', deliveryMode: 'RECORD_ONLY', mailStatus: 'NOT_APPLICABLE' },
+  ];
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
+    ok: true,
+    status: 200,
+    json: async () => (url.endsWith('/list-applications') ? records : []),
+  })));
+  setup('/applications?view=all');
+  await screen.findByText('Ready letter');
+  expect(screen.getByText('Ready to print')).toBeInTheDocument();
+  expect(screen.getByText('Saved for records')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Document outcome'), { target: { value: 'MAIL' } });
+  expect(screen.queryByText('Client instructions')).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Mailing status'), { target: { value: 'NEEDS_MAILING' } });
+  expect(screen.getByText('Ready letter')).toBeInTheDocument();
+  ['Signature letter', 'Sent letter', 'Draft letter', 'Intake record'].forEach((name) => {
+    expect(screen.queryByText(name)).not.toBeInTheDocument();
+  });
+  fireEvent.change(screen.getByLabelText('Mailing status'), { target: { value: 'MAILED' } });
+  expect(screen.getByText('Sent letter')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Document outcome'), { target: { value: 'PRINT_ONLY' } });
+  expect(screen.getByText('Client instructions')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Mailing status')).not.toBeInTheDocument();
+});

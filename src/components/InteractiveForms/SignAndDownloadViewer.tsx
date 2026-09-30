@@ -11,6 +11,7 @@ import { useAlert } from 'react-alert';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import getServerURL from '../../serverOverride';
+import { getApplicationMailStatus } from '../Applications/api/applicationMailStatus';
 import {
   type ApplicationAttachmentOption,
   getApplicationAttachmentOptions,
@@ -50,6 +51,7 @@ export interface SignAndDownloadViewerProps {
   pdfFormsReadOnly?: boolean;
   startInEditMode?: boolean;
   canEditAttachments?: boolean;
+  canMail?: boolean;
 }
 
 export interface SignAndDownloadViewerHandle {
@@ -73,6 +75,7 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   pdfFormsReadOnly = false,
   startInEditMode = false,
   canEditAttachments = false,
+  canMail = true,
 }, ref) => {
   const FRAME_MAX_WIDTH_CLASS = 'tw-max-w-4xl';
   const [numPages, setNumPages] = useState(1);
@@ -91,6 +94,19 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
   /** Snapshot when opening expanded pad; stable while drawing in the modal. */
   const [modalSigSnapshot, setModalSigSnapshot] = useState<string | null>(null);
   const alert = useAlert();
+  const [mailEligible, setMailEligible] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setMailEligible(false);
+    if (canMail && applicationId) {
+      getApplicationMailStatus(applicationId)
+        .then(({ mailStatus }) => {
+          if (active) setMailEligible(!['NOT_APPLICABLE', 'DRAFT', 'CANCELLED'].includes(mailStatus));
+        })
+        .catch(() => { if (active) setMailEligible(false); });
+    }
+    return () => { active = false; };
+  }, [applicationId, canMail]);
   const [mailDialogIsOpen, setMailDialogIsOpen] = useState(false);
   const [showMailSuccess, setShowMailSuccess] = useState(false);
   const [activePlacementIdx, setActivePlacementIdx] = useState<number | null>(null);
@@ -1181,14 +1197,16 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
         >
           {printButtonLabel}
         </button>
-        <button
-          type="button"
-          onClick={() => setMailDialogIsOpen(true)}
-          disabled={isPdfActionsLocked || !allSigned}
-          className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${printButtonClass}`}
-        >
-          Mail
-        </button>
+        {canMail && mailEligible && (
+          <button
+            type="button"
+            onClick={() => setMailDialogIsOpen(true)}
+            disabled={isPdfActionsLocked || !allSigned}
+            className={`tw-flex-1 tw-min-w-0 tw-py-2.5 tw-rounded-lg tw-text-sm tw-font-medium tw-transition-colors ${printButtonClass}`}
+          >
+            Mail
+          </button>
+        )}
         {showSaveButton && (
           <button
             type="button"
