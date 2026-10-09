@@ -5,8 +5,10 @@ function capitalizeSegment(segment: string): string {
 }
 
 export function smartTitleCase(value: string): string {
-  return value.replace(/\p{L}[\p{L}'’.-]*/gu, (word) => (
-    word
+  // Match numeric ordinals before words so their suffix is not capitalized separately.
+  return value.replace(/\d+(?:st|nd|rd|th)\b|\p{L}[\p{L}'’.-]*/giu, (word) => {
+    if (/^\d/u.test(word)) return word.toLocaleLowerCase();
+    return word
       .split(/(['’.-])/u)
       .map((segment, index, segments) => {
         if (index % 2 !== 0) return segment;
@@ -15,6 +17,6 @@ export function smartTitleCase(value: string): string {
           && segments[0].length > 1;
         return followsContractionApostrophe ? segment.toLocaleLowerCase() : capitalizeSegment(segment);
       })
-      .join('')
-  ));
+      .join('');
+  });
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import MailchimpSubscribe from 'react-mailchimp-subscribe';
 import { Link } from 'react-router-dom';
 
 import { buildVersionLabel, currentBuildSha } from '../lib/buildVersion';
@@ -10,9 +9,9 @@ import Logo from '../static/images/logo.svg';
 
 const Footer = () => {
   const mailchimpUrl =
-    'https://keep.us7.list-manage.com/subscribe/post?u=9896e51b9ee0605d5e6745f82&amp;id=f16b440eb5';
+    'https://keep.us7.list-manage.com/subscribe/post?u=9896e51b9ee0605d5e6745f82&id=f16b440eb5';
   return (
-    <footer className="tw-bg-footerblack tw-px-16">
+    <footer className="tw-bg-footerblack tw-px-6 sm:tw-px-16">
       <div className="tw-container tw-bg-footerblack tw-mx-auto ">
         <div className="tw-flex tw-flex-col tw-pt-8 lg:tw-pt-20 tw-pb-5 lg:tw-pb-10 tw-px-3 lg:tw-px-24">
 
@@ -75,56 +74,34 @@ const Footer = () => {
           <div className="tw-h-px tw-bg-white" />
 
           <div className="lg:tw-flex lg:tw-flex-row tw-pb-4 lg:tw-justify-between">
-            <div>
+            <div className="tw-min-w-0">
               <p className="tw-text-white tw-pt-8 tw-font-medium">Sign up for our monthly email newsletter</p>
-              <MailchimpSubscribe
-                url={mailchimpUrl}
-                render={({ subscribe, status }) => (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      subscribe({
-                        EMAIL: e.currentTarget.email.value,
-                      });
-                    }}
+              <form action={mailchimpUrl} method="post" target="_blank" rel="noopener noreferrer">
+                <div className="tw-flex tw-max-w-md">
+                  <label htmlFor="email-address" className="tw-sr-only">
+                    Email address
+                  </label>
+                  <input
+                    id="email-address"
+                    name="EMAIL"
+                    type="email"
+                    autoComplete="email"
+                    aria-describedby="newsletter-handoff"
+                    required
+                    className="tw-min-w-0 tw-flex-1 tw-border-3 tw-border-white tw-block tw-w-64 tw-bg-footerblack tw-rounded-l-md tw-py-2 tw-px-3 tw-text-white tw-text-sm"
+                    placeholder="Enter your email"
+                  />
+                  <button
+                    type="submit"
+                    className="tw-shrink-0 tw-border-none tw-bg-white tw-rounded-r-md tw-px-3 tw-py-2 tw-text-sm tw-font-bold tw-text-gray-900 hover:tw-bg-gray-300"
                   >
-                    <div className="tw-flex">
-                      <div className="tw-relative tw-flex">
-                        <label htmlFor="email-address" className="tw-sr-only">
-                          Email address
-                        </label>
-                        <input
-                          id="email-address"
-                          name="email"
-                          type="email"
-                          autoComplete="email"
-                          required
-                          className="focus:tw-outline-none tw-border-3 tw-border-white tw-block tw-w-64 tw-bg-footerblack tw-rounded-l-md tw-py-2 tw-pl-10 tw-text-white tw-text-sm"
-                          placeholder="Enter your email"
-                        />
-                        <button
-                          type="submit"
-                          className="tw-border-none stw--ml-1 tw-bg-white tw-items-center tw-gap-x-1.5 tw-rounded-r-md tw-px-3 tw-py-2 tw-text-sm tw-font-bold tw-text-gray-900 hover:tw-bg-gray-300"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                          }}
-                        >
-                          Sign Up
-                        </button>
-                      </div>
-                    </div>
-                    {status === 'sending' && (
-                      <p className="my-auto tw-pt-3 tw-text-white tw-font-medium">Sending...</p>
-                    )}
-                    {status === 'error' && (
-                      <p className="my-auto tw-pt-3 tw-text-red-600 tw-font-medium">This email address is not valid.</p>
-                    )}
-                    {status === 'success' && (
-                      <p className="my-auto tw-pt-3 tw-text-twprimary tw-font-medium">Thank you for subscribing!</p>
-                    )}
-                  </form>
-                )}
-              />
+                    Sign Up
+                  </button>
+                </div>
+                <p id="newsletter-handoff" className="tw-pt-2 tw-text-sm tw-text-white">
+                  Opens Mailchimp in a new tab.
+                </p>
+              </form>
             </div>
             <div>
               <p className="tw-text-white tw-pt-4 lg:tw-pt-8 tw-font-medium">Join our purpose-driven team</p>
