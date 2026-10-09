@@ -17,4 +17,13 @@ describe('smartTitleCase', () => {
     expect(smartTitleCase("mcpherson o'connor smith-jones children’s hospital"))
       .toBe("McPherson O'Connor Smith-Jones Children’s Hospital");
   });
+
+  it.each([
+    ["mcpherson-o'connor", "McPherson-O'Connor"],
+    ['mcpherson-o’connor', 'McPherson-O’Connor'],
+    ["st. o'brien", "St. O'Brien"],
+    ["o-children's hospital", "O-Children's Hospital"],
+  ])('uses the name segment immediately before an apostrophe in %s', (input, expected) => {
+    expect(smartTitleCase(input)).toBe(expected);
+  });
 });
