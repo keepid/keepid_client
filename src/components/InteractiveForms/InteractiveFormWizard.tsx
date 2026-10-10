@@ -27,6 +27,8 @@ export function applyAutoFillFields(
   const merged = { ...pdfFill };
   autoFillFields.forEach((af) => {
     if (!af.pdfFieldName) return;
+    // A field a question answer already filled keeps that answer. Autofill covers only fields no question touches.
+    if (merged[af.pdfFieldName] !== undefined) return;
     if (af.fieldType === 'checkbox') {
       merged[af.pdfFieldName] = typeof af.value === 'string' && af.value.trim() !== '' ? af.value : 'true';
       return;
