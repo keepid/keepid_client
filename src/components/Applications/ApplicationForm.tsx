@@ -33,19 +33,14 @@ import {
   validateLastname,
   validatePhonenumber,
 } from '../SignUp/SignUp.validators';
-import {
-  fillPdfBlob,
-  listApplicationPdfIds,
-  updateProfileFromDirectives,
-  uploadCompletedPdf,
-} from './api/interactiveForm';
 import ApplicationCard from './ApplicationCard';
 import { filterAvailableApplications } from './ApplicationOptionsFilter';
 import ApplicationReviewPage from './ApplicationReviewPage';
-import { completeServiceRecord, createClassifiedService } from './applicationSelector/flowApi';
+import { completeServiceRecord } from './applicationSelector/flowApi';
 import type { SelectorCompletionContext } from './applicationSelector/types';
 import { ApplicationFormData, ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
+import { submitWizardFill } from './submitWizardFill';
 
 function WebFormPageContent({
   blankFormId,
@@ -591,50 +586,17 @@ export default function ApplicationForm({
       setFillingPdf(true);
       setSubmitError(null);
       try {
-        let existingApplicationIdsBeforeSave: Set<string> | null = null;
-        try {
-          existingApplicationIdsBeforeSave = new Set(await listApplicationPdfIds(targetClientUsername));
-        } catch {
-          existingApplicationIdsBeforeSave = null;
-        }
-        const blob = await fillPdfBlob(blankFormId, pdfFill, targetClientUsername);
-        let applicationId = serviceRecordId;
-        if (!applicationId && selectorCompletion) {
-          const created = await createClassifiedService({
-            clientUsername: targetClientUsername,
-            ...selectorCompletion,
-            directiveValues,
-          });
-          applicationId = created.applicationId;
-        }
-        const uploadResult = await uploadCompletedPdf(
-          blob,
-          applicationId || blankFormId,
+        const { blob, persistedId } = await submitWizardFill({
+          blankFormId,
+          clientUsername: targetClientUsername,
+          serviceRecordId,
+          selectorCompletion,
+          pdfFill,
           formOutput,
-          targetClientUsername,
           profileUpdates,
-        );
-        let persistedId = uploadResult.applicationId || uploadResult.fileId;
-        if (!persistedId && existingApplicationIdsBeforeSave) {
-          const applicationIdsAfterSave = await listApplicationPdfIds(targetClientUsername);
-          const newlyCreatedApplicationIds = applicationIdsAfterSave.filter(
-            (id) => !existingApplicationIdsBeforeSave?.has(id),
-          );
-          if (newlyCreatedApplicationIds.length === 1) {
-            persistedId = newlyCreatedApplicationIds[0];
-          }
-        }
-        if (!persistedId) {
-          throw new Error('Could not create a persisted application record. Please try again.');
-        }
+          directiveValues,
+        });
         setPersistedApplicationId(persistedId);
-        if (profileUpdates && Object.keys(profileUpdates).length > 0) {
-          try {
-            await updateProfileFromDirectives(profileUpdates, targetClientUsername);
-          } catch (updateErr) {
-            console.warn('Failed to update profile from form directives in background', updateErr);
-          }
-        }
         const url = URL.createObjectURL(blob);
         setFilledPdfUrl((prev) => {
           if (prev) URL.revokeObjectURL(prev);

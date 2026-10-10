@@ -7,10 +7,16 @@ import {
   normalizeDateLikeValue,
   resolveDirectiveFromProfilesForTarget,
 } from '../../utils/directives';
+import type { GetQuestionsV2Response } from '../Applications/api/interactiveForm';
 import { WizardSubmitProvider } from './InteractiveFormWizardContext';
 import { interactiveFormCells, interactiveFormRenderers } from './renderers';
 import { type AutoFillField, type BuilderState, type OutputFieldDefinition, computeMetadata } from './types';
-import { extractDirectivesFromUiSchema, normalizeTextFieldValues, useInteractiveForm } from './useInteractiveForm';
+import {
+  buildFormAnswers,
+  extractDirectivesFromUiSchema,
+  normalizeTextFieldValues,
+  useInteractiveForm,
+} from './useInteractiveForm';
 
 export function applyAutoFillFields(
   pdfFill: Record<string, unknown>,
@@ -77,6 +83,42 @@ export function buildTemplateDirectiveValues(
     ...extractAutoFillDirectiveValues(autoFillFields, resolvedProfiles),
     ...formDirectiveValues,
   };
+}
+
+export interface WizardSubmitPayloadInput {
+  uiSchema: Record<string, unknown> | null | undefined;
+  jsonSchema: Record<string, unknown> | null | undefined;
+  data: Record<string, unknown>;
+  resolvedProfiles: GetQuestionsV2Response['resolvedProfiles'] | null;
+  autoFillFields: AutoFillField[] | undefined;
+  outputFields: OutputFieldDefinition[] | undefined;
+}
+
+/**
+ * Everything the wizard hands to onSubmit for one submission. The wizard's requestSubmit and the
+ * fill-matrix harness both call this, so the harness exercises the same computation as the UI.
+ */
+export function buildWizardSubmitPayload({
+  uiSchema,
+  jsonSchema,
+  data,
+  resolvedProfiles,
+  autoFillFields,
+  outputFields,
+}: WizardSubmitPayloadInput) {
+  const normalizedData = normalizeTextFieldValues(data, jsonSchema);
+  const baseFill = uiSchema && jsonSchema
+    ? buildFormAnswers(uiSchema, jsonSchema, normalizedData, resolvedProfiles)
+    : {};
+  const pdfFill = applyAutoFillFields(baseFill, autoFillFields, resolvedProfiles);
+  const metadata = computeMetadata(outputFields, normalizedData, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
+  const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema, normalizedData, jsonSchema) : {};
+  const formDirectiveValues = uiSchema
+    ? extractDirectivesFromUiSchema(uiSchema, normalizedData, jsonSchema, { includeExcluded: true })
+    : {};
+  const directiveValues = buildTemplateDirectiveValues(autoFillFields, resolvedProfiles, formDirectiveValues);
+  const formOutput = { ...pdfFill, metadata };
+  return { normalizedData, pdfFill, formOutput, formData: normalizedData, profileUpdates, directiveValues };
 }
 
 export interface InteractiveFormWizardProps {
@@ -147,28 +189,17 @@ export default function InteractiveFormWizard({
   }, [data, getFormAnswers, jsonSchema, uiSchema, onDebugUpdate, effectiveAutoFillFields, resolvedProfiles]);
 
   const requestSubmit = useCallback(() => {
-    const normalizedData = normalizeTextFieldValues(data, jsonSchema);
-    if (normalizedData !== data) setData(normalizedData);
-    const baseFill = getFormAnswers(normalizedData);
-    const pdfFill = applyAutoFillFields(baseFill, effectiveAutoFillFields, resolvedProfiles);
-    const metadata = computeMetadata(effectiveOutputFields, normalizedData, { pdfFill, resolvedProfiles: resolvedProfiles ?? undefined });
-    const profileUpdates = uiSchema ? extractDirectivesFromUiSchema(uiSchema as Record<string, unknown>, normalizedData, jsonSchema) : {};
-    const formDirectiveValues = uiSchema
-      ? extractDirectivesFromUiSchema(
-        uiSchema as Record<string, unknown>,
-        normalizedData,
-        jsonSchema,
-        { includeExcluded: true },
-      )
-      : {};
-    const directiveValues = buildTemplateDirectiveValues(
-      effectiveAutoFillFields,
+    const payload = buildWizardSubmitPayload({
+      uiSchema: uiSchema as Record<string, unknown> | null,
+      jsonSchema: jsonSchema as Record<string, unknown> | null,
+      data,
       resolvedProfiles,
-      formDirectiveValues,
-    );
-    const formOutput = { ...pdfFill, metadata };
-    onSubmit(pdfFill, formOutput, normalizedData, profileUpdates, directiveValues);
-  }, [data, getFormAnswers, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema, jsonSchema]);
+      autoFillFields: effectiveAutoFillFields,
+      outputFields: effectiveOutputFields,
+    });
+    if (payload.normalizedData !== data) setData(payload.normalizedData);
+    onSubmit(payload.pdfFill, payload.formOutput, payload.formData, payload.profileUpdates, payload.directiveValues);
+  }, [data, effectiveOutputFields, effectiveAutoFillFields, onSubmit, resolvedProfiles, uiSchema, jsonSchema]);
 
   if (loading) {
     return (
