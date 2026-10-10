@@ -46,3 +46,6 @@ agents/
 start-agent.sh
 stop-agent.sh
 WALKTHROUGH.md
+
+# Fill matrix run output (report.md, report.json, server.log)
+e2e/fill-matrix/out/
