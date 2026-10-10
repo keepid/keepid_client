@@ -158,6 +158,16 @@ function targetText(...values: unknown[]): string {
     .join(' ');
 }
 
+/**
+ * Scope of the group sub-field that shares a group-level fill's directive. A group-level fill
+ * reads that sub-field's answer, so the last-name fill never takes the first name.
+ */
+function subFieldScopeForDirective(elements: Record<string, unknown>[], directive: unknown): string | undefined {
+  if (typeof directive !== 'string') return undefined;
+  const sub = elements.find((el) => (el.options as Record<string, unknown> | undefined)?.directive === directive);
+  return typeof sub?.scope === 'string' ? sub.scope : undefined;
+}
+
 export function buildFormAnswers(
   uiSchema: Record<string, unknown>,
   jsonSchema: Record<string, unknown>,
@@ -193,30 +203,9 @@ export function buildFormAnswers(
       // that are not valid PDF option tokens.
       if (options?.pdfField && scope && !hasOptionMappings) {
         const pdfField = options.pdfField as string;
-        const directive = options.directive;
-        const hasConfiguredDirective = typeof directive === 'string'
-          ? directive.trim() !== ''
-          : Array.isArray(directive) && directive.length > 0;
-        // A configured directive is the source of truth for this destination. If it is
-        // invalid or its profile value is missing, leave the PDF field blank instead of
-        // silently substituting the question answer (often the client's first name).
-        let value: unknown = hasConfiguredDirective ? undefined : getPropValue(scope);
-        const targetName = targetText(element.label, pdfField);
-        if (directive != null && resolvedProfiles) {
-          if (typeof directive === 'string') {
-            const resolved = resolveDirectiveFromProfilesForTarget(directive, resolvedProfiles, targetName);
-            if (resolved !== undefined) value = resolved;
-          } else if (Array.isArray(directive)) {
-            const useDirective = resolveConditionalDirective(
-              directive as Array<{ when?: { scope?: string; schema?: Record<string, unknown> }; use: string }>,
-              data,
-            );
-            if (useDirective) {
-              const resolved = resolveDirectiveFromProfilesForTarget(useDirective, resolvedProfiles, targetName);
-              if (resolved !== undefined) value = resolved;
-            }
-          }
-        }
+        // A question's PDF field is filled from its answer only. The directive pre-filled that
+        // answer (buildInitialData), so an edited or cleared answer is what reaches the PDF.
+        let value: unknown = getPropValue(scope);
         const boolScope = isBooleanScope(scope);
         if (boolScope || typeof value === 'boolean') {
           const isChecked = value === true || value === 'true' || value === 1 || value === '1';
@@ -250,28 +239,16 @@ export function buildFormAnswers(
           const isSharedGroupField = (mappingCountByPdfField[pdfField] ?? 0) > 1;
           let fillVal: unknown;
           if (isSharedGroupField) {
-            // Tight mapping for shared-group targets:
-            // require an explicit PDF token or directive result; never fall back to UI option value.
+            // Tight mapping for shared-group targets: require an explicit PDF token;
+            // never fall back to the UI option value.
             if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
               if (explicitFill === ON_PLACEHOLDER) return;
               fillVal = explicitFill;
-            } else if (m.directive && resolvedProfiles) {
-              fillVal = resolveDirectiveFromProfilesForTarget(
-                m.directive as string,
-                resolvedProfiles,
-                targetText(element.label, pdfField),
-              );
             } else {
               return;
             }
           } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
             fillVal = explicitFill;
-          } else if (m.directive && resolvedProfiles) {
-            fillVal = resolveDirectiveFromProfilesForTarget(
-              m.directive as string,
-              resolvedProfiles,
-              targetText(element.label, pdfField),
-            );
           } else {
             fillVal = currentVal;
           }
@@ -287,15 +264,9 @@ export function buildFormAnswers(
           const fillCond = cf.fillCondition as Array<{ scope?: string; schema?: Record<string, unknown> }> | undefined;
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
-          const fillVal = cf.fillValue ?? (resolvedProfiles && cf.directive
-            ? resolveDirectiveFromProfilesForTarget(
-              cf.directive as string,
-              resolvedProfiles,
-              targetText(element.label, pdfField),
-            )
-            : baseValue);
+          const fillVal = cf.fillValue ?? baseValue;
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
-            const usesBaseValue = cf.fillValue === undefined && !(resolvedProfiles && cf.directive);
+            const usesBaseValue = cf.fillValue === undefined;
             out[pdfField] = formatValueForPdf(fillVal, usesBaseValue && isTitleCaseTextScope(scope));
           }
         });
@@ -332,23 +303,11 @@ export function buildFormAnswers(
               if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
                 if (explicitFill === ON_PLACEHOLDER) return;
                 fillVal = explicitFill;
-              } else if (m.directive && resolvedProfiles) {
-                fillVal = resolveDirectiveFromProfilesForTarget(
-                  m.directive as string,
-                  resolvedProfiles,
-                  targetText(element.label, pdfField),
-                );
               } else {
                 return;
               }
             } else if (explicitFill !== undefined && explicitFill !== null && explicitFill !== '') {
               fillVal = explicitFill;
-            } else if (m.directive && resolvedProfiles) {
-              fillVal = resolveDirectiveFromProfilesForTarget(
-                m.directive as string,
-                resolvedProfiles,
-                targetText(element.label, pdfField),
-              );
             } else {
               fillVal = val;
             }
@@ -356,22 +315,20 @@ export function buildFormAnswers(
           }
         });
       }
-      if (conditionalFills && firstScope) {
-        const baseValue = getPropValue(firstScope);
+      if (conditionalFills) {
         conditionalFills.forEach((cf) => {
           const pdfField = cf.pdfField as string | undefined;
           const fillCond = cf.fillCondition as Array<{ scope?: string; schema?: Record<string, unknown> }> | undefined;
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
-          const fillVal = cf.fillValue ?? (cf.directive && resolvedProfiles
-            ? resolveDirectiveFromProfilesForTarget(
-              cf.directive as string,
-              resolvedProfiles,
-              targetText(element.label, pdfField),
-            ) : baseValue);
+          // Literal fills need no source. Otherwise each fill reads its own sub-field's answer.
+          const sourceScope = cf.fillValue === undefined
+            ? subFieldScopeForDirective(element.elements as Record<string, unknown>[], cf.directive)
+            : undefined;
+          if (cf.fillValue === undefined && sourceScope === undefined) return;
+          const fillVal = cf.fillValue ?? getPropValue(sourceScope as string);
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
-            const usesBaseValue = cf.fillValue === undefined && !(cf.directive && resolvedProfiles);
-            out[pdfField] = formatValueForPdf(fillVal, usesBaseValue && isTitleCaseTextScope(firstScope));
+            out[pdfField] = formatValueForPdf(fillVal, cf.fillValue === undefined && isTitleCaseTextScope(sourceScope as string));
           }
         });
       }
@@ -668,10 +625,13 @@ export function extractDirectivesFromUiSchema(
           conditionalFills?.forEach((fill) => {
             const conditions = fill.fillCondition as Array<{ scope?: string; schema?: Record<string, unknown> }> | undefined;
             if (!fillConditionMatches(conditions, data)) return;
+            // Sync the answer of the sub-field this fill shares a directive with.
+            const sourceScope = subFieldScopeForDirective(element.elements as Record<string, unknown>[], fill.directive);
+            if (!sourceScope) return;
             addDirectiveValue(
               fill.directive,
-              firstScope,
-              targetText(element.label, fill.pdfField, firstScope),
+              sourceScope,
+              targetText(element.label, fill.pdfField, sourceScope),
             );
           });
         }

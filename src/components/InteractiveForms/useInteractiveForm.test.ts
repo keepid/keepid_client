@@ -7,7 +7,12 @@ import {
   extractAutoFillDirectiveValues,
 } from './InteractiveFormWizard';
 import type { AutoFillField } from './types';
-import { buildFormAnswers, extractDirectivesFromUiSchema, normalizeTextFieldValues } from './useInteractiveForm';
+import {
+  buildFormAnswers,
+  buildInitialData,
+  extractDirectivesFromUiSchema,
+  normalizeTextFieldValues,
+} from './useInteractiveForm';
 
 const resolvedProfiles: ResolvedProfiles = {
   client: {
@@ -100,7 +105,8 @@ describe('interactive form PDF fill directives', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 5, 2));
 
-    expect(buildFormAnswers(uiSchema, jsonSchema, {}, resolvedProfiles)).toEqual({
+    const prefilled = buildInitialData(uiSchema, resolvedProfiles);
+    expect(buildFormAnswers(uiSchema, jsonSchema, prefilled, resolvedProfiles)).toEqual({
       clientFullName: 'Ada Lovelace',
       workerDob: '12/09/1906',
       orgName: 'Demo Org',
@@ -185,7 +191,40 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
-  it('does not fall back to a question answer when its PDF directive is unresolved', () => {
+  it('fills a question PDF field from the edited answer, not its profile directive', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/firstName',
+          options: { pdfField: 'first_name', directive: 'client.currentName.first' },
+        },
+      ],
+    };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, { firstName: 'grace' }, resolvedProfiles)).toEqual({
+      first_name: 'Grace',
+    });
+  });
+
+  it('leaves a question PDF field empty when its answer is empty, even if the directive resolves', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/firstName',
+          options: { pdfField: 'first_name', directive: 'client.currentName.first' },
+        },
+      ],
+    };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, { firstName: '' }, resolvedProfiles)).toEqual({});
+    expect(buildFormAnswers(uiSchema, jsonSchema, {}, resolvedProfiles)).toEqual({});
+  });
+
+  it('fills a question PDF field from its answer when its PDF directive is unresolved', () => {
     const uiSchema = {
       type: 'VerticalLayout',
       elements: [
@@ -199,7 +238,154 @@ describe('interactive form PDF fill directives', () => {
 
     expect(
       buildFormAnswers(uiSchema, jsonSchema, { firstName: 'Ada' }, resolvedProfiles),
-    ).toEqual({});
+    ).toEqual({ unrelated_pdf_field: 'Ada' });
+  });
+
+  it('pre-fills a question from its profile directive, and the PDF takes the answer the user leaves', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/firstName',
+          options: { pdfField: 'first_name', directive: 'client.currentName.first' },
+        },
+      ],
+    };
+
+    expect(buildInitialData(uiSchema, resolvedProfiles)).toEqual({ firstName: 'Ada' });
+    expect(buildFormAnswers(uiSchema, jsonSchema, buildInitialData(uiSchema, resolvedProfiles), resolvedProfiles))
+      .toEqual({ first_name: 'Ada' });
+  });
+
+  it('sends an edited pre-filled answer to profile updates instead of the profile value', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/streetAddress',
+          options: { directive: 'client.personalAddress.line1' },
+        },
+      ],
+    };
+
+    expect(extractDirectivesFromUiSchema(uiSchema, { streetAddress: '7 New Street' })).toEqual({
+      'client.personalAddress.line1': '7 New Street',
+    });
+  });
+
+  it('fills a second destination from the question answer, not its directive', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Control',
+          scope: '#/properties/firstName',
+          options: {
+            pdfField: 'first_name',
+            conditionalFills: [{ pdfField: 'first_name_2', directive: 'client.currentName.first' }],
+          },
+        },
+      ],
+    };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, { firstName: 'Grace' }, resolvedProfiles)).toEqual({
+      first_name: 'Grace',
+      first_name_2: 'Grace',
+    });
+  });
+
+  it('maps group sub-field answers to their own PDF fields and to the matching second destination', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Group',
+          label: "Father's name",
+          elements: [
+            {
+              type: 'Control',
+              label: 'First',
+              scope: '#/properties/fatherFirst',
+              options: { pdfField: 'First_4', directive: 'client.fatherName.first' },
+            },
+            {
+              type: 'Control',
+              label: 'Last',
+              scope: '#/properties/fatherLast',
+              options: { pdfField: 'Last_prior', directive: 'client.fatherName.last' },
+            },
+          ],
+          options: {
+            conditionalFills: [{ pdfField: 'Current last_2', directive: 'client.fatherName.last' }],
+          },
+        },
+      ],
+    };
+    const answers = { fatherFirst: 'Grace', fatherLast: 'Byron' };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, answers, resolvedProfiles)).toEqual({
+      First_4: 'Grace',
+      Last_prior: 'Byron',
+      'Current last_2': 'Byron',
+    });
+  });
+
+  it('syncs each group sub-field answer to its own profile directive, including the second destination', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Group',
+          label: "Father's name",
+          elements: [
+            { type: 'Control', label: 'First', scope: '#/properties/fatherFirst', options: { directive: 'client.fatherName.first' } },
+            { type: 'Control', label: 'Last', scope: '#/properties/fatherLast', options: { directive: 'client.fatherName.last' } },
+          ],
+          options: {
+            conditionalFills: [{ pdfField: 'Current last_2', directive: 'client.fatherName.last' }],
+          },
+        },
+      ],
+    };
+
+    expect(extractDirectivesFromUiSchema(uiSchema, { fatherFirst: 'Grace', fatherLast: 'Byron' })).toEqual({
+      'client.fatherName.first': 'Grace',
+      'client.fatherName.last': 'Byron',
+    });
+  });
+
+  it('keeps a literal group-level fill without reading any sub-field', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Group',
+          elements: [
+            { type: 'Control', scope: '#/properties/fatherFirst', options: { pdfField: 'First_4' } },
+          ],
+          options: {
+            conditionalFills: [{ pdfField: 'Fixed', fillValue: 'Yes' }],
+          },
+        },
+      ],
+    };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, { fatherFirst: 'Grace' }, resolvedProfiles)).toEqual({
+      First_4: 'Grace',
+      Fixed: 'Yes',
+    });
+  });
+
+  it('does not let a question-less autofill overwrite a PDF field a question answer already filled', () => {
+    expect(
+      applyAutoFillFields(
+        { first_name: 'Grace' },
+        [{ pdfFieldName: 'first_name', valueSource: 'directive', value: 'client.currentName.first' }],
+        resolvedProfiles as Record<string, unknown>,
+      ),
+    ).toEqual({ first_name: 'Grace' });
   });
 
   it('preserves fixed literal outcomes for boolean and option annotations', () => {
@@ -311,7 +497,7 @@ describe('interactive form PDF fill directives', () => {
       ],
     };
 
-    expect(buildFormAnswers(uiSchema, jsonSchema, {}, resolvedProfiles)).toEqual({
+    expect(buildFormAnswers(uiSchema, jsonSchema, buildInitialData(uiSchema, resolvedProfiles), resolvedProfiles)).toEqual({
       mother_maiden_name: 'Milbanke',
       mother_last_name: 'Byron',
     });
