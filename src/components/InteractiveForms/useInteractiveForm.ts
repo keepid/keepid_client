@@ -322,13 +322,11 @@ export function buildFormAnswers(
           if (!pdfField) return;
           if (!fillConditionMatches(fillCond, data)) return;
           // Literal fills need no source. Otherwise each fill reads its own sub-field's answer.
-          const sourceScope = cf.fillValue === undefined
-            ? subFieldScopeForDirective(element.elements as Record<string, unknown>[], cf.directive)
-            : undefined;
-          if (cf.fillValue === undefined && sourceScope === undefined) return;
-          const fillVal = cf.fillValue ?? getPropValue(sourceScope as string);
+          const sourceScope = subFieldScopeForDirective(element.elements as Record<string, unknown>[], cf.directive);
+          const fillVal = cf.fillValue ?? (sourceScope !== undefined ? getPropValue(sourceScope) : undefined);
           if (fillVal !== undefined && fillVal !== null && fillVal !== '') {
-            out[pdfField] = formatValueForPdf(fillVal, cf.fillValue === undefined && isTitleCaseTextScope(sourceScope as string));
+            const usesBaseValue = cf.fillValue === undefined && sourceScope !== undefined;
+            out[pdfField] = formatValueForPdf(fillVal, usesBaseValue && isTitleCaseTextScope(sourceScope));
           }
         });
       }

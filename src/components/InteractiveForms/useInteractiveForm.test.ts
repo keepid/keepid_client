@@ -378,6 +378,30 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
+  it('skips a group-level fill that has no literal value and no sub-field sharing its directive', () => {
+    const uiSchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'Group',
+          elements: [
+            { type: 'Control', scope: '#/properties/fatherFirst', options: { pdfField: 'First_4' } },
+          ],
+          options: {
+            conditionalFills: [
+              { pdfField: 'Unmatched', directive: 'client.fatherName.last' },
+              { pdfField: 'NullLiteral', fillValue: null },
+            ],
+          },
+        },
+      ],
+    };
+
+    expect(buildFormAnswers(uiSchema, jsonSchema, { fatherFirst: 'Grace' }, resolvedProfiles)).toEqual({
+      First_4: 'Grace',
+    });
+  });
+
   it('does not let a question-less autofill overwrite a PDF field a question answer already filled', () => {
     expect(
       applyAutoFillFields(
