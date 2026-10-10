@@ -48,7 +48,7 @@ function conditionMatches(
   return false;
 }
 
-function fillConditionMatches(
+export function fillConditionMatches(
   fillCondition: Array<{ scope?: string; schema?: Record<string, unknown> }> | undefined,
   data: Record<string, unknown>,
 ): boolean {
@@ -398,7 +398,7 @@ export function buildFormAnswers(
 }
 
 /** Build initial form data by resolving directives from resolvedProfiles. */
-function buildInitialData(
+export function buildInitialData(
   uiSchema: Record<string, unknown>,
   resolvedProfiles: GetQuestionsV2Response['resolvedProfiles'] | null,
 ): Record<string, unknown> {
