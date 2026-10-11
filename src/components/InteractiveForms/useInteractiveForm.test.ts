@@ -412,6 +412,21 @@ describe('interactive form PDF fill directives', () => {
     ).toEqual({ first_name: 'Grace' });
   });
 
+  it('checks a directive-driven checkbox autofill only when its directive resolves to a truthy value', () => {
+    expect(
+      applyAutoFillFields(
+        {},
+        [
+          { pdfFieldName: 'has_first', fieldType: 'checkbox', valueSource: 'directive', value: 'client.currentName.first' },
+          { pdfFieldName: 'has_suffix', fieldType: 'checkbox', valueSource: 'directive', value: 'client.motherName.suffix' },
+          { pdfFieldName: 'parent', fieldType: 'checkbox', valueSource: 'directive', value: '' },
+          { pdfFieldName: 'parent', fieldType: 'checkbox', valueSource: 'literal', value: 'Choice2_father' },
+        ],
+        resolvedProfiles as Record<string, unknown>,
+      ),
+    ).toEqual({ has_first: 'true', parent: 'Choice2_father' });
+  });
+
   it('preserves fixed literal outcomes for boolean and option annotations', () => {
     const uiSchema = {
       type: 'VerticalLayout',

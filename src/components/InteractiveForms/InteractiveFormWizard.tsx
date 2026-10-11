@@ -18,6 +18,16 @@ import {
   useInteractiveForm,
 } from './useInteractiveForm';
 
+const UNCHECKED_VALUES = new Set(['', 'false', 'no', 'n', '0', 'off', 'unchecked']);
+
+/** Whether a resolved profile value should check a checkbox. */
+function isCheckedValue(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') return !UNCHECKED_VALUES.has(value.trim().toLowerCase());
+  return false;
+}
+
 export function applyAutoFillFields(
   pdfFill: Record<string, unknown>,
   autoFillFields: AutoFillField[] | undefined,
@@ -30,6 +40,13 @@ export function applyAutoFillFields(
     // A field a question answer already filled keeps that answer. Autofill covers only fields no question touches.
     if (merged[af.pdfFieldName] !== undefined) return;
     if (af.fieldType === 'checkbox') {
+      if (af.valueSource === 'directive') {
+        // A directive-driven checkbox is checked when its directive resolves to a truthy profile value.
+        if (!af.value) return;
+        const resolved = resolveDirectiveFromProfilesForTarget(af.value, resolvedProfiles as never, af.pdfFieldName);
+        if (isCheckedValue(resolved)) merged[af.pdfFieldName] = 'true';
+        return;
+      }
       merged[af.pdfFieldName] = typeof af.value === 'string' && af.value.trim() !== '' ? af.value : 'true';
       return;
     }
