@@ -174,22 +174,21 @@ function UploadDocumentsPage({
         <title>Upload Documents</title>
         <meta name="description" content="Keep.id" />
       </Helmet>
-      <div className="jumbotron-fluid mt-5">
-        {isQuickAccessUpload ? (
+      <div className={`jumbotron-fluid${phoneUploadToken ? '' : ' mt-5'}`}>
+        {!phoneUploadToken && isQuickAccessUpload && (
           <div className="mb-4">
             <Link to="/" className="btn btn-outline-secondary">
               <i className="fas fa-chevron-left me-1" aria-hidden />
               Back
             </Link>
           </div>
-        ) : (
+        )}
+        {!phoneUploadToken && !isQuickAccessUpload && (
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
             <h1 className="display-4 mb-0">Upload Documents</h1>
-            {phoneUploadToken ? null : (
-              <Link to={returnLink} className="btn btn-outline-secondary">
-                Back to documents
-              </Link>
-            )}
+            <Link to={returnLink} className="btn btn-outline-secondary">
+              Back to documents
+            </Link>
           </div>
         )}
         <DocumentsInlineUpload

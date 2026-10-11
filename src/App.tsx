@@ -296,14 +296,22 @@ class App extends React.Component<{}, State, {}> {
                 content="Securely Combating Homelessness"
               />
             </Helmet>
-            <Header
-              isLoggedIn={role !== Role.LoggedOut}
-              logIn={this.logIn}
-              logOut={this.logOut}
-              role={role}
-              organization={organization}
-              username={username}
-              email={email}
+            {/* The phone scanner link is a single-purpose capture page; the site
+                header and footer push the capture button below the fold. */}
+            <Route
+              render={({ location }) => (
+                location.pathname.startsWith('/phone-upload') ? null : (
+                  <Header
+                    isLoggedIn={role !== Role.LoggedOut}
+                    logIn={this.logIn}
+                    logOut={this.logOut}
+                    role={role}
+                    organization={organization}
+                    username={username}
+                    email={email}
+                  />
+                )
+              )}
             />
             {/* PWA install nudge — opens once per login session.
                 Triggered by username change; lib/pwa handles platform + dismissal logic. */}
@@ -771,7 +779,8 @@ class App extends React.Component<{}, State, {}> {
           </div>
           <Route
             render={({ location }) => (
-              location.pathname.startsWith('/communications') ? null : <Footer />
+              location.pathname.startsWith('/communications')
+                || location.pathname.startsWith('/phone-upload') ? null : <Footer />
             )}
           />
         </div>
