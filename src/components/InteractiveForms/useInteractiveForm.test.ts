@@ -97,7 +97,7 @@ describe('interactive form PDF fill directives', () => {
         {
           type: 'Control',
           scope: '#/properties/dateQuestion',
-          options: { pdfField: 'today', directive: 'org.$date' },
+          options: { pdfField: 'today', directive: 'currentDate' },
         },
       ],
     };
@@ -570,7 +570,7 @@ describe('interactive form PDF fill directives', () => {
     });
   });
 
-  it('syncs parent-name alias directives back to canonical profile paths', () => {
+  it('does not save retired parent-name directives to profile paths', () => {
     const uiSchema = {
       type: 'VerticalLayout',
       elements: [
@@ -589,10 +589,7 @@ describe('interactive form PDF fill directives', () => {
       ],
     };
 
-    expect(extractDirectivesFromUiSchema(uiSchema, { motherMaiden: 'Milbanke', fatherLast: 'Byron' })).toEqual({
-      'client.motherName.maiden': 'Milbanke',
-      'client.fatherName.last': 'Byron',
-    });
+    expect(extractDirectivesFromUiSchema(uiSchema, { motherMaiden: 'Milbanke', fatherLast: 'Byron' })).toEqual({});
   });
 
   it('syncs title-cased free-text answers back to profile directives', () => {
