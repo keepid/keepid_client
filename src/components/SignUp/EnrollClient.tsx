@@ -2,7 +2,7 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 import { useAlert } from 'react-alert';
 import { Helmet } from 'react-helmet';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 
 import { isTeamKeepOrganization } from '../../utils/featureAccess';
 import { smartTitleCase } from '../../utils/textCase';
@@ -65,6 +65,7 @@ function defaultExperiencingHomelessnessForSession(): boolean {
 
 export default function EnrollClientPage(): JSX.Element {
   const alert = useAlert();
+  const history = useHistory();
   const location = useLocation();
   const initialPhone = new URLSearchParams(location.search).get('phone') || '';
   const defaultExperiencingHomelessness = defaultExperiencingHomelessnessForSession();
@@ -255,7 +256,11 @@ export default function EnrollClientPage(): JSX.Element {
           });
           mailAddressSaved = profileResponse.status === 'SUCCESS';
         }
-        setEnrolled(true);
+        if (response.username) {
+          history.push(`/profile/${encodeURIComponent(response.username)}`);
+        } else {
+          setEnrolled(true);
+        }
         if (mailAddressSaved) {
           alert.success(
             `${values.firstname} ${values.lastname} has been enrolled successfully.`,
