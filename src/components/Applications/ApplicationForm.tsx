@@ -41,6 +41,7 @@ import type { SelectorCompletionContext } from './applicationSelector/types';
 import { ApplicationFormData, ApplicationType, formContent as applicationFormPages, useApplicationFormContext } from './Hooks/ApplicationFormHook';
 import useGetApplicationRegistry from './Hooks/UseGetApplicationRegistry';
 import { submitWizardFill } from './submitWizardFill';
+import { describeWizardSubmitFailure } from './wizardSubmitFailure';
 
 function WebFormPageContent({
   blankFormId,
@@ -161,6 +162,7 @@ export default function ApplicationForm({
   const [shouldPrompt, setShouldPrompt] = useState(true);
   const [fillingPdf, setFillingPdf] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitErrorDetail, setSubmitErrorDetail] = useState<string | null>(null);
   const [whoForMode, setWhoForMode] = useState<'existing' | 'new'>('existing');
   const [clientQuery, setClientQuery] = useState('');
   const [debouncedClientQuery, setDebouncedClientQuery] = useState('');
@@ -585,6 +587,7 @@ export default function ApplicationForm({
       }
       setFillingPdf(true);
       setSubmitError(null);
+      setSubmitErrorDetail(null);
       try {
         const { blob, persistedId } = await submitWizardFill({
           blankFormId,
@@ -606,7 +609,12 @@ export default function ApplicationForm({
         setWizardFormData(formData);
         handleNext();
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : 'Could not generate PDF. Please try again.');
+        const failure = describeWizardSubmitFailure(err);
+        console.error('Could not generate the application PDF', err);
+        setSubmitError(failure.message);
+        setSubmitErrorDetail(failure.detail);
+        // Reopen the wizard with these answers. It restores them on its last step, so the user can retry.
+        setWizardFormData(formData);
       } finally {
         setFillingPdf(false);
       }
@@ -1180,8 +1188,22 @@ export default function ApplicationForm({
         )}
 
         {submitError && (isWebFormPage || isSignAndDownloadPage) && (
-          <Alert variant="danger" className="tw-mt-4" onClose={() => setSubmitError(null)} dismissible>
+          <Alert
+            variant="danger"
+            className="tw-mt-4"
+            onClose={() => {
+              setSubmitError(null);
+              setSubmitErrorDetail(null);
+            }}
+            dismissible
+          >
             {submitError}
+            {submitErrorDetail && (
+              <details className="tw-mt-2 tw-text-sm">
+                <summary>Technical details</summary>
+                <div className="tw-mt-1 tw-break-words">{submitErrorDetail}</div>
+              </details>
+            )}
           </Alert>
         )}
 
