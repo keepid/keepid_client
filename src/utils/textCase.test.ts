@@ -26,4 +26,14 @@ describe('smartTitleCase', () => {
   ])('uses the name segment immediately before an apostrophe in %s', (input, expected) => {
     expect(smartTitleCase(input)).toBe(expected);
   });
+
+  it.each([
+    ['Philadelphia PA', 'Philadelphia PA'],
+    ['PO Box 1815', 'PO Box 1815'],
+    ['100 main st NW', '100 Main St NW'],
+    ['john smith III', 'John Smith III'],
+    ['NEW YORK NY', 'New York NY'],
+  ])('keeps uppercase state codes and abbreviations in %s', (input, expected) => {
+    expect(smartTitleCase(input)).toBe(expected);
+  });
 });
