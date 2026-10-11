@@ -4,6 +4,7 @@ import {
   canonicalDirectiveForTarget,
   getByPath,
   isExcludedFromProfileFormSync,
+  isResolvableDirective,
   normalizeDateLikeValue,
   resolveDirectiveFromProfilesForTarget,
 } from '../../utils/directives';
@@ -558,6 +559,8 @@ export function extractDirectivesFromUiSchema(
     const profileDirective = sourceDirectiveForFormValue(
       canonicalDirectiveForTarget(selectedDirective, targetName),
     );
+    // A retired or unknown directive is not a profile field, so it is not saved back.
+    if (!isResolvableDirective(profileDirective)) return;
     if (!extractionOptions.includeExcluded && isExcludedFromProfileFormSync(profileDirective)) return;
     directivesMap[profileDirective] = formatTextValue(value, isTitleCaseTextScope(scope));
   }

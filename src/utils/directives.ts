@@ -152,7 +152,50 @@ export const SUPPORTED_DIRECTIVES = DIRECTIVE_CATALOG_COLUMNS.flatMap((column) =
   column.groups.flatMap((group) => group.items.map((item) => item.directive))
 ));
 
-const SUPPORTED_DIRECTIVE_KEYS = new Set(SUPPORTED_DIRECTIVES.map((directive) => directive.toLowerCase()));
+const USER_SCOPES = ['client', 'worker', 'director'];
+
+/** Paths under each person scope (client, worker, director). Mirrors the server's directive catalog. */
+const USER_DIRECT_PATHS = [
+  'currentName.first', 'currentName.middle', 'currentName.last', 'currentName.suffix',
+  'fatherName.first', 'fatherName.middle', 'fatherName.last', 'fatherName.suffix', 'fatherName.maiden',
+  'motherName.first', 'motherName.middle', 'motherName.last', 'motherName.suffix', 'motherName.maiden',
+  'birthDate', 'email', 'sex', 'phoneBook.0.phoneNumber', 'penndotNumber',
+  'personalAddress.line1', 'personalAddress.line2', 'personalAddress.city', 'personalAddress.state',
+  'personalAddress.zip', 'personalAddress.county',
+  'mailAddress.line1', 'mailAddress.line2', 'mailAddress.city', 'mailAddress.state',
+  'mailAddress.zip', 'mailAddress.county',
+];
+const USER_COMPUTED_PATHS = [
+  '$age', '$birthYear', '$birthMonth', '$birthDay', '$dob_mm/dd/yyyy', '$dob_month_day_year',
+  '$fullName', '$primaryPhoneLast7', '$phoneLast7', '$primaryPhoneAreaCode',
+  '$primaryPhoneTelephonePrefix', '$primaryPhoneLineNumber',
+  '$fullAddress', '$fullPersonalAddress', '$fullMailAddress',
+  'personalAddress.$line1And2', 'personalAddress.$cityStateZip',
+  'mailAddress.$line1And2', 'mailAddress.$cityStateZip',
+];
+const ORG_PATHS = [
+  'organizationName', 'email', 'phoneNumber', 'ein', 'taxStatusLabel', 'website',
+  'address.line1', 'address.line2', 'address.city', 'address.state', 'address.zip', 'address.county',
+  'creationDate', '$fullAddress', 'address.$line1And2', 'address.$cityStateZip',
+];
+
+/**
+ * Every directive key the resolver accepts, spelled exactly as the server's directive catalog spells
+ * it. Document-only keys (images, responses.*) are not form values, so they are not here. A key
+ * outside this set resolves to nothing. Retired spellings get a suggested replacement from
+ * replacementForDeprecatedDirective, which never affects resolution.
+ */
+export const RESOLVABLE_DIRECTIVES: ReadonlySet<string> = new Set([
+  'currentDate',
+  'director.title',
+  ...USER_SCOPES.flatMap((scope) => [...USER_DIRECT_PATHS, ...USER_COMPUTED_PATHS].map((path) => `${scope}.${path}`)),
+  ...ORG_PATHS.map((path) => `org.${path}`),
+]);
+
+/** Whether a directive key, with any namespace prefix, is one the resolver accepts. */
+export function isResolvableDirective(directive: string): boolean {
+  return RESOLVABLE_DIRECTIVES.has(stripDirectiveNamespace(directive));
+}
 
 /**
  * Get value by dot path. Handles both:
@@ -329,9 +372,9 @@ function replacementForDeprecatedDirective(directive: string): string | null {
     return `${scope}.${clientAddress}.$cityStateZip`;
   }
 
-  const normalized = normalizeDirectiveAlias(directive);
-  if (normalized.toLowerCase() !== lower && SUPPORTED_DIRECTIVE_KEYS.has(normalized.toLowerCase())) {
-    return normalized;
+  const suggested = suggestedAliasPath(directive);
+  if (suggested !== directive && RESOLVABLE_DIRECTIVES.has(suggested)) {
+    return suggested;
   }
   return null;
 }
@@ -340,7 +383,6 @@ export function getDirectiveHealth(rawDirective: string | null | undefined): Dir
   const directive = rawDirective?.trim() ?? '';
   if (!directive) return { status: 'supported', directive };
   const stripped = stripDirectiveNamespace(directive);
-  const lower = stripped.toLowerCase();
   if (stripped === 'signature' || stripped.startsWith('+') || stripped.startsWith('-')) {
     return {
       status: 'sentinel',
@@ -348,7 +390,7 @@ export function getDirectiveHealth(rawDirective: string | null | undefined): Dir
       message: 'This is not a value directive. Use the signature/field-link tools instead.',
     };
   }
-  if (SUPPORTED_DIRECTIVE_KEYS.has(lower)) return { status: 'supported', directive: stripped };
+  if (RESOLVABLE_DIRECTIVES.has(stripped)) return { status: 'supported', directive: stripped };
 
   const replacement = replacementForDeprecatedDirective(stripped);
   if (replacement) {
@@ -376,7 +418,8 @@ function splitDirectiveNamespace(directive: string): { namespace: string; path: 
   return { namespace: '', path: trimmed };
 }
 
-const DIRECTIVE_ALIASES: Record<string, string> = {
+/** Retired spellings and the catalog path they became. Used only to suggest a replacement. */
+const RETIRED_ALIASES: Record<string, string> = {
   dob: 'birthDate',
   dateOfBirth: 'birthDate',
   emailAddress: 'email',
@@ -391,11 +434,11 @@ const DIRECTIVE_ALIASES: Record<string, string> = {
   fatherMaidenName: 'fatherName.maiden',
 };
 
-function normalizeDirectiveAlias(path: string): string {
+function suggestedAliasPath(path: string): string {
   const scopeMatch = path.match(/^(client|worker|director|org)\.(.+)$/i);
   const scope = scopeMatch?.[1].toLowerCase();
   const localPath = scopeMatch?.[2] ?? path;
-  const aliasedPath = DIRECTIVE_ALIASES[localPath] ?? localPath;
+  const aliasedPath = RETIRED_ALIASES[localPath] ?? localPath;
   const parentNameAlias = aliasedPath.match(/^(mother|father)(?:Name|\.name)?\.(first|middle|last|suffix|maiden)$/i);
   if (parentNameAlias) {
     const root = parentNameAlias[1].toLowerCase() === 'father' ? 'fatherName' : 'motherName';
@@ -431,12 +474,11 @@ function isMotherLastDirective(directive: string): boolean {
 
 export function canonicalDirectiveForTarget(directiveKey: string, targetName?: unknown): string {
   const { namespace, path } = splitDirectiveNamespace(directiveKey);
-  const directive = normalizeDirectiveAlias(path);
 
-  if (isMotherMaidenTarget(targetName) && isMotherLastDirective(directive)) {
-    return `${namespace}${directive.toLowerCase().startsWith('client.') ? 'client.' : ''}motherName.maiden`;
+  if (isMotherMaidenTarget(targetName) && isMotherLastDirective(path)) {
+    return `${namespace}${path.toLowerCase().startsWith('client.') ? 'client.' : ''}motherName.maiden`;
   }
-  return `${namespace}${directive}`;
+  return `${namespace}${path}`;
 }
 
 /** Full name for a profile scope: prefer structured currentName, else firstName/lastName. */
@@ -510,30 +552,17 @@ function resolveAddressLine1And2Directive(
   directive: string,
   profiles: ResolvedProfiles,
 ): string | undefined {
-  const match = directive.trim().match(
-    /^(?:(client|worker|org|director)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$line1(?:\+2|And2)$/i,
-  );
+  const match = directive.match(/^(client|worker|director|org)\.(personalAddress|mailAddress|address)\.\$line1And2$/);
   if (!match) return undefined;
 
-  const profileKey = (match[1]?.toLowerCase() ?? 'client') as 'client' | 'worker' | 'org' | 'director';
-  const rawPrefix = match[2]?.toLowerCase();
+  const profileKey = match[1] as 'client' | 'worker' | 'org' | 'director';
   const profile = profiles[profileKey] as Record<string, unknown> | undefined;
   if (!profile) return undefined;
-
-  if (rawPrefix === 'personaladdress') return combineAddressLine1And2(profile, 'personalAddress');
-  if (rawPrefix === 'mailaddress') return combineAddressLine1And2(profile, 'mailAddress');
-  if (rawPrefix === 'orgaddress') return combineAddressLine1And2(profile, 'orgAddress');
-  if (rawPrefix === 'address') {
-    if (profileKey === 'org') {
-      return combineAddressLine1And2(profile, 'address') ?? combineAddressLine1And2(profile, 'orgAddress');
-    }
-    return combineAddressLine1And2(profile, 'personalAddress') ?? combineAddressLine1And2(profile, 'mailAddress');
-  }
 
   if (profileKey === 'org') {
     return combineAddressLine1And2(profile, 'address') ?? combineAddressLine1And2(profile, 'orgAddress');
   }
-  return combineAddressLine1And2(profile, 'personalAddress') ?? combineAddressLine1And2(profile, 'mailAddress');
+  return combineAddressLine1And2(profile, match[2]);
 }
 
 function combineAddressCityStateZip(
@@ -553,30 +582,28 @@ function resolveAddressCityStateZipDirective(
   directive: string,
   profiles: ResolvedProfiles,
 ): string | undefined {
-  const match = directive.trim().match(
-    /^(?:(client|worker|org|director)\.)?(?:(personalAddress|mailAddress|address|orgAddress)\.)?\$city(?:\+state\+zip|StateZip)$/i,
-  );
+  const match = directive.match(/^(client|worker|director|org)\.(personalAddress|mailAddress|address)\.\$cityStateZip$/);
   if (!match) return undefined;
 
-  const profileKey = (match[1]?.toLowerCase() ?? 'client') as 'client' | 'worker' | 'org' | 'director';
-  const rawPrefix = match[2]?.toLowerCase();
+  const profileKey = match[1] as 'client' | 'worker' | 'org' | 'director';
   const profile = profiles[profileKey] as Record<string, unknown> | undefined;
   if (!profile) return undefined;
-
-  if (rawPrefix === 'personaladdress') return combineAddressCityStateZip(profile, 'personalAddress');
-  if (rawPrefix === 'mailaddress') return combineAddressCityStateZip(profile, 'mailAddress');
-  if (rawPrefix === 'orgaddress') return combineAddressCityStateZip(profile, 'orgAddress');
-  if (rawPrefix === 'address') {
-    if (profileKey === 'org') {
-      return combineAddressCityStateZip(profile, 'address') ?? combineAddressCityStateZip(profile, 'orgAddress');
-    }
-    return combineAddressCityStateZip(profile, 'personalAddress') ?? combineAddressCityStateZip(profile, 'mailAddress');
-  }
 
   if (profileKey === 'org') {
     return combineAddressCityStateZip(profile, 'address') ?? combineAddressCityStateZip(profile, 'orgAddress');
   }
-  return combineAddressCityStateZip(profile, 'personalAddress') ?? combineAddressCityStateZip(profile, 'mailAddress');
+  return combineAddressCityStateZip(profile, match[2]);
+}
+
+/** Dev-only: says once per key that the resolver does not know it, and what to use instead. */
+const warnedUnresolvableDirectives = new Set<string>();
+
+function warnUnresolvableDirective(directive: string): void {
+  if (!import.meta.env.DEV || warnedUnresolvableDirectives.has(directive)) return;
+  warnedUnresolvableDirectives.add(directive);
+  const replacement = replacementForDeprecatedDirective(directive);
+  const hint = replacement ? ` Use '${replacement}' instead.` : '';
+  console.warn(`Directive '${directive}' is not in the directive catalog, so it resolves to nothing.${hint}`);
 }
 
 /** Resolve directive string to value from profiles, e.g. "client.currentName.first" */
@@ -586,6 +613,10 @@ export function resolveDirectiveFromProfiles(
 ): unknown {
   if (!profiles) return undefined;
   const normalizedDirective = stripDirectiveNamespace(canonicalDirectiveForTarget(directive));
+  if (!RESOLVABLE_DIRECTIVES.has(normalizedDirective)) {
+    warnUnresolvableDirective(normalizedDirective);
+    return undefined;
+  }
   const lower = normalizedDirective.toLowerCase();
 
   const dobMatch = normalizedDirective.match(/^(client|worker|director)\.\$dob_mm\/dd\/yyyy$/i);
@@ -595,7 +626,7 @@ export function resolveDirectiveFromProfiles(
     return normalizeDateLikeValue(getByPath(profile as Record<string, unknown> | undefined, 'birthDate'));
   }
   const longDobMatch = normalizedDirective
-    .match(/^(client|worker|director)\.\$(dob_month_day_year|dob_mmmm_d_yyyy|dobMonthDayYear|birthDateLong)$/i);
+    .match(/^(client|worker|director)\.\$(dob_month_day_year)$/i);
   if (longDobMatch) {
     const profileKey = longDobMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
@@ -606,13 +637,13 @@ export function resolveDirectiveFromProfiles(
     const profileKey = ageMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeAgeFromBirthDate(profiles[profileKey] as Record<string, unknown> | undefined);
   }
-  const monthNumberMatch = normalizedDirective.match(/^(client|worker|director)\.\$(birthMonth|dobMonthNumber)$/i);
+  const monthNumberMatch = normalizedDirective.match(/^(client|worker|director)\.\$birthMonth$/i);
   if (monthNumberMatch) {
     const profileKey = monthNumberMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computeBirthMonthNumber(profiles[profileKey] as Record<string, unknown> | undefined);
   }
   const phoneLast7Match = normalizedDirective
-    .match(/^(client|worker|director)\.\$?(phoneLast7|phoneLastSeven|primaryPhoneLast7|primaryPhoneLastSeven|primaryPhoneNumber|primaryPhoneLocalNumber)$/i);
+    .match(/^(client|worker|director)\.\$(phoneLast7|primaryPhoneLast7)$/i);
   if (phoneLast7Match) {
     const profileKey = phoneLast7Match[1].toLowerCase() as 'client' | 'worker' | 'director';
     return computePhoneLast7(profiles[profileKey] as Record<string, unknown> | undefined);
@@ -636,13 +667,6 @@ export function resolveDirectiveFromProfiles(
     const profileKey = birthDayMatch[1].toLowerCase() as 'client' | 'worker' | 'director';
     const birthDate = parseBirthDate(getByPath(profiles[profileKey] as Record<string, unknown> | undefined, 'birthDate'));
     return birthDate ? String(birthDate.getDate()) : undefined;
-  }
-
-  if (/^(client|worker|director|org)\.\$date$/i.test(normalizedDirective)) {
-    const d = new Date();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${mm}/${dd}/${d.getFullYear()}`;
   }
 
   const phonePartMatch = normalizedDirective
@@ -698,7 +722,7 @@ export function resolveDirectiveFromProfiles(
   if (lower.startsWith('director.') && profiles.director) {
     return normalizeDateLikeValue(resolveProfilePath(profiles.director, normalizedDirective.slice(9)));
   }
-  if (lower === 'anydate' || lower === 'currentdate') {
+  if (normalizedDirective === 'currentDate') {
     const d = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');

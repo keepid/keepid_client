@@ -6,6 +6,7 @@ import {
   getByPath,
   getDirectiveHealth,
   isExcludedFromProfileFormSync,
+  isResolvableDirective,
   normalizeDateLikeValue,
   resolveDirectiveFromProfiles,
   resolveDirectiveFromProfilesForTarget,
@@ -83,12 +84,8 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.motherName.last', profiles)).toBe('Byron');
     expect(resolveDirectiveFromProfiles('client.motherName.maiden', profiles)).toBe('Milbanke');
     expect(resolveDirectiveFromProfiles('dummy:client.motherName.maiden', profiles)).toBe('Milbanke');
-    expect(resolveDirectiveFromProfiles('client.mother.name.maiden', profiles)).toBe('Milbanke');
-    expect(resolveDirectiveFromProfiles('client.motherLastName', profiles)).toBe('Byron');
-    expect(resolveDirectiveFromProfiles('client.father.name.last', profiles)).toBe('Byron');
-    expect(resolveDirectiveFromProfiles('client.fatherFirstName', profiles)).toBe('Lord');
-    expect(resolveDirectiveFromProfiles('client.emailAddress', profiles)).toBe('ada@example.org');
-    expect(resolveDirectiveFromProfiles('client.genderAssignedAtBirth', profiles)).toBe('F');
+    expect(resolveDirectiveFromProfiles('client.email', profiles)).toBe('ada@example.org');
+    expect(resolveDirectiveFromProfiles('client.sex', profiles)).toBe('F');
     expect(resolveDirectiveFromProfiles('client.mailAddress.line2', profiles)).toBe('Unit 7');
     expect(resolveDirectiveFromProfiles('worker.currentName.last', profiles)).toBe('Hopper');
     expect(resolveDirectiveFromProfiles('director.email', profiles)).toBe('kj@example.org');
@@ -105,11 +102,6 @@ describe('directive resolution', () => {
       "Mother's Maiden Name",
     )).toBe('Milbanke');
     expect(resolveDirectiveFromProfilesForTarget(
-      'client.mother.name.last',
-      profiles,
-      "Mother's Maiden Name",
-    )).toBe('Milbanke');
-    expect(resolveDirectiveFromProfilesForTarget(
       'client.motherName.last',
       profiles,
       "Mother's current last name",
@@ -121,8 +113,6 @@ describe('directive resolution', () => {
     expect(normalizeDateLikeValue('01-31-2024')).toBe('01/31/2024');
     expect(normalizeDateLikeValue('1/2/2024')).toBe('01/02/2024');
     expect(resolveDirectiveFromProfiles('client.birthDate', profiles)).toBe('12/10/1815');
-    expect(resolveDirectiveFromProfiles('client.dob', profiles)).toBe('12/10/1815');
-    expect(resolveDirectiveFromProfiles('client.dateOfBirth', profiles)).toBe('12/10/1815');
     expect(resolveDirectiveFromProfiles('org.creationDate', profiles)).toBe('01/31/2024');
   });
 
@@ -140,7 +130,6 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('client.$dob_month_day_year', singleDigitDobProfiles)).toBe('June 2, 2001');
     expect(resolveDirectiveFromProfiles('client.$birthYear', profiles)).toBe('1815');
     expect(resolveDirectiveFromProfiles('client.$birthMonth', profiles)).toBe('12');
-    expect(resolveDirectiveFromProfiles('client.$dobMonthNumber', profiles)).toBe('12');
     expect(resolveDirectiveFromProfiles('client.$birthDay', profiles)).toBe('10');
   });
 
@@ -150,10 +139,7 @@ describe('directive resolution', () => {
 
     expect(resolveDirectiveFromProfiles('client.$age', profiles)).toBe('210');
     expect(resolveDirectiveFromProfiles('director.$age', profiles)).toBe('107');
-    expect(resolveDirectiveFromProfiles('anyDate', profiles)).toBe('06/02/2026');
     expect(resolveDirectiveFromProfiles('currentDate', profiles)).toBe('06/02/2026');
-    expect(resolveDirectiveFromProfiles('client.$date', profiles)).toBe('06/02/2026');
-    expect(resolveDirectiveFromProfiles('org.$date', profiles)).toBe('06/02/2026');
 
     vi.useRealTimers();
   });
@@ -163,10 +149,7 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('worker.$fullName', profiles)).toBe('Grace Hopper');
     expect(resolveDirectiveFromProfiles('director.$fullName', profiles)).toBe('Katherine G Johnson');
     expect(resolveDirectiveFromProfiles('client.$phoneLast7', profiles)).toBe('555-0199');
-    expect(resolveDirectiveFromProfiles('client.$phoneLastSeven', profiles)).toBe('555-0199');
     expect(resolveDirectiveFromProfiles('client.$primaryPhoneLast7', profiles)).toBe('555-0199');
-    expect(resolveDirectiveFromProfiles('client.$primaryPhoneNumber', profiles)).toBe('555-0199');
-    expect(resolveDirectiveFromProfiles('client.primaryPhoneLocalNumber', profiles)).toBe('555-0199');
     expect(resolveDirectiveFromProfiles('worker.$phoneLast7', profiles)).toBe('555-0102');
     expect(resolveDirectiveFromProfiles('director.$phoneLast7', profiles)).toBe('555-0103');
     expect(resolveDirectiveFromProfiles('client.$primaryPhoneAreaCode', profiles)).toBe('215');
@@ -203,15 +186,11 @@ describe('directive resolution', () => {
     );
     expect(resolveDirectiveFromProfiles('client.$fullMailAddress', profiles)).toBe('PO Box 42, Unit 7, Pittsburgh, PA 15213');
     expect(resolveDirectiveFromProfiles('org.$fullAddress', profiles)).toBe('100 Main St, Floor 2, Philadelphia, PA 19107');
-    expect(resolveDirectiveFromProfiles('address.$line1+2', profiles)).toBe('12 Analytical Engine Way, Suite 34');
     expect(resolveDirectiveFromProfiles('client.personalAddress.$line1And2', profiles)).toBe('12 Analytical Engine Way, Suite 34');
-    expect(resolveDirectiveFromProfiles('org.address.$line1+2', profiles)).toBe('100 Main St, Floor 2');
     expect(resolveDirectiveFromProfiles('org.address.$line1And2', profiles)).toBe('100 Main St, Floor 2');
-    expect(resolveDirectiveFromProfiles('address.$city+state+zip', profiles)).toBe('Philadelphia, PA 19104');
     expect(resolveDirectiveFromProfiles('client.personalAddress.$cityStateZip', profiles)).toBe('Philadelphia, PA 19104');
     expect(resolveDirectiveFromProfiles('client.mailAddress.$cityStateZip', profiles)).toBe('Pittsburgh, PA 15213');
     expect(resolveDirectiveFromProfiles('director.personalAddress.$cityStateZip', profiles)).toBe('Hampton, VA 23666');
-    expect(resolveDirectiveFromProfiles('org.address.$city+state+zip', profiles)).toBe('Philadelphia, PA 19107');
     expect(resolveDirectiveFromProfiles('org.address.$cityStateZip', profiles)).toBe('Philadelphia, PA 19107');
   });
 
@@ -222,10 +201,90 @@ describe('directive resolution', () => {
     expect(resolveDirectiveFromProfiles('org.address.county', profiles)).toBe('Philadelphia');
   });
 
+  it('resolves nothing for retired or unknown spellings', () => {
+    const retired = [
+      'client.dob',
+      'client.dateOfBirth',
+      'client.$dobMonthNumber',
+      'client.$dob_mmmm_d_yyyy',
+      'client.$dobMonthDayYear',
+      'client.$birthDateLong',
+      'client.$phoneLastSeven',
+      'client.$primaryPhoneNumber',
+      'client.primaryPhoneLocalNumber',
+      'client.$primaryPhoneLastSeven',
+      'anyDate',
+      'anydate',
+      'client.$date',
+      'org.$date',
+      'client.emailAddress',
+      'client.genderAssignedAtBirth',
+      'client.motherLastName',
+      'client.fatherFirstName',
+      'client.mother.name.last',
+      'client.father.name.last',
+      'client.mother.name.maiden',
+      'client.address.$line1And2',
+      'client.personalAddress.$line1+2',
+      'client.mailAddress.$line1+2',
+      'address.$line1+2',
+      'org.address.$line1+2',
+      'address.$city+state+zip',
+      'org.address.$city+state+zip',
+      'org.name',
+      'org.phone',
+      'Client.Email',
+      'client.nickname',
+      'director.phone',
+      'responses.anything',
+    ];
+    retired.forEach((directive) => {
+      expect(resolveDirectiveFromProfiles(directive, profiles), directive).toBeUndefined();
+      expect(isResolvableDirective(directive), directive).toBe(false);
+    });
+  });
+
+  it('recognizes every catalog spelling', () => {
+    expect(isResolvableDirective('currentDate')).toBe(true);
+    expect(isResolvableDirective('client.$dob_mm/dd/yyyy')).toBe(true);
+    expect(isResolvableDirective('client.$dob_month_day_year')).toBe(true);
+    expect(isResolvableDirective('client.$birthMonth')).toBe(true);
+    expect(isResolvableDirective('client.personalAddress.$line1And2')).toBe(true);
+    expect(isResolvableDirective('client.$phoneLast7')).toBe(true);
+    expect(isResolvableDirective('dummy:client.email')).toBe(true);
+    expect(isResolvableDirective('org.address.$cityStateZip')).toBe(true);
+    expect(isResolvableDirective('director.title')).toBe(true);
+    expect(isResolvableDirective('client.phoneBook.0.phoneNumber')).toBe(true);
+  });
+
+  it('warns once per unknown key in dev', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(resolveDirectiveFromProfiles('client.favoriteColor', profiles)).toBeUndefined();
+    expect(resolveDirectiveFromProfiles('client.favoriteColor', profiles)).toBeUndefined();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain("'client.favoriteColor'");
+    warn.mockRestore();
+  });
+
   it('does not resolve non-value sentinel directives', () => {
     expect(resolveDirectiveFromProfiles('signature', profiles)).toBeUndefined();
     expect(resolveDirectiveFromProfiles('+<fieldId>', profiles)).toBeUndefined();
     expect(resolveDirectiveFromProfiles('-<fieldId>', profiles)).toBeUndefined();
+  });
+
+  it('suggests a replacement for retired spellings without resolving them', () => {
+    expect(getDirectiveHealth('client.dob')).toMatchObject({ status: 'deprecated', replacement: 'client.birthDate' });
+    expect(getDirectiveHealth('client.mother.name.last')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.motherName.last',
+    });
+    expect(getDirectiveHealth('client.$dob_mmmm_d_yyyy')).toMatchObject({
+      status: 'deprecated',
+      replacement: 'client.$dob_month_day_year',
+    });
+    expect(resolveDirectiveFromProfiles('client.mother.name.last', profiles)).toBeUndefined();
   });
 
   it('labels deprecated and unknown directives for cleanup', () => {
