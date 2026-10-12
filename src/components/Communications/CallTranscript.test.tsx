@@ -52,4 +52,44 @@ describe('CallTranscript', () => {
     expect(within(turns[1]).getByText('Keep.id AI')).toBeInTheDocument();
     expect(within(turns[1]).getByText('I can help you work through that.')).toBeInTheDocument();
   });
+
+  it('renders server-decoded segments and labels call audio as audio, not staff', () => {
+    render(
+      <CallTranscript
+        transcript="Staff: Please stay on the line."
+        segments={[
+          { speaker: 'caller', kind: 'speech', text: 'Hello?' },
+          { speaker: 'call_audio', kind: 'speech', text: 'Please stay on the line.' },
+        ]}
+      />,
+    );
+
+    const turns = screen.getAllByRole('listitem');
+    expect(turns).toHaveLength(2);
+    expect(within(turns[0]).getByText('Caller')).toBeInTheDocument();
+    expect(within(turns[1]).getByText('Call audio')).toBeInTheDocument();
+    expect(turns[1]).toHaveClass('audio');
+    expect(screen.queryByText('Keep.id staff')).not.toBeInTheDocument();
+  });
+
+  it('labels the configured welcome greeting separately from spoken turns', () => {
+    render(
+      <CallTranscript
+        transcript=""
+        segments={[
+          { speaker: 'assistant', kind: 'greeting', text: "Hi, you've reached Keep.id." },
+          { speaker: 'caller', kind: 'speech', text: 'Yes.' },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('Keep.id AI greeting')).toBeInTheDocument();
+    expect(screen.queryByText(/Configured welcome greeting/)).not.toBeInTheDocument();
+  });
+
+  it('falls back to parsing the text when the server sends no segments', () => {
+    render(<CallTranscript transcript="Caller: Hi. Staff: Hello." segments={[]} />);
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
 });

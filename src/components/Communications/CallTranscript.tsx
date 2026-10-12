@@ -1,5 +1,7 @@
 import React from 'react';
 
+import type { CallTranscriptSegment } from './communicationsApi';
+
 type TranscriptSide = 'left' | 'right';
 
 type TranscriptTurn = {
@@ -7,6 +9,7 @@ type TranscriptTurn = {
   speaker: string;
   side: TranscriptSide;
   text: string;
+  audio?: boolean;
 };
 
 const SPEAKER_LABEL = /(?:^|\s)(Automated assistant|AI assistant|Keep\.?id AI|Caller|Client|Staff|Agent|Keep\.?id(?: staff)?|Steffen|Stefan):\s*/gi;
@@ -50,19 +53,55 @@ function parseTranscript(transcript: string): TranscriptTurn[] {
   return turns;
 }
 
+function turnsFromSegments(segments: CallTranscriptSegment[]): TranscriptTurn[] {
+  return segments.map((segment, index) => {
+    const id = `segment-${index}`;
+    switch (segment.speaker) {
+      case 'caller':
+        return {
+          id, speaker: 'Caller', side: 'left', text: segment.text,
+        };
+      case 'assistant':
+        return {
+          id,
+          speaker: segment.kind === 'greeting' ? 'Keep.id AI greeting' : 'Keep.id AI',
+          side: 'right',
+          text: segment.text,
+        };
+      case 'staff':
+        return {
+          id, speaker: 'Keep.id staff', side: 'right', text: segment.text,
+        };
+      case 'call_audio':
+        // Audio Twilio played to the caller (menu, voicemail greeting, forwarded leg), not a person.
+        return {
+          id, speaker: 'Call audio', side: 'right', text: segment.text, audio: true,
+        };
+      default:
+        return {
+          id, speaker: 'Transcript', side: 'left', text: segment.text,
+        };
+    }
+  });
+}
+
 type Props = {
   transcript: string;
+  /** Decoded by the server. When present it is used instead of parsing the text. */
+  segments?: CallTranscriptSegment[];
 };
 
-export default function CallTranscript({ transcript }: Props) {
-  const turns = parseTranscript(transcript);
+export default function CallTranscript({ transcript, segments }: Props) {
+  const turns = segments && segments.length > 0
+    ? turnsFromSegments(segments)
+    : parseTranscript(transcript);
   if (turns.length === 0) return null;
 
   return (
     <div className="call-transcript" aria-label="Call transcript" role="list">
       {turns.map((turn) => (
         <div
-          className={`call-transcript-turn ${turn.side}`}
+          className={`call-transcript-turn ${turn.side}${turn.audio ? ' audio' : ''}`}
           key={turn.id}
           role="listitem"
         >

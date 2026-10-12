@@ -116,6 +116,12 @@ export type CommunicationContact = {
   phones: CommunicationContactPhone[];
 };
 
+export type CallTranscriptSegment = {
+  speaker: 'caller' | 'assistant' | 'staff' | 'call_audio' | 'unknown';
+  kind: 'speech' | 'greeting';
+  text: string;
+};
+
 export type MessageBoardItem = {
   type: 'call' | 'voicemail' | 'note' | 'message' | 'scheduled' | 'system';
   occurredAt?: string;
@@ -126,6 +132,8 @@ export type MessageBoardItem = {
   status?: string;
   metadata?: string;
   recordingUrl?: string;
+  flow?: 'VOICE_AGENT' | 'OUTBOUND' | 'LEGACY_INBOUND';
+  segments?: CallTranscriptSegment[];
 };
 
 export type CallsResponse = {

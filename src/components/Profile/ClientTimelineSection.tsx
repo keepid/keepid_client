@@ -30,13 +30,14 @@ type TimelineEntry = {
   communicationNoteId?: string;
   recordingUrl?: string;
   type?: MessageBoardItem['type'];
+  segments?: MessageBoardItem['segments'];
 };
 
 type SaveState = 'idle' | 'saving' | 'saved';
 
 function TimelineEntryBody({ item }: { item: TimelineEntry }) {
   if (item.type === 'call') {
-    return <CallTranscript transcript={item.body} />;
+    return <CallTranscript transcript={item.body} segments={item.segments} />;
   }
   return <p>{item.body}</p>;
 }
@@ -187,6 +188,7 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
       ? getCallRecordingPlaybackUrl(item.sourceId)
       : undefined,
     type: item.type,
+    segments: item.segments,
   };
 }
 

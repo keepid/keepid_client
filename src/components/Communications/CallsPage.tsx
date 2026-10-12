@@ -872,7 +872,7 @@ export default function CallsPage() {
                       ) : (
                         item.body && (
                           item.type === 'call'
-                            ? <CallTranscript transcript={item.body} />
+                            ? <CallTranscript transcript={item.body} segments={item.segments} />
                             : <p>{item.body}</p>
                         )
                       )}
