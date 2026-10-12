@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAlert } from 'react-alert';
 
 import getServerURL from '../../serverOverride';
+import CallbackActions from '../Communications/CallbackActions';
 import CallTranscript from '../Communications/CallTranscript';
 import {
   getCallRecordingPlaybackUrl,
@@ -31,6 +32,7 @@ type TimelineEntry = {
   recordingUrl?: string;
   type?: MessageBoardItem['type'];
   segments?: MessageBoardItem['segments'];
+  callback?: MessageBoardItem['callback'];
 };
 
 type SaveState = 'idle' | 'saving' | 'saved';
@@ -189,6 +191,7 @@ function toTimelineItem(item: MessageBoardItem): TimelineEntry {
       : undefined,
     type: item.type,
     segments: item.segments,
+    callback: item.type === 'call' ? item.callback : undefined,
   };
 }
 
@@ -300,6 +303,13 @@ export default function ClientTimelineSection({
     });
     return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
   }, [timeline]);
+
+  async function refreshCommunicationItems() {
+    const data = await getMessageBoard(username);
+    if (data.status === 'SUCCESS') {
+      setCommunicationItems(data.items);
+    }
+  }
 
   async function saveWorkerNotes(nextEntries: WorkerNoteEntry[]) {
     setSaveState('saving');
@@ -448,6 +458,9 @@ export default function ClientTimelineSection({
                           </audio>
                           <a href={item.recordingUrl} target="_blank" rel="noreferrer">Open recording</a>
                         </div>
+                      )}
+                      {item.type === 'call' && (
+                        <CallbackActions callback={item.callback} onChanged={refreshCommunicationItems} />
                       )}
                       {item.source && <small>{item.source}</small>}
                     </div>

@@ -9,6 +9,7 @@ import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import CallbackActions from './CallbackActions';
 import CallCosts from './CallCosts';
 import CallTranscript from './CallTranscript';
 import {
@@ -886,6 +887,9 @@ export default function CallsPage() {
                         </div>
                       )}
                       {item.status && item.type !== 'call' && item.type !== 'voicemail' && <small>{item.status}</small>}
+                      {item.type === 'call' && (
+                        <CallbackActions callback={item.callback} onChanged={refreshSelectedConversation} />
+                      )}
                       {item.type === 'call' && (
                         <div className="call-cost-footer">
                           <time dateTime={item.occurredAt}>{formatTime(item.occurredAt)}</time>

@@ -1993,3 +1993,52 @@ body:has(.communications-shell),
   color: #667085;
   font-size: 11px;
 }
+
+.callback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.callback-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff4e5;
+  color: #9a4a00;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.callback-actions .btn {
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+.callback-note-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 100%;
+}
+
+.callback-note-form input {
+  flex: 1 1 160px;
+  min-width: 0;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+
+.callback-error {
+  flex: 1 1 100%;
+  color: #b42318;
+}
+
+.callback-quiet {
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 12px;
+}
