@@ -122,6 +122,28 @@ export type CallTranscriptSegment = {
   text: string;
 };
 
+export type CallbackStatus = 'PENDING' | 'ASSIGNED' | 'COMPLETED' | 'CANCELLED';
+export type CallbackAction = 'assign' | 'complete' | 'cancel';
+
+export type CallbackSummary = {
+  id: string;
+  status: CallbackStatus;
+  createdAt?: string;
+};
+
+export type CallbackRequest = CallbackSummary & {
+  callbackPhone: string;
+  reason: string;
+  requestOrigin: string;
+  assignedAt?: string;
+  assignedStaffName?: string;
+  completedAt?: string;
+  completionNote?: string;
+  callLogId: string;
+  contactId: string;
+  contactName?: string;
+};
+
 export type MessageBoardItem = {
   type: 'call' | 'voicemail' | 'note' | 'message' | 'scheduled' | 'system';
   occurredAt?: string;
@@ -134,6 +156,19 @@ export type MessageBoardItem = {
   recordingUrl?: string;
   flow?: 'VOICE_AGENT' | 'OUTBOUND' | 'LEGACY_INBOUND';
   segments?: CallTranscriptSegment[];
+  callback?: CallbackSummary | null;
+};
+
+export type CallbacksResponse = {
+  status: string;
+  message?: string;
+  callbacks: CallbackRequest[];
+};
+
+export type CallbackResponse = {
+  status: string;
+  message?: string;
+  callback?: CallbackRequest | null;
 };
 
 export type CallsResponse = {
@@ -401,6 +436,19 @@ export function getCalls(status = 'all', search = '') {
   if (status) params.set('status', status);
   if (search) params.set('search', search);
   return jsonFetch<CallsResponse>(`/api/communications/calls?${params.toString()}`);
+}
+
+export function getCallbacks(status = 'open') {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  return jsonFetch<CallbacksResponse>(`/api/communications/callbacks?${params.toString()}`);
+}
+
+export function updateCallback(callbackId: string, action: CallbackAction, note?: string) {
+  return jsonFetch<CallbackResponse>(`/api/communications/callbacks/${encodeURIComponent(callbackId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ action, note }),
+  });
 }
 
 export function getConversations(search = '') {
