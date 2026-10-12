@@ -361,6 +361,15 @@ body:has(.communications-shell),
   text-align: right;
 }
 
+.call-transcript-turn.audio span {
+  color: #627d98;
+}
+
+.call-transcript-turn.audio p {
+  color: #486581;
+  font-style: italic;
+}
+
 .call-transcript-turn span {
   color: #2f80ed;
   font-size: 11px;
