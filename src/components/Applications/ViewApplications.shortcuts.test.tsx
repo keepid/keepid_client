@@ -74,7 +74,7 @@ it('opens instructions from the organization list after choosing a client, witho
   expect(screen.getByRole('dialog')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Open worker instructions' })).toBeDisabled();
   fireEvent.change(screen.getByRole('textbox', { name: 'Client' }), { target: { value: 'Demo' } });
-  fireEvent.click(await screen.findByRole('button', { name: 'Demo Client' }));
+  fireEvent.click(await screen.findByRole('button', { name: '********' }));
   fireEvent.click(screen.getByRole('button', { name: 'Open worker instructions' }));
   await screen.findByRole('heading', { name: 'Worker instructions' });
   expect(history.location.pathname).toBe('/applications/selector');
