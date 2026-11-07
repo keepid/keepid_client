@@ -17,3 +17,13 @@ export function demoClientPhone(phone?: string | null): string {
     ? formatPhoneForDisplay(phone)
     : '(***) *** - ****';
 }
+
+// Communications may use a phone number as a contact label or in timeline text.
+export function demoPhoneText(text: string): string {
+  return text.replace(
+    /(^|[^\d])((?:\+?1[ .-]*)?(?:\(\d{3}\)|\d{3})[ .-]*\d{3}[ .-]*\d{4})(?!\d)/g,
+    (_match, prefix: string, phone: string) => `${prefix}${
+      canonicalizePhone(phone) === '3108179067' ? phone : demoClientPhone(phone)
+    }`,
+  );
+}

@@ -1,6 +1,7 @@
 import CellTowerOutlinedIcon from '@mui/icons-material/CellTowerOutlined';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { demoClientPhone as displayPhone, demoPhoneText } from '../../utils/demoPrivacy';
 import {
   addCommunicationContactPhone,
   checkCommunicationContactPhoneLineStatus,
@@ -24,14 +25,6 @@ type ContactEditorSheetProps = {
   onSelectContact: (contactId: string) => void;
   onPromoted: (result: PromoteSharedResponse) => void;
 };
-
-function displayPhone(value: string) {
-  const digits = value.replace(/\D/g, '');
-  if (digits.length === 11 && digits.startsWith('1')) {
-    return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
-  }
-  return value;
-}
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Something went wrong.';
@@ -162,7 +155,7 @@ function PhoneRow({ contact, phone, onChanged, onSelectContact, onStartPromotion
         )}
         {phone.relationship === 'shared_reference' && phone.routingContactId && (
           <button type="button" onClick={() => onSelectContact(phone.routingContactId!)}>
-            Open {phone.routingContactLabel || 'shared thread'}
+            Open {demoPhoneText(phone.routingContactLabel || 'shared thread')}
           </button>
         )}
         <button
@@ -285,7 +278,7 @@ export default function ContactEditorSheet({
   async function linkClient() {
     if (!linkTarget) return;
     const destination = personContacts.find((candidate) => candidate.id === linkTarget);
-    if (!destination || !window.confirm(`Attach this thread to ${destination.displayName}? The histories will be combined.`)) return;
+    if (!destination || !window.confirm(`Attach this thread to ${demoPhoneText(destination.displayName)}? The histories will be combined.`)) return;
     setIsSaving(true);
     setError('');
     try {
@@ -322,7 +315,7 @@ export default function ContactEditorSheet({
   }
 
   async function archiveContact() {
-    if (!window.confirm(`Archive ${contact.displayName}? Its history will be preserved and removed from the active conversation list.`)) return;
+    if (!window.confirm(`Archive ${demoPhoneText(contact.displayName)}? Its history will be preserved and removed from the active conversation list.`)) return;
     setIsSaving(true);
     setError('');
     try {
@@ -341,13 +334,13 @@ export default function ContactEditorSheet({
     <div className="contact-sheet-backdrop" role="presentation" onMouseDown={onClose}>
       <aside
         className="contact-sheet"
-        aria-label={`Edit ${contact.displayName}`}
+        aria-label={`Edit ${demoPhoneText(contact.displayName)}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="contact-sheet-header">
           <div>
             <p className="communications-kicker">Communication contact</p>
-            <h2>{contact.displayName}</h2>
+            <h2>{demoPhoneText(contact.displayName)}</h2>
             <span className={`contact-type-pill ${contact.type.toLowerCase()}`}>
               {contactTypeLabel(contact)}
             </span>
@@ -359,7 +352,7 @@ export default function ContactEditorSheet({
           {contact.type === 'PERSON' ? (
             <section className="contact-sheet-section">
               <h3>Contact name</h3>
-              <p className="contact-form-help">This label follows the linked client profile: {contact.displayName}.</p>
+              <p className="contact-form-help">This label follows the linked client profile: {demoPhoneText(contact.displayName)}.</p>
             </section>
           ) : (
             <section className="contact-sheet-section">
@@ -386,7 +379,7 @@ export default function ContactEditorSheet({
               <select value={linkTarget} onChange={(event) => setLinkTarget(event.target.value)}>
                 <option value="">Select a client</option>
                 {personContacts.map((candidate) => (
-                  <option key={candidate.id} value={candidate.id}>{candidate.displayName}</option>
+                  <option key={candidate.id} value={candidate.id}>{demoPhoneText(candidate.displayName)}</option>
                 ))}
               </select>
               <button type="button" className="contact-primary-button" disabled={isSaving || !linkTarget} onClick={linkClient}>
@@ -482,7 +475,7 @@ export default function ContactEditorSheet({
                   className="contact-reference-row"
                   onClick={() => onSelectContact(reference.id)}
                 >
-                  <span>{reference.displayName}</span>
+                  <span>{demoPhoneText(reference.displayName)}</span>
                   <span>Open thread →</span>
                 </button>
               ))}
