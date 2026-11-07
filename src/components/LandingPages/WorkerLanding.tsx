@@ -9,9 +9,8 @@ import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
-import { demoClientBirthDate, demoClientName } from '../../utils/demoPrivacy';
+import { demoClientBirthDate, demoClientName, demoClientPhone } from '../../utils/demoPrivacy';
 import { canUseApplications, canUseClientNotifications, canUseCommunications } from '../../utils/featureAccess';
-import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
 interface Props {
@@ -466,7 +465,7 @@ const WorkerLanding: React.FC<Props> = ({
             </div>
             <div className="tw-mb-1">
               <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
-                {formatPhoneForDisplay(client.phone)}
+                {demoClientPhone(client.phone)}
               </p>
             </div>
             <div className="tw-mb-1">
@@ -536,7 +535,7 @@ const WorkerLanding: React.FC<Props> = ({
                 {demoClientBirthDate(clientDisplayName(client), formatBirthDateForDisplay(client.birthDate))}
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
-                {formatPhoneForDisplay(client.phone)}
+                {demoClientPhone(client.phone)}
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
                 {formatCreationDateForDisplay(client.creationDate)}
