@@ -9,7 +9,7 @@ import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { demoClientPhone as phone, demoPhoneText } from '../../utils/demoPrivacy';
+import { demoContactLabel } from '../../utils/demoPrivacy';
 import CallbackActions from './CallbackActions';
 import CallCosts from './CallCosts';
 import CallTranscript from './CallTranscript';
@@ -68,6 +68,18 @@ function formatTime(value?: string) {
   }).format(new Date(value));
 }
 
+function phone(value?: string) {
+  if (!value) return '';
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return value;
+}
+
 function itemSide(item: MessageBoardItem) {
   if (item.type === 'message' || item.type === 'voicemail') return item.metadata === 'outbound' ? 'right' : 'left';
   return 'center';
@@ -88,7 +100,7 @@ function conversationKey(conversation?: CommunicationContact) {
 }
 
 function conversationLabel(conversation: CommunicationContact) {
-  return demoPhoneText(conversation.displayName);
+  return conversation.displayName;
 }
 
 function contactTypeLabel(contact: CommunicationContact) {
@@ -344,7 +356,7 @@ export default function CallsPage() {
     const q = search.trim().toLowerCase();
     if (!q) return conversations;
     return conversations.filter((conversation) => (
-      conversation.displayName.toLowerCase().includes(q)
+      conversationLabel(conversation).toLowerCase().includes(q)
       || conversation.displayName.toLowerCase().includes(q)
       || (conversation.username || '').toLowerCase().includes(q)
       || conversation.primaryPhone?.toLowerCase().includes(q)
@@ -724,7 +736,7 @@ export default function CallsPage() {
             <p className="communications-muted">No communication contacts found.</p>
           )}
           {filtered.map((conversation) => {
-            const label = conversationLabel(conversation);
+            const label = demoContactLabel(conversationLabel(conversation));
             return (
               <button
                 type="button"
@@ -737,7 +749,7 @@ export default function CallsPage() {
                   setSelectedContactId(conversation.id);
                 }}
               >
-                <span className={`contact-avatar ${conversation.type.toLowerCase()}`}>{conversationInitial(conversation)}</span>
+                <span className={`contact-avatar ${conversation.type.toLowerCase()}`}>{label.replace(/\W/g, '').charAt(0).toUpperCase() || '?'}</span>
                 <span className="contact-main">
                   <strong>
                     {label}
@@ -747,7 +759,7 @@ export default function CallsPage() {
                       </span>
                     )}
                   </strong>
-                  <small>{demoPhoneText(conversation.lastPreview || 'No recent activity')}</small>
+                  <small>{conversation.lastPreview || 'No recent activity'}</small>
                 </span>
                 <span className="contact-meta">
                   <small>{formatTime(conversation.lastActivityAt)}</small>
@@ -813,7 +825,7 @@ export default function CallsPage() {
                   <article key={`${item.type}-${item.sourceId}`} className={`chat-item ${side} ${item.type}`}>
                     <div className="chat-bubble">
                       <div className="chat-item-top">
-                        <strong>{demoPhoneText(title)}</strong>
+                        <strong>{title}</strong>
                         <span>
                           {item.type !== 'call' && formatTime(item.occurredAt)}
                           {item.type === 'note' && (
@@ -862,13 +874,8 @@ export default function CallsPage() {
                       ) : (
                         item.body && (
                           item.type === 'call'
-                            ? (
-                              <CallTranscript
-                                transcript={demoPhoneText(item.body)}
-                                segments={item.segments?.map((segment) => ({ ...segment, text: demoPhoneText(segment.text) }))}
-                              />
-                            )
-                            : <p>{demoPhoneText(item.body)}</p>
+                            ? <CallTranscript transcript={item.body} segments={item.segments} />
+                            : <p>{item.body}</p>
                         )
                       )}
                       {recordingUrl && (
@@ -902,7 +909,7 @@ export default function CallsPage() {
                   <section className="scheduled-preview existing">
                     <div>
                       <strong>Scheduled SMS</strong>
-                      <p>{demoPhoneText(scheduledItem.body || '')}</p>
+                      <p>{scheduledItem.body}</p>
                     </div>
                     <div className="scheduled-preview-actions">
                       <span>{formatTime(scheduledItem.occurredAt)}</span>
@@ -936,7 +943,7 @@ export default function CallsPage() {
                     {sendablePhones.map((contactPhone) => (
                       <option key={contactPhone.id} value={contactPhone.phoneNumber}>
                         {phone(contactPhone.phoneNumber)}
-                        {'label' in contactPhone && contactPhone.label ? ` · ${demoPhoneText(contactPhone.label)}` : ''}
+                        {'label' in contactPhone && contactPhone.label ? ` · ${contactPhone.label}` : ''}
                       </option>
                     ))}
                   </select>
@@ -1026,7 +1033,7 @@ export default function CallsPage() {
                         {sendablePhones.map((contactPhone) => (
                           <option key={contactPhone.id} value={contactPhone.phoneNumber}>
                             {phone(contactPhone.phoneNumber)}
-                            {'label' in contactPhone && contactPhone.label ? ` · ${demoPhoneText(contactPhone.label)}` : ''}
+                            {'label' in contactPhone && contactPhone.label ? ` · ${contactPhone.label}` : ''}
                           </option>
                         ))}
                       </select>
