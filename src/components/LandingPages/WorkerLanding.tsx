@@ -9,8 +9,8 @@ import GenericProfilePicture from '../../static/images/generalprofilepic.png';
 import VisualizationSVG from '../../static/images/visualization.svg';
 import Role from '../../static/Role';
 import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
+import { demoClientBirthDate, demoClientName, demoClientPhone } from '../../utils/demoPrivacy';
 import { canUseApplications, canUseClientNotifications, canUseCommunications } from '../../utils/featureAccess';
-import { formatPhoneForDisplay } from '../../utils/phone';
 import IdPickupNotificationForm from '../Notifications/IdPickupNotificationForm';
 
 interface Props {
@@ -460,17 +460,17 @@ const WorkerLanding: React.FC<Props> = ({
             </div>
             <div className="tw-mb-1">
               <h5 className="tw-text-xl tw-font-bold tw-text-gray-800">
-                {clientDisplayName(client)}
+                {demoClientName(clientDisplayName(client))}
               </h5>
             </div>
             <div className="tw-mb-1">
               <p className="tw-mb-1 tw-text-sm tw-font-medium tw-text-gray-600">
-                {formatPhoneForDisplay(client.phone)}
+                {demoClientPhone(client.phone)}
               </p>
             </div>
             <div className="tw-mb-1">
               <p className="tw-mb-0 tw-text-sm tw-font-medium tw-text-gray-600">
-                Birth Date: {formatBirthDateForDisplay(client.birthDate)}
+                Birth Date: {demoClientBirthDate(clientDisplayName(client), formatBirthDateForDisplay(client.birthDate))}
               </p>
             </div>
             <div className="tw-mb-1">
@@ -517,7 +517,7 @@ const WorkerLanding: React.FC<Props> = ({
               className="tw-cursor-pointer hover:tw-bg-gray-50 focus:tw-bg-blue-50 focus:tw-outline-none"
               role="link"
               tabIndex={0}
-              aria-label={`Open profile for ${clientDisplayName(client)}`}
+              aria-label={`Open profile for ${demoClientName(clientDisplayName(client))}`}
               onClick={() => history.push(`/profile/${client.username}`)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -528,14 +528,14 @@ const WorkerLanding: React.FC<Props> = ({
             >
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left">
                 <span className="tw-font-semibold tw-text-gray-900">
-                  {clientDisplayName(client)}
+                  {demoClientName(clientDisplayName(client))}
                 </span>
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
-                {formatBirthDateForDisplay(client.birthDate)}
+                {demoClientBirthDate(clientDisplayName(client), formatBirthDateForDisplay(client.birthDate))}
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
-                {formatPhoneForDisplay(client.phone)}
+                {demoClientPhone(client.phone)}
               </td>
               <td className="tw-whitespace-nowrap tw-px-4 tw-py-3 tw-text-left tw-text-sm tw-font-medium tw-text-gray-700">
                 {formatCreationDateForDisplay(client.creationDate)}
