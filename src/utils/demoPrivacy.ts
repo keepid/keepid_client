@@ -18,12 +18,8 @@ export function demoClientPhone(phone?: string | null): string {
     : '(***) *** - ****';
 }
 
-// Communications may use a phone number as a contact label or in timeline text.
-export function demoPhoneText(text: string): string {
-  return text.replace(
-    /(^|[^\d])((?:\+?1[ .-]*)?(?:\(\d{3}\)|\d{3})[ .-]*\d{3}[ .-]*\d{4})(?!\d)/g,
-    (_match, prefix: string, phone: string) => `${prefix}${
-      canonicalizePhone(phone) === '3108179067' ? phone : demoClientPhone(phone)
-    }`,
-  );
+// Only contact-list labels are masked; selected profiles and messages stay intact.
+export function demoContactLabel(label: string): string {
+  if (/^\+?[\d\s().-]+$/.test(label.trim())) return demoClientPhone(label);
+  return demoClientName(label);
 }
