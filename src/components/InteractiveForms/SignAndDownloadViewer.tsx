@@ -702,10 +702,8 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     setSaveError(null);
     setSaving(true);
     try {
-      if (currentViewerPageMeta.doc.kind === 'attachment') {
-        if (!canEditAttachments || effectivePdfFormsReadOnly) {
-          throw new Error('Attachment editing is not available in this mode.');
-        }
+      // Viewing an attachment does not require editing it to finish the application.
+      if (canEditCurrentAttachment) {
         const attachmentFileId = currentViewerPageMeta.doc.id;
         const attachmentBlob = await getCurrentAttachmentPdfBlob();
         await updateApplicationAttachmentPdf(attachmentBlob, applicationId, attachmentFileId);
@@ -723,8 +721,10 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
           }));
         setPdfVersion((v) => v + 1);
       }
-      const blob = await getCurrentPdfBlob();
-      await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
+      if (hasMainPdf) {
+        const blob = await getCurrentPdfBlob();
+        await uploadCompletedPdf(blob, applicationId, formAnswers, clientUsername);
+      }
       await onSaveSuccess?.();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save application');
@@ -733,14 +733,14 @@ const SignAndDownloadViewer = React.forwardRef<SignAndDownloadViewerHandle, Sign
     }
   }, [
     applicationId,
-    canEditAttachments,
+    canEditCurrentAttachment,
     clientUsername,
     currentViewerPageMeta.doc,
     formAnswers,
     getCurrentAttachmentPdfBlob,
     getCurrentPdfBlob,
+    hasMainPdf,
     onSaveSuccess,
-    effectivePdfFormsReadOnly,
   ]);
 
   const handleSavePdfEdits = useCallback(async (): Promise<boolean> => {

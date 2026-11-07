@@ -2,6 +2,7 @@
 import '@testing-library/jest-dom/vitest';
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Blob as NodeBlob } from 'node:buffer';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -47,6 +48,7 @@ vi.mock('react-pdf', async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal('Blob', NodeBlob);
   vi.mocked(getApplicationMailStatus).mockResolvedValue({ mailStatus: 'READY_TO_MAIL', mailedAt: null });
   vi.stubGlobal('ResizeObserver', class {
     observe() {}
@@ -118,5 +120,86 @@ describe('attachments-only PDF packets', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Download filled PDF' }));
     await screen.findByText("Couldn't download the attachment packet: Please retry");
     expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();
+  });
+});
+
+describe('finishing an application from an attachment preview', () => {
+  it.each([true, false])('finishes after signing in read-only mode with attachment permission %s', async (canEditAttachments) => {
+    vi.mocked(getApplicationAttachmentOptions).mockResolvedValue({
+      status: 'SUCCESS',
+      options: [],
+      attachments: [{ fileId: 'attachment-1', filename: 'letter.pdf' }],
+      hasMainPdf: true,
+    });
+    const onSaveSuccess = vi.fn();
+    render(
+      <SignAndDownloadViewer
+        fileUrl="blob:main-document"
+        applicationId="packet"
+        signaturePlacements={[{ key: 'signature-1', page: 0, rect: [10, 10, 100, 40], status: 'SIGNED' }]}
+        formAnswers={{ answer: 'saved answer' }}
+        clientUsername="demo-client"
+        onSaveSuccess={onSaveSuccess}
+        showPdfEditControls
+        pdfFormsReadOnly
+        canEditAttachments={canEditAttachments}
+      />,
+    );
+    await screen.findByText('Attached pages appended: 1');
+    expect(screen.getByText('Signature saved')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Next →' }));
+    expect(screen.getByText('Page 2 / 2')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Finish application' }));
+    await waitFor(() => expect(onSaveSuccess).toHaveBeenCalledOnce());
+    expect(uploadCompletedPdf).toHaveBeenCalledWith(expect.any(Blob), 'packet', { answer: 'saved answer' }, 'demo-client');
+    expect(updateApplicationAttachmentPdf).not.toHaveBeenCalled();
+    expect(screen.queryByText('Attachment editing is not available in this mode.')).not.toBeInTheDocument();
+  });
+
+  it('finishes an attachments-only packet without uploading a primary form', async () => {
+    const onSaveSuccess = vi.fn();
+    render(
+      <SignAndDownloadViewer
+        fileUrl="blob:first-document"
+        applicationId="packet"
+        signaturePlacements={[]}
+        formAnswers={{}}
+        onSaveSuccess={onSaveSuccess}
+        pdfFormsReadOnly
+      />,
+    );
+    await screen.findByText('Attachment pages: 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Finish application' }));
+    await waitFor(() => expect(onSaveSuccess).toHaveBeenCalledOnce());
+    expect(uploadCompletedPdf).not.toHaveBeenCalled();
+    expect(updateApplicationAttachmentPdf).not.toHaveBeenCalled();
+  });
+
+  it('persists an editable attachment before finishing and preserves save failures', async () => {
+    vi.mocked(updateApplicationAttachmentPdf).mockRejectedValueOnce(new Error('Attachment save failed'));
+    const onSaveSuccess = vi.fn();
+    render(
+      <SignAndDownloadViewer
+        fileUrl="blob:first-document"
+        applicationId="packet"
+        signaturePlacements={[]}
+        formAnswers={{}}
+        onSaveSuccess={onSaveSuccess}
+        showPdfEditControls
+        pdfFormsReadOnly
+        startInEditMode
+        canEditAttachments
+      />,
+    );
+    await screen.findByText('Attachment pages: 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Finish application' }));
+    await screen.findByText('Attachment save failed');
+    expect(onSaveSuccess).not.toHaveBeenCalled();
+    expect(uploadCompletedPdf).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Finish application' }));
+    await waitFor(() => expect(onSaveSuccess).toHaveBeenCalledOnce());
+    expect(updateApplicationAttachmentPdf).toHaveBeenCalledWith(expect.any(Blob), 'packet', 'attachment-1');
+    expect(uploadCompletedPdf).not.toHaveBeenCalled();
   });
 });
