@@ -12,7 +12,6 @@ import getServerURL from '../../serverOverride';
 import FileType from '../../static/FileType';
 import Role from '../../static/Role';
 import { getClientSearchCandidateQueries, matchesClientSearchQuery } from '../../utils/clientSearch';
-import { demoClientName } from '../../utils/demoPrivacy';
 import DataTable, { DataTableColumn } from '../BaseComponents/DataTable';
 import RowActionMenu, { RowAction } from '../BaseComponents/RowActionMenu';
 import {
@@ -1038,13 +1037,13 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
           type="text"
           className="form-control"
           placeholder="Search and choose a client..."
-          value={modalClientUsername ? demoClientName(modalClientQuery) : modalClientQuery}
+          value={modalClientQuery}
           onChange={(event) => this.searchModalClients(event.target.value)}
           disabled={disabled}
         />
         {modalClientUsername && (
           <div className="tw-text-sm tw-text-gray-600 tw-mt-2">
-            Selected client: <strong>{demoClientName(modalClientName)}</strong>
+            Selected client: <strong>{modalClientName || modalClientUsername}</strong>
           </div>
         )}
         {modalClientSearching && (
@@ -1066,7 +1065,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
                   onClick={() => this.selectModalClient(client)}
                   disabled={disabled}
                 >
-                  <div className="tw-font-semibold">{demoClientName(displayName)}</div>
+                  <div className="tw-font-semibold">{displayName}</div>
                   {secondaryLabel && (
                     <div className="tw-text-sm tw-text-gray-500">{secondaryLabel}</div>
                   )}
@@ -1115,9 +1114,9 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
     const pageTitle = isClientUser ? 'My Applications' : 'Applications';
     const applicationsOwner = (clientUsername === '' || clientUsername === undefined)
       ? ''
-      : `${demoClientName(clientName)}'s`;
+      : `${clientName || clientUsername || 'Client'}'s`;
     const emptyApplicationsMessage = clientName || clientUsername
-      ? `No applications for ${demoClientName(clientName)}` : 'No applications found';
+      ? `No applications for ${clientName || clientUsername}` : 'No applications found';
     const filteredAvailableApplications = this.getFilteredAvailableApplications();
 
     const columns: DataTableColumn<DocumentInformation>[] = [
@@ -1190,7 +1189,7 @@ class ViewApplications extends Component<Props & RouteComponentProps, State, {}>
         sortable: true,
         width: '18%',
         hideOnMobile: true,
-        renderCell: (row: DocumentInformation) => demoClientName(this.getClientDisplayName(row)),
+        renderCell: (row: DocumentInformation) => this.getClientDisplayName(row),
       } as DataTableColumn<DocumentInformation>,
       {
         field: 'actions',
