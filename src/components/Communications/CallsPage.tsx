@@ -9,7 +9,6 @@ import { Device } from '@twilio/voice-sdk';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { demoContactLabel } from '../../utils/demoPrivacy';
 import CallbackActions from './CallbackActions';
 import CallCosts from './CallCosts';
 import CallTranscript from './CallTranscript';
@@ -736,7 +735,7 @@ export default function CallsPage() {
             <p className="communications-muted">No communication contacts found.</p>
           )}
           {filtered.map((conversation) => {
-            const label = demoContactLabel(conversationLabel(conversation));
+            const label = conversationLabel(conversation);
             return (
               <button
                 type="button"
@@ -749,7 +748,7 @@ export default function CallsPage() {
                   setSelectedContactId(conversation.id);
                 }}
               >
-                <span className={`contact-avatar ${conversation.type.toLowerCase()}`}>{label.replace(/\W/g, '').charAt(0).toUpperCase() || '?'}</span>
+                <span className={`contact-avatar ${conversation.type.toLowerCase()}`}>{conversationInitial(conversation)}</span>
                 <span className="contact-main">
                   <strong>
                     {label}
